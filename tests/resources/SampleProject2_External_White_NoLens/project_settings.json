@@ -1,0 +1,83 @@
+{
+    "openvp_cal_version": "1.0.0-rc.1",
+    "project_settings": {
+        "file_format": "exr",
+        "resolution_width": 3840,
+        "resolution_height": 2160,
+        "output_folder": "/Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/tests/resources/SampleProject2_External_White_NoLens",
+        "ocio_config_path": null,
+        "custom_logo_path": "",
+        "frames_per_patch": 1,
+        "led_walls": [
+            {
+                "name": "Wall_1_ROE",
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": false,
+                "auto_wb_source": false,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/tests/resources/SampleProject2_External_White_NoLens/Plates/A102_C015_1027M2_001.R3D",
+                "num_grey_patches": 30,
+                "primaries_saturation": 0.7,
+                "calculation_order": "EOTF > CS",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "REDWideGamutRGB",
+                "reference_to_target_cat": "CAT02",
+                "roi": [
+                    748,
+                    1412,
+                    185,
+                    848
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 1650,
+                "target_gamut": "ROE_Gamut",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "None",
+                "match_reference_wall": false,
+                "reference_wall": "",
+                "use_external_white_point": true,
+                "external_white_point_file": "/Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/tests/resources/SampleProject2_External_White_NoLens/Plates/A102_C016_102752_001.R3D/Render.918989.exr",
+                "verification_wall": "",
+                "is_verification_wall": false,
+                "avoid_clipping": true
+            }
+        ],
+        "project_custom_primaries": {
+            "ROE_Gamut": [
+                [
+                    0.6919,
+                    0.3074
+                ],
+                [
+                    0.1828,
+                    0.7413
+                ],
+                [
+                    0.1308,
+                    0.0633
+                ],
+                [
+                    0.3127,
+                    0.329
+                ]
+            ],
+            "AOTO_Gamut": [
+                [
+                    0.6937,
+                    0.3042
+                ],
+                [
+                    0.1845,
+                    0.7347
+                ],
+                [
+                    0.1355,
+                    0.0518
+                ],
+                [
+                    0.3127,
+                    0.329
+                ]
+            ]
+        }
+    }
+}
