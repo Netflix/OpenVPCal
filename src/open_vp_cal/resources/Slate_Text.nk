@@ -1,0 +1,178 @@
+#! /Applications/Nuke14.0v3/Nuke14.0v3.app/Contents/MacOS/libnuke-14.0.3.dylib -nx
+version 14.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="26" w="1920" h="1027" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1257" stretch="1"/>
+            <splitter orientation="2">
+                <split size="591"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="416"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+                <page id="Scenegraph.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Slate_Text.nk
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement OCIO
+ OCIO_config studio-config-v1.0.0_aces-v1.3_ocio-v2.1
+ defaultViewerLUT "OCIO LUTs"
+ workingSpaceLUT scene_linear
+ monitorLut "ACES 1.0 - SDR Video (sRGB - Display)"
+ monitorOutLUT "ACES 1.0 - SDR Video (sRGB - Display)"
+ int8Lut matte_paint
+ int16Lut texture_paint
+ logLut compositing_log
+ floatLut scene_linear
+}
+Reformat {
+ inputs 0
+ format "3840 2160 0 0 3840 2160 1 UHD_4K"
+ name Reformat1
+ xpos -174
+ ypos -173
+}
+Text {
+ message Overview
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 56
+ yjustify top
+ Transform 1
+ box {130 1710 1320 1800}
+ translate {0 180}
+ name Text_4
+ label Overview
+ xpos -168
+ ypos -122
+}
+Text {
+ message "OpenVPCal is an open source calibration tool for In-Camera VFX pipelines. It consists of a Python 3 API with a standalone PySide interface.\n\nIt creates a calibration as an OpenColorIO Config and Display-to-Display 3D LUT that should be applied to the content projected on the LED wall. \n\nPLEASE REFER TO THE USER GUIDE FOR DETAILED INSTRUCTIONS."
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 34
+ leading 0.1
+ yjustify top
+ Transform 1
+ box {130 1454 1300 1729}
+ translate {0 180}
+ name Text_33
+ xpos -168
+ ypos -90
+}
+Text {
+ message "Pre-Calibration Setup"
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 48
+ yjustify top
+ Transform 1
+ box {129 1408 1327 1468}
+ translate {0 160}
+ name Text_5
+ label "Pre-Calibration Setup"
+ xpos -168
+ ypos -39
+}
+Text {
+ message "As OpenVPCal uses the camera as a colorimeter, is essential to capture the calibration patches with the exact camera model that will be used in production. Any lens can be used for the calibration, but the camera model and its firmware cannot change.\n"
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 34
+ leading 0.1
+ yjustify top
+ Transform 1
+ box {138.5 1228 1305.5 1408}
+ translate {0 150}
+ name Text_34
+ xpos -168
+ ypos -7
+}
+Text {
+ message "1. Turn off any part of the LED wall that is not directly in front of the camera and is required for the calibration.\n\n2. Warm up the camera and LED panels: display a flat grey color on the LED panels for at least 20 minutes before capture.\n\n3. If the generated calibration sequence has only one frame per patch, playback at a frame rate equal to 1/10 of the camera FPS: if the camera records at 25 FPS, set the playback to 2.5FPS. If the exact number of patches are available, the playback speed should be set at the camera FPS. Disable any type of frame blending and playback loops, the sequence should stop at its last frame.\n\n4. Bypass any unnecessary color transforms other than the ones required to map the calibration patches to the LED wall (invEOTF), if the patches are linear and not already in a display referred space. The chromaticity of the patches should not be modified. Disable previous calibrations, except the inbuilt Image Processor calibration for the LED panels.\n\n5. Ensure that the whole system from Media Player to Image Processor to Camera is correnctly genlocked."
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 34
+ leading 0.1
+ yjustify top
+ Transform 1
+ box {175 589 1303 1249}
+ translate {0 150}
+ name Text_36
+ xpos -168
+ ypos 17
+}
+Text {
+ message "Calibration Settings & Version"
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 48
+ yjustify top
+ Transform 1
+ box {130 417 1318 487}
+ translate {0 100}
+ name Text_6
+ label "Calibration Settings & Version"
+ xpos -168
+ ypos 53
+}
+Transform {
+ translate {0 -30}
+ center {1920 1080}
+ name Transform18
+ xpos -168
+ ypos 109
+}
+Text {
+ message "Capture Setup"
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 56
+ yjustify top
+ Transform 1
+ box {2530 1730 3760 1840}
+ translate {0 110}
+ name Text_7
+ label "Capture Setup"
+ xpos -168
+ ypos 149
+}
+Text {
+ message "1. Set the LED panel to the maximum brightness allowed by the Image processor (do not override the gain). If using ST2084 (PQ) as EOTF, make sure that these two squares are equally bright:\n\n\n\n2. Check the video data range (Legal/Full) throughout the pipeline. If a difference can be perceived between the four squares below, it is correctly set. Otherwise, check the video pipeline from the media player to the wall, and make sure that the video range is set consistently. Don't trust video metadata and auto-settings, override the settings manually. Just note that when using ST2084 (PQ) as EOTF, the differences between the black patches might be imperceivable. \n\n\n\n\n3. Set the camera perpendicular to the wall, at a distance where it would be - on average - when shooting: the center square must look like a square and the circle must look like a circle. Scale the content until the center target gray square covers 60/70% of the vertical camera field of view.\n\n4. Defocus to prevent moire. Defocus towards the camera (closer focus): imagine you are focusing on an actor that is sitting in front of the wall. Defocus to the point where the inner black border disappears. Too little will cause moire, too much might cause the analysis to error.\n\n5. Set the exposure so that the center square hits 18% of the camera's sensitivity. Use the camera's false color tool or a light meter to set the exposure until the whole square is set to 18%. Use the 17% and 19% small patches as a reference to further center your exposure. Try not to use shutter angle or camera FPS to adjust the exposure as this will introduce multiplexing. ND filters will most likely be required.\n\n6. Auto white-balance the camera towards the center target gray square. Once done, check the exposure again as certain camera's white balance affect the exposure of the image.\n\n7. Check for clipping. Use the below white patch and ensure that it is not clipping your sensor's sensitivity using the camera's false color tool:\n\n\n\n8. Set the camera recording mode to RAW or to a mode with an official and documented transform pipeline to ACES.\n\n9. Start recording on the camera and play the image sequence until it ends.\n"
+ font /Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/src/open_vp_cal/resources/Roboto-Bold.ttf
+ size 34
+ kerning 0.014
+ leading 0.124
+ yjustify top
+ Transform 1
+ box {2530 8 3750 1760}
+ translate {0 100}
+ name Text_39
+ label Usage
+ xpos -168
+ ypos 181
+}
+Viewer {
+ frame 1
+ frame_range 1-100
+ viewerProcess "ACES 1.0 - SDR Video (sRGB - Display)"
+ name Viewer1
+ xpos -163
+ ypos 243
+}

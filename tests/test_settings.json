@@ -1,0 +1,65 @@
+{
+    "openvp_cal_version": "0.1.0a",
+    "project_settings": {
+        "file_format": "exr",
+        "resolution_width": 3840,
+        "resolution_height": 2160,
+        "output_folder": "",
+        "custom_logo_path": "",
+        "ocio_config_path": "test",
+        "frames_per_patch": 1,
+        "project_custom_primaries": {
+            "TestPrimaries1": [
+                [
+                    0.7347,
+                    0.265
+                ],
+                [
+                    0.0,
+                    1.0
+                ],
+                [
+                    0.0001,
+                    0.0
+                ],
+                [
+                    0.32168,
+                    0.338
+                ]
+            ]
+        },
+        "led_walls": [
+            {
+                "name": "Wall1",
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": true,
+                "auto_wb_source": true,
+                "input_sequence_folder": "",
+                "num_grey_patches": 30,
+                "primaries_saturation": 0.7,
+                "calculation_order": "CS > EOTF",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "ACES2065-1",
+                "reference_to_target_cat": "CAT02",
+                "roi": [
+                    342,
+                    685,
+                    119,
+                    470
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 1000,
+                "target_gamut": "ITU-R BT.2020",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "CAT02",
+                "match_reference_wall": false,
+                "reference_wall": "",
+                "use_external_white_point": false,
+                "external_white_point_file": "",
+                "is_verification_wall": false,
+                "verification_wall": "",
+                "avoid_clipping": true
+            }
+        ]
+    }
+}

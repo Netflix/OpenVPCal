@@ -4,3 +4,4 @@
 dist/**
 **myenv/**
 **venv/**
+openvpcal.egg-info/**

@@ -1,0 +1,36 @@
+{
+    "project_settings": {
+        "file_format": "exr",
+        "resolution_width": 3840,
+        "resolution_height": 2160,
+        "output_folder": "",
+        "custom_logo_path": "",
+        "ocio_config_path": "",
+        "frames_per_patch": 1,
+        "led_walls" : [
+            {
+                "name": "Wall1",
+                "custom_primaries": null,
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": true,
+                "auto_wb_source": true,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-internal/openvpcal/tests/resources/TEST_EXR_OPENVPCAL_balanced",
+                "calculation_order": "CS > EOTF",
+                "primaries_saturation": 0.7,
+                "input_plate_gamut": "ACES2065-1",
+                "num_grey_patches": 30,
+                "reference_to_target_cat": "CAT02",
+                "roi": [342, 685, 119, 470],
+                "saturation_cat": "CAT02",
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 1000,
+                "target_gamut": "ITU-R BT.2020",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "CAT02",
+                "reference_wall": "",
+                "verification_wall": "",
+                "is_verification_wall": false
+            }
+        ]
+    }
+}
