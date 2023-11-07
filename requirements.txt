@@ -1,7 +1,7 @@
 altgraph==0.17.3
 astroid==2.15.5
-colour-science==0.4.2
 colour-checker-detection==0.1.4
+colour-science==0.4.2
 contourpy==1.0.7
 coverage==7.2.7
 cycler==0.11.0
@@ -32,6 +32,7 @@ PySide6==6.5.1.1
 PySide6-Addons==6.5.1.1
 PySide6-Essentials==6.5.1.1
 python-dateutil==2.8.2
+requests==2.31.0
 requests
 scipy==1.10.1
 shiboken6==6.5.1.1
