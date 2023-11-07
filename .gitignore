@@ -5,3 +5,4 @@ dist/**
 **myenv/**
 **venv/**
 openvpcal.egg-info/**
+.pytest_cache/**
