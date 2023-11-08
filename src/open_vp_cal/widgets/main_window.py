@@ -1098,14 +1098,12 @@ class MainWindow(QMainWindow):
     def save_project_settings_as(self):
         """ Saves the current project settings to disk
         """
-        dialog = QFileDialog()
-        dialog.setDefaultSuffix('.json')
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilter('JSON files (*.json)')
-
-        if dialog.exec_() == QFileDialog.Accepted:
-            file_name = dialog.selectedFiles()[0]
-            self.project_settings_model.to_json(file_name)
+        folder = select_folder()
+        if folder:
+            current_output_folder = self.project_settings_model.output_folder
+            self.project_settings_model.output_folder = folder
+            self.project_settings_model.set_data(constants.ProjectSettings.OUTPUT_FOLDER, folder)
+            self.save_project_settings(inform_completion=False)
             self.task_completed()
 
     def on_save_project(self) -> None:
