@@ -32,7 +32,7 @@ def scale_lut_to_target(lut, new_min=0, new_max=1000):
     return lut
 
 
-def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename, peak_lum=None, avoid_clipping=True) -> None:
+def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename) -> None:
     """ Write a LUT to a file in CLF format using PQ
 
     Args:
@@ -58,23 +58,6 @@ def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename, peak_lum=None, avoid_clippi
     lut_r_i_pq = eotf_inverse_ST2084(lut_r_i * pq_max_scaled_1_100)
     lut_g_i_pq = eotf_inverse_ST2084(lut_g_i * pq_max_scaled_1_100)
     lut_b_i_pq = eotf_inverse_ST2084(lut_b_i * pq_max_scaled_1_100)
-
-    # # TODO Check With Frankie If This Is Where We Want To Do This Or Not
-    # if avoid_clipping:
-    #     if not peak_lum:
-    #         raise ValueError("Peak luminance must be provided if avoid_clipping is True")
-    #
-    #     peak_lum_pq = utils.nits_to_pq(peak_lum)
-    #     max_r = np.max(np.max(lut_r_i_pq[:, 0]))
-    #     max_g = np.max(np.max(lut_g_i_pq[:, 0]))
-    #     max_b = np.max(np.max(lut_b_i_pq[:, 0]))
-    #     max_lut_value_pq = max(max_r, max_g, max_b)
-    #     if max_lut_value_pq > peak_lum_pq:
-    #         scale_factor = peak_lum_pq/max_lut_value_pq
-    #
-    #         lut_r_i_pq *= scale_factor
-    #         lut_g_i_pq *= scale_factor
-    #         lut_b_i_pq *= scale_factor
 
     for i in range(constants.LUT_LEN):
         lut_transform.setValue(i, lut_r_i_pq[i][0], lut_g_i_pq[i][0], lut_b_i_pq[i][0])
@@ -123,15 +106,11 @@ def create_EOTF_LUT(lut_filename: str, results: dict) -> ocio.GroupTransform:
     """
     # EOTF LUT
     # must be written to a sidecar file, which is named from the config
-    peak_lum = results[constants.Results.TARGET_MAX_LUM_NITS]
-    avoid_clipping = results[constants.Results.AVOID_CLIPPING]
     write_eotf_lut_pq(
         results[constants.Results.EOTF_LUT_R],
         results[constants.Results.EOTF_LUT_G],
         results[constants.Results.EOTF_LUT_B],
-        lut_filename,
-        peak_lum=peak_lum,
-        avoid_clipping=avoid_clipping
+        lut_filename
     )
     eotf_lut = ocio.FileTransform(
         os.path.basename(lut_filename),
