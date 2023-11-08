@@ -1,6 +1,6 @@
 import unittest
 import colour
-
+import numpy as np
 
 import open_vp_cal.core.calibrate as calibrate
 
@@ -234,6 +234,52 @@ class TestCalibrate(TestProject):
                                reference_wall_external_white_balance_matrix=None)
 
 
+class TestAvoidClipping(TestProject):
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_avoid_clipping(self):
+        samples = self.get_samples(self.led_wall)
+        reference_samples = self.get_reference_samples(self.led_wall)
+
+        target_colour_space = utils.get_target_colourspace_for_led_wall(self.led_wall)
+        result = calibrate.run(
+            measured_samples=samples, reference_samples=reference_samples,
+            input_plate_gamut=self.led_wall.input_plate_gamut,
+            native_camera_gamut=constants.CameraColourSpace.RED_WIDE_GAMUT,
+            target_gamut=target_colour_space,
+            target_to_screen_cat=self.led_wall.target_to_screen_cat,
+            reference_to_target_cat=self.led_wall.reference_to_target_cat,
+            target_max_lum_nits=self.led_wall.target_max_lum_nits, target_EOTF=None,
+            enable_plate_white_balance=True, enable_gamut_compression=True,
+            enable_EOTF_correction=True, calculation_order=CalculationOrder.CO_CS_EOTF,
+            gamut_compression_shadow_rolloff=constants.GAMUT_COMPRESSION_SHADOW_ROLLOFF,
+            reference_wall_external_white_balance_matrix=None,
+            avoid_clipping=False
+        )
+
+        result2 = calibrate.run(
+            measured_samples=samples, reference_samples=reference_samples,
+            input_plate_gamut=self.led_wall.input_plate_gamut,
+            native_camera_gamut=constants.CameraColourSpace.RED_WIDE_GAMUT,
+            target_gamut=target_colour_space,
+            target_to_screen_cat=self.led_wall.target_to_screen_cat,
+            reference_to_target_cat=self.led_wall.reference_to_target_cat,
+            target_max_lum_nits=self.led_wall.target_max_lum_nits, target_EOTF=None,
+            enable_plate_white_balance=True, enable_gamut_compression=True,
+            enable_EOTF_correction=True, calculation_order=CalculationOrder.CO_CS_EOTF,
+            gamut_compression_shadow_rolloff=constants.GAMUT_COMPRESSION_SHADOW_ROLLOFF,
+            reference_wall_external_white_balance_matrix=None,
+            avoid_clipping=True
+        )
+
+        no_clipping_primaries = result[constants.Results.POST_CALIBRATION_SCREEN_PRIMARIES]
+        no_clipping_whitepoint = result[constants.Results.POST_CALIBRATION_SCREEN_WHITEPOINT]
+
+        clipping_primaries = result2[constants.Results.POST_CALIBRATION_SCREEN_PRIMARIES]
+        clipping_whitepoint = result2[constants.Results.POST_CALIBRATION_SCREEN_WHITEPOINT]
+
+        self.assertTrue(np.allclose(no_clipping_primaries, clipping_primaries, atol=0.00001))
+        self.assertTrue(np.allclose(no_clipping_whitepoint, clipping_whitepoint, atol=0.00001))
+
+
+
+

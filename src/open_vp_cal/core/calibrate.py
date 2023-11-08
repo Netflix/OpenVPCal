@@ -69,8 +69,8 @@ def achromatic(rgb, shadow_rolloff):
     return np.asarray([value, value, value])
 
 def eotf_correction_calculation(
-        grey_ramp_screen, grey_signal_values, grey_signal_value_rgb, deltaE_grey_ramp,
-        deltaE_threshold=10):
+        grey_ramp_screen, grey_signal_values, grey_signal_value_rgb, deltaE_grey_ramp, avoid_clipping=True,
+        peak_lum=None, deltaE_threshold=10):
     """ Compute a LUT to correct the EOTF as measured from grey patches. Any grey patches with a delta E greater than
         the deltaE_threshold are ignored.
 
@@ -80,6 +80,9 @@ def eotf_correction_calculation(
         grey_signal_values (array-like): Reference Signal Values For The EOTF
         grey_signal_value_rgb: Reference Signal Values For The EOTF as RGB values
         deltaE_grey_ramp: Delta E Values For The Grey Ramp
+        avoid_clipping: If we want to avoid clipping of values on the led wall we scale any values using the peak lum
+            if values go above this
+        peak_lum: The peak luminance of the led wall
 
     Returns:
         lut_r (array-like): 1D LUT with elements as (y,x)
@@ -107,6 +110,21 @@ def eotf_correction_calculation(
     lut_r = np.array(lut_r)
     lut_g = np.array(lut_g)
     lut_b = np.array(lut_b)
+
+    if avoid_clipping:
+        if not peak_lum:
+            raise ValueError("Peak luminance must be provided if avoid_clipping is True")
+
+        max_r = np.max(np.max(lut_r[:, 0]))
+        max_g = np.max(np.max(lut_g[:, 0]))
+        max_b = np.max(np.max(lut_b[:, 0]))
+        max_value = max(max_r, max_g, max_b)
+        if max_value > peak_lum:
+            scale_factor = peak_lum / max_value
+
+            lut_r *= scale_factor
+            lut_g *= scale_factor
+            lut_b *= scale_factor
 
     return lut_r, lut_g, lut_b
 
@@ -225,10 +243,12 @@ def extract_screen_cs(
         chromatic_adaptation_transform=cs_cat,
     )
 
-    # If we want to avoid clipping we need to scale the matrix so that the sum of each row is 1
-    # if avoid_clipping:
-    #     row_sums = target_to_screen_matrix.sum(axis=1, keepdims=True)
-    #     target_to_screen_matrix = target_to_screen_matrix / row_sums
+    # If we want to avoid clipping, we need to scale the matrix so that the sum of each row is 1
+    if avoid_clipping:
+        row_sums = target_to_screen_matrix.sum(axis=1, keepdims=True)
+        max_value = max(row_sums)
+        if max_value > 1:
+            target_to_screen_matrix = target_to_screen_matrix / max_value
 
     saturated_primaries_input_plate_gamut = colour.RGB_to_RGB(
         saturated_primaries, native_camera_gamut_cs, input_plate_cs, camera_conversion_cat
@@ -843,7 +863,9 @@ def run(
                 eotf_ramp_screen,
                 eotf_signal_values,
                 eotf_signal_value_rgb,
-                delta_e_ICtCP_eotf_ramp
+                avoid_clipping=avoid_clipping,
+                peak_lum=peak_lum,
+                deltaE_threshold=delta_e_ICtCP_eotf_ramp
             )
 
             eotf_ramp_camera_native_gamut_calibrated = ca.vector_dot(
@@ -883,7 +905,9 @@ def run(
             eotf_ramp_camera_native_gamut,
             eotf_signal_values,
             eotf_signal_value_rgb,
-            delta_e_ICtCP_eotf_ramp
+            avoid_clipping=avoid_clipping,
+            peak_lum=peak_lum,
+            deltaE_threshold=delta_e_ICtCP_eotf_ramp
         )
 
         # rgb_ratio is not passed as the LUTs already include this factor
