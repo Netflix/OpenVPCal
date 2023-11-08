@@ -683,101 +683,75 @@ def run(
     if target_to_screen_cat == constants.CAT.CAT_NONE:
         target_to_screen_cat = None
 
+    # 0) Ensure we can do only one of auto white balance, external white balance, or decoupled lens white balance
+    configuration_check = [
+        enable_plate_white_balance,
+        reference_wall_external_white_balance_matrix is not None,
+        decoupled_lens_white_samples is not None].count(True)
+
+    if configuration_check > 1:
+        raise ValueError("Only one of auto white balance, external white balance, "
+                         "or decoupled lens white balance is allowed")
+
     # 1) First We Get Our Colour Spaces
-    input_plate_cs = (
-        colour.RGB_COLOURSPACES[input_plate_gamut]
-        if isinstance(input_plate_gamut, str)
-        else input_plate_gamut
-    )
-
-    native_camera_gamut_cs = (
-        colour.RGB_COLOURSPACES[native_camera_gamut] if isinstance(native_camera_gamut, str) else native_camera_gamut
-    )
-
-    target_cs = (
-        colour.RGB_COLOURSPACES[target_gamut] if isinstance(target_gamut, str) else target_gamut
-    )
+    input_plate_cs, native_camera_gamut_cs, target_cs = get_calibration_colour_spaces(
+        input_plate_gamut, native_camera_gamut, target_gamut)
 
     # 2) Once we have our camera native colour space we decide on the cat we want to use to convert to camera space
     camera_conversion_cat = utils.get_cat_for_camera_conversion(native_camera_gamut_cs.name)
 
-    # 3) We Take The 18 Percent Grey Samples And Convert Them To Camera Space
-    grey_measurements_input_plate_gamut = measured_samples[Measurements.GREY]
-    grey_measurements_native_camera_gamut = colour.RGB_to_RGB(
-        grey_measurements_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    # 3) We take our measured samples and convert them to camera space
+    (
+        eotf_ramp_camera_native_gamut, grey_measurements_native_camera_gamut,
+        macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+        rgbw_measurements_camera_native_gamut,
+        decoupled_lens_white_samples_camera_native_gamut
+    ) = convert_measured_samples_to_camera_native_cs(
+            camera_conversion_cat, input_plate_cs, measured_samples, native_camera_gamut_cs,
+            decoupled_lens_white_samples
     )
 
-    # 3a) We Take Out Max White Samples And Convert Them To Camera Space
-    max_white_input_plate_gamut = measured_samples[Measurements.MAX_WHITE]
-    max_white_camera_native_gamut = colour.RGB_to_RGB(
-        max_white_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
-    )
-
-    # 3b) We Take Our Decoupled White Samples And Convert Them To Camera Space
+    # 4) We Calculate a decoupled white balance matrix if we have a decoupled lens white samples
     decoupling_white_balance_matrix = None
-    if decoupled_lens_white_samples:
-        decoupled_lens_white_samples_camera_native_gamut = colour.RGB_to_RGB(
-            decoupled_lens_white_samples, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
-        )
+    if decoupled_lens_white_samples_camera_native_gamut is not None:
         decoupling_white_balance_matrix = create_decoupling_white_balance_matrix(
             grey_measurements_native_camera_gamut, decoupled_lens_white_samples_camera_native_gamut)
 
-    # 6) Combine the primaries and white samples to give us RGBW in the input plate gamut space
-    rgbw_measurements_input_plate_gamut = np.concatenate(
-        (measured_samples[Measurements.DESATURATED_RGB], [measured_samples[Measurements.GREY]])
-    )
-
-    # Get The Macbeth Samples And Convert To Camera Native
-    macbeth_measurements_camera_native_gamut = colour.RGB_to_RGB(
-        measured_samples[Measurements.MACBETH], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
-    )
-
-    # 7) Convert the RGBW measurements to the camera native gamut space
-    rgbw_measurements_camera_native_gamut = colour.RGB_to_RGB(
-        rgbw_measurements_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
-    )
-
-    # 5) We Take Our Grey Ramp Samples And Convert Them To Camera Space
-    eotf_ramp_input_plate_gamut = measured_samples[Measurements.EOTF_RAMP]
-    eotf_ramp_camera_native_gamut = colour.RGB_to_RGB(
-        eotf_ramp_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
-    )
-
+    # 5) We Apply The Decoupling White Balance Matrix To All The Samples If We Have One
     if decoupling_white_balance_matrix is not None:
-        eotf_ramp_camera_native_gamut = [ca.vector_dot(decoupling_white_balance_matrix, m) for m in
-                                         eotf_ramp_camera_native_gamut]
-        rgbw_measurements_camera_native_gamut = ca.vector_dot(decoupling_white_balance_matrix,
-                                                              rgbw_measurements_camera_native_gamut)
-        macbeth_measurements_camera_native_gamut = ca.vector_dot(decoupling_white_balance_matrix,
-                                                                 macbeth_measurements_camera_native_gamut)
+        (
+            eotf_ramp_camera_native_gamut, grey_measurements_native_camera_gamut,
+            macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+            rgbw_measurements_camera_native_gamut
+        ) = apply_matrix_to_samples(
+                decoupling_white_balance_matrix, eotf_ramp_camera_native_gamut,
+                grey_measurements_native_camera_gamut,
+                macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+                rgbw_measurements_camera_native_gamut
+            )
 
-        grey_measurements_native_camera_gamut = ca.vector_dot(decoupling_white_balance_matrix,
-                                                              grey_measurements_native_camera_gamut)
-        max_white_camera_native_gamut = ca.vector_dot(
-            decoupling_white_balance_matrix,
-            max_white_camera_native_gamut)
-
-    # 4) We Calculate The White Balance Matrix By Balancing The Grey Samples Against The Green Channel
+    # 4) We Calculate The White Balance Matrix By Balancing The Grey Samples Against The Green Channel Or Use The One
+    # Provided By The External Reference Wall
     # Green Value / Red Value
     if reference_wall_external_white_balance_matrix is None:
         white_balance_matrix = utils.create_white_balance_matrix(grey_measurements_native_camera_gamut)
     else:
         white_balance_matrix = np.array(reference_wall_external_white_balance_matrix)
 
-    # 8) Apply the white balance matrix to the RGBW measurements and Grey Ramps In Camera Space If Enabled
+    # 5) Apply the white balance matrix to the RGBW measurements and Grey Ramps In Camera Space If Enabled
     if enable_plate_white_balance:
-        eotf_ramp_camera_native_gamut = [ca.vector_dot(white_balance_matrix, m) for m in
-                                         eotf_ramp_camera_native_gamut]
-        rgbw_measurements_camera_native_gamut = ca.vector_dot(white_balance_matrix,
-                                                              rgbw_measurements_camera_native_gamut)
-        macbeth_measurements_camera_native_gamut = ca.vector_dot(white_balance_matrix,
-                                                                 macbeth_measurements_camera_native_gamut)
+        (
+            eotf_ramp_camera_native_gamut, _,
+            macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+            rgbw_measurements_camera_native_gamut
+        ) = apply_matrix_to_samples(
+            white_balance_matrix, eotf_ramp_camera_native_gamut,
+            grey_measurements_native_camera_gamut,
+            macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+            rgbw_measurements_camera_native_gamut
+        )
 
-        max_white_camera_native_gamut = ca.vector_dot(
-            white_balance_matrix,
-            max_white_camera_native_gamut)
-
-    # 9) We Get The Matrix To Convert From OCIO Reference Space To Target Space
+    # 6) We Get The Matrix To Convert From OCIO Reference Space To Target Space
     (
         reference_to_target_matrix, ocio_reference_cs,
         target_to_XYZ_matrix, reference_to_XYZ_matrix,
@@ -786,7 +760,7 @@ def run(
         input_plate_cs, target_cs, cs_cat=reference_to_target_cat
     )
 
-    # 9a) We Get The Green Value From The 18% Grey Patch, Scale This So It Equals 18% Of Peak Luminance
+    # 7) We Get The Green Value From The 18% Grey Patch, Scale This So It Equals 18% Of Peak Luminance
     # Apply This Scaling To RGBW & Grey Ramp Samples
     peak_lum = target_max_lum_nits * 0.01
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
@@ -814,7 +788,7 @@ def run(
         item / exposure_scaling_factor for item in macbeth_measurements_camera_native_gamut
     ]
 
-    # 9b) We do the deltaE analysis
+    # 8) We do the deltaE analysis
     _, delta_e_ICtCP_eotf_ramp, _ = deltaE_ICtCp(
         reference_samples, rgbw_measurements_camera_native_gamut, eotf_ramp_camera_native_gamut,
         macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs, target_max_lum_nits
@@ -824,7 +798,7 @@ def run(
         macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs, target_max_lum_nits
     )
 
-    # 10 If we have disabled eotf correction, we have to force the operation order
+    # 9 If we have disabled eotf correction, we have to force the operation order
     if not enable_EOTF_correction:
         calculation_order = CalculationOrder.CO_CS_EOTF
 
@@ -834,7 +808,7 @@ def run(
         [signal, signal, signal] for signal in eotf_signal_values
     ])
 
-    # 11 We calculate the difference in the linearity of the wall based on the signals and eotf ramps
+    # 10 We calculate the difference in the linearity of the wall based on the signals and eotf ramps
     eotf_linearity = calculate_eotf_linearity(eotf_signal_values, eotf_ramp_camera_native_gamut)
 
     eotf_ramp_camera_native_gamut_calibrated = eotf_ramp_camera_native_gamut.copy()
@@ -1014,6 +988,133 @@ def run(
         Results.EOTF_LINEARITY: eotf_linearity,
         Results.AVOID_CLIPPING: avoid_clipping
     }
+
+
+def apply_matrix_to_samples(
+        input_matrix: np.ndarray,
+        eotf_ramp_camera_native_gamut: np.ndarray,
+        grey_measurements_native_camera_gamut: np.ndarray,
+        macbeth_measurements_camera_native_gamut: np.ndarray,
+        max_white_camera_native_gamut: np.ndarray,
+        rgbw_measurements_camera_native_gamut: np.ndarray) -> Tuple:
+    """ Applies the given matrix to all the provided arrays and returns their modified form
+
+    Args:
+        input_matrix: The matrix we want to apply
+        eotf_ramp_camera_native_gamut: The eotf ramp samples in camera colour space
+        grey_measurements_native_camera_gamut: The grey samples in camera colour space
+        macbeth_measurements_camera_native_gamut: The macbeth samples in camera colour space
+        max_white_camera_native_gamut: The max-white samples in camera colour space
+        rgbw_measurements_camera_native_gamut: The rgbw samples in camera colour space
+
+    Returns: Tuple containing the modified samples
+
+    """
+
+    eotf_ramp_camera_native_gamut = [ca.vector_dot(input_matrix, m) for m in
+                                     eotf_ramp_camera_native_gamut]
+    rgbw_measurements_camera_native_gamut = ca.vector_dot(input_matrix,
+                                                          rgbw_measurements_camera_native_gamut)
+    macbeth_measurements_camera_native_gamut = ca.vector_dot(input_matrix,
+                                                             macbeth_measurements_camera_native_gamut)
+
+    grey_measurements_native_camera_gamut = ca.vector_dot(input_matrix,
+                                                          grey_measurements_native_camera_gamut)
+    max_white_camera_native_gamut = ca.vector_dot(
+        input_matrix,
+        max_white_camera_native_gamut)
+
+    return (
+        eotf_ramp_camera_native_gamut, grey_measurements_native_camera_gamut,
+        macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+        rgbw_measurements_camera_native_gamut
+    )
+
+
+def convert_measured_samples_to_camera_native_cs(
+        camera_conversion_cat: str,
+        input_plate_cs: RGB_Colourspace,
+        measured_samples: Dict, native_camera_gamut_cs: RGB_Colourspace,
+        decoupled_lens_white_samples: np.array) -> Tuple:
+    """ Convert the measured samples to the camera native colour space
+
+    Args:
+        camera_conversion_cat: The colour conversion cat we want to use
+        input_plate_cs: The colour space of the input plate we measured the samples from
+        measured_samples: The measured samples from the input plate
+        native_camera_gamut_cs: The native colour space of the camera, used to capture the input plate
+        decoupled_lens_white_samples: An additional sample of the decoupled white
+
+    Returns: Tuple containing the converted samples
+
+    """
+
+    grey_measurements_native_camera_gamut = colour.RGB_to_RGB(
+        measured_samples[Measurements.GREY], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    )
+
+    max_white_camera_native_gamut = colour.RGB_to_RGB(
+        measured_samples[Measurements.MAX_WHITE], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    )
+    # Get The Macbeth Samples And Convert To Camera Native
+    macbeth_measurements_camera_native_gamut = colour.RGB_to_RGB(
+        measured_samples[Measurements.MACBETH], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    )
+
+    # Combine the primaries and white samples to give us RGBW in the input plate gamut space
+    rgbw_measurements_input_plate_gamut = np.concatenate(
+        (measured_samples[Measurements.DESATURATED_RGB], [measured_samples[Measurements.GREY]])
+    )
+
+    rgbw_measurements_camera_native_gamut = colour.RGB_to_RGB(
+        rgbw_measurements_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    )
+
+    eotf_ramp_camera_native_gamut = colour.RGB_to_RGB(
+        measured_samples[Measurements.EOTF_RAMP], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    )
+
+    decoupled_lens_white_samples_camera_native_gamut = None
+    if decoupled_lens_white_samples:
+        decoupled_lens_white_samples_camera_native_gamut = colour.RGB_to_RGB(
+            decoupled_lens_white_samples, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+        )
+
+    return (
+        eotf_ramp_camera_native_gamut,
+        grey_measurements_native_camera_gamut,
+        macbeth_measurements_camera_native_gamut,
+        max_white_camera_native_gamut,
+        rgbw_measurements_camera_native_gamut,
+        decoupled_lens_white_samples_camera_native_gamut
+    )
+
+
+def get_calibration_colour_spaces(
+            input_plate_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
+            native_camera_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
+            target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
+        ) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
+    """ Get the colour spaces needed for the calibration process
+
+    Args:
+        input_plate_gamut: The colour space of the input plate we measured the samples from
+        native_camera_gamut: The native colour space of the camera, used to capture the input plate
+        target_gamut: The colour space we want to target for the calibration
+
+    Returns: The python colour colour spaces needed for the calibration process
+
+    """
+    input_plate_cs = (
+        colour.RGB_COLOURSPACES[input_plate_gamut] if isinstance(input_plate_gamut, str) else input_plate_gamut
+    )
+    native_camera_gamut_cs = (
+        colour.RGB_COLOURSPACES[native_camera_gamut] if isinstance(native_camera_gamut, str) else native_camera_gamut
+    )
+    target_cs = (
+        colour.RGB_COLOURSPACES[target_gamut] if isinstance(target_gamut, str) else target_gamut
+    )
+    return input_plate_cs, native_camera_gamut_cs, target_cs
 
 
 def read_results_from_json(filename):
