@@ -226,9 +226,9 @@ def extract_screen_cs(
     )
 
     # If we want to avoid clipping we need to scale the matrix so that the sum of each row is 1
-    if avoid_clipping:
-        row_sums = target_to_screen_matrix.sum(axis=1, keepdims=True)
-        target_to_screen_matrix = target_to_screen_matrix / row_sums
+    # if avoid_clipping:
+    #     row_sums = target_to_screen_matrix.sum(axis=1, keepdims=True)
+    #     target_to_screen_matrix = target_to_screen_matrix / row_sums
 
     saturated_primaries_input_plate_gamut = colour.RGB_to_RGB(
         saturated_primaries, native_camera_gamut_cs, input_plate_cs, camera_conversion_cat
@@ -722,19 +722,6 @@ def run(
         decoupling_white_balance_matrix = create_decoupling_white_balance_matrix(
             grey_measurements_native_camera_gamut, decoupled_lens_white_samples_camera_native_gamut)
 
-    # 4) We Calculate The White Balance Matrix By Balancing The Grey Samples Against The Green Channel
-    # Green Value / Red Value
-    if reference_wall_external_white_balance_matrix is None:
-        white_balance_matrix = utils.create_white_balance_matrix(grey_measurements_native_camera_gamut)
-    else:
-        white_balance_matrix = np.array(reference_wall_external_white_balance_matrix)
-
-    # 5) We Take Our Grey Ramp Samples And Convert Them To Camera Space
-    eotf_ramp_input_plate_gamut = measured_samples[Measurements.EOTF_RAMP]
-    eotf_ramp_camera_native_gamut = colour.RGB_to_RGB(
-        eotf_ramp_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
-    )
-
     # 6) Combine the primaries and white samples to give us RGBW in the input plate gamut space
     rgbw_measurements_input_plate_gamut = np.concatenate(
         (measured_samples[Measurements.DESATURATED_RGB], [measured_samples[Measurements.GREY]])
@@ -750,6 +737,33 @@ def run(
         rgbw_measurements_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
     )
 
+    # 5) We Take Our Grey Ramp Samples And Convert Them To Camera Space
+    eotf_ramp_input_plate_gamut = measured_samples[Measurements.EOTF_RAMP]
+    eotf_ramp_camera_native_gamut = colour.RGB_to_RGB(
+        eotf_ramp_input_plate_gamut, input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
+    )
+
+    if decoupling_white_balance_matrix is not None:
+        eotf_ramp_camera_native_gamut = [ca.vector_dot(decoupling_white_balance_matrix, m) for m in
+                                         eotf_ramp_camera_native_gamut]
+        rgbw_measurements_camera_native_gamut = ca.vector_dot(decoupling_white_balance_matrix,
+                                                              rgbw_measurements_camera_native_gamut)
+        macbeth_measurements_camera_native_gamut = ca.vector_dot(decoupling_white_balance_matrix,
+                                                                 macbeth_measurements_camera_native_gamut)
+
+        grey_measurements_native_camera_gamut = ca.vector_dot(decoupling_white_balance_matrix,
+                                                              grey_measurements_native_camera_gamut)
+        max_white_camera_native_gamut = ca.vector_dot(
+            decoupling_white_balance_matrix,
+            max_white_camera_native_gamut)
+
+    # 4) We Calculate The White Balance Matrix By Balancing The Grey Samples Against The Green Channel
+    # Green Value / Red Value
+    if reference_wall_external_white_balance_matrix is None:
+        white_balance_matrix = utils.create_white_balance_matrix(grey_measurements_native_camera_gamut)
+    else:
+        white_balance_matrix = np.array(reference_wall_external_white_balance_matrix)
+
     # 8) Apply the white balance matrix to the RGBW measurements and Grey Ramps In Camera Space If Enabled
     if enable_plate_white_balance:
         eotf_ramp_camera_native_gamut = [ca.vector_dot(white_balance_matrix, m) for m in
@@ -761,17 +775,6 @@ def run(
 
         max_white_camera_native_gamut = ca.vector_dot(
             white_balance_matrix,
-            max_white_camera_native_gamut)
-    elif decoupling_white_balance_matrix is not None:
-        eotf_ramp_camera_native_gamut = [ca.vector_dot(decoupling_white_balance_matrix, m) for m in
-                                         eotf_ramp_camera_native_gamut]
-        rgbw_measurements_camera_native_gamut = ca.vector_dot(decoupling_white_balance_matrix,
-                                                              rgbw_measurements_camera_native_gamut)
-        macbeth_measurements_camera_native_gamut = ca.vector_dot(decoupling_white_balance_matrix,
-                                                                 macbeth_measurements_camera_native_gamut)
-
-        max_white_camera_native_gamut = ca.vector_dot(
-            decoupling_white_balance_matrix,
             max_white_camera_native_gamut)
 
     # 9) We Get The Matrix To Convert From OCIO Reference Space To Target Space

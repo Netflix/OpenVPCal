@@ -1100,7 +1100,6 @@ class MainWindow(QMainWindow):
         """
         folder = select_folder()
         if folder:
-            current_output_folder = self.project_settings_model.output_folder
             self.project_settings_model.output_folder = folder
             self.project_settings_model.set_data(constants.ProjectSettings.OUTPUT_FOLDER, folder)
             self.save_project_settings(inform_completion=False)

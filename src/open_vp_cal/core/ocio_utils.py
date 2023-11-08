@@ -59,22 +59,22 @@ def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename, peak_lum=None, avoid_clippi
     lut_g_i_pq = eotf_inverse_ST2084(lut_g_i * pq_max_scaled_1_100)
     lut_b_i_pq = eotf_inverse_ST2084(lut_b_i * pq_max_scaled_1_100)
 
-    # TODO Check With Frankie If This Is Where We Want To Do This Or Not
-    if avoid_clipping:
-        if not peak_lum:
-            raise ValueError("Peak luminance must be provided if avoid_clipping is True")
-
-        peak_lum_pq = utils.nits_to_pq(peak_lum)
-        max_r = np.max(np.max(lut_r_i_pq[:, 0]))
-        max_g = np.max(np.max(lut_g_i_pq[:, 0]))
-        max_b = np.max(np.max(lut_b_i_pq[:, 0]))
-        max_lut_value_pq = max(max_r, max_g, max_b)
-        if max_lut_value_pq > peak_lum_pq:
-            scale_factor = peak_lum_pq/max_lut_value_pq
-
-            lut_r_i_pq *= scale_factor
-            lut_g_i_pq *= scale_factor
-            lut_b_i_pq *= scale_factor
+    # # TODO Check With Frankie If This Is Where We Want To Do This Or Not
+    # if avoid_clipping:
+    #     if not peak_lum:
+    #         raise ValueError("Peak luminance must be provided if avoid_clipping is True")
+    #
+    #     peak_lum_pq = utils.nits_to_pq(peak_lum)
+    #     max_r = np.max(np.max(lut_r_i_pq[:, 0]))
+    #     max_g = np.max(np.max(lut_g_i_pq[:, 0]))
+    #     max_b = np.max(np.max(lut_b_i_pq[:, 0]))
+    #     max_lut_value_pq = max(max_r, max_g, max_b)
+    #     if max_lut_value_pq > peak_lum_pq:
+    #         scale_factor = peak_lum_pq/max_lut_value_pq
+    #
+    #         lut_r_i_pq *= scale_factor
+    #         lut_g_i_pq *= scale_factor
+    #         lut_b_i_pq *= scale_factor
 
     for i in range(constants.LUT_LEN):
         lut_transform.setValue(i, lut_r_i_pq[i][0], lut_g_i_pq[i][0], lut_b_i_pq[i][0])
