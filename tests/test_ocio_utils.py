@@ -72,8 +72,7 @@ class TestCalibrate(TestProject):
                 results[Results.EOTF_LUT_R],
                 results[Results.EOTF_LUT_G],
                 results[Results.EOTF_LUT_B],
-                filename,
-                avoid_clipping=False,
+                filename
             )
 
     def test_write_alt_order(self):
@@ -85,8 +84,7 @@ class TestCalibrate(TestProject):
                 results[Results.EOTF_LUT_R],
                 results[Results.EOTF_LUT_G],
                 results[Results.EOTF_LUT_B],
-                filename,
-                avoid_clipping=False,
+                filename
             )
 
     def test_lut_generation(self):
