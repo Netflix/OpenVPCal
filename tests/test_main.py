@@ -91,9 +91,14 @@ class TestProjectCli(TestProject):
             if led_wall.is_verification_wall:
                 continue
 
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
+            self.assertEqual(expected_results, result.calibration_results)
 
 
 class TestProjectExternalWhite(TestProject):
@@ -106,9 +111,14 @@ class TestProjectExternalWhite(TestProject):
             if led_wall.is_verification_wall:
                 continue
 
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
+            self.assertEqual(expected_results, result.calibration_results)
 
     def get_sample_project_plates(self):
         result = super().get_sample_project_plates()
