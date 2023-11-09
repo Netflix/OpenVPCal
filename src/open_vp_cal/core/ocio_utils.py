@@ -170,11 +170,11 @@ def create_gamut_compression(results: dict) -> ocio.GroupTransform:
 
 
 def populate_ocio_group_transform_for_CO_CS_EOTF(
-        calibration_cs_name: str, group: ocio.GroupTransform, output_folder: str, results: dict) -> None:
+        clf_name: str, group: ocio.GroupTransform, output_folder: str, results: dict) -> None:
     """ Populate the OCIO group transform for the CO_CS_EOTF calculation order
 
     Args:
-        calibration_cs_name: The name of the calibration colour space
+        clf_name: The name of the clf file we want to write out
         group: The OCIO group transform to add the transforms to
         output_folder: The folder to write the CLF files to
         results: The results from the calibration
@@ -182,8 +182,8 @@ def populate_ocio_group_transform_for_CO_CS_EOTF(
     """
     # EOTF LUT
     if results[constants.Results.ENABLE_EOTF_CORRECTION]:
-        lut_filename = os.path.join(output_folder, calibration_cs_name + ".clf")
-        eotf_lut_group = create_EOTF_LUT(lut_filename, results)
+        clf_name = os.path.join(output_folder, clf_name + ".clf")
+        eotf_lut_group = create_EOTF_LUT(clf_name, results)
         group.appendTransform(eotf_lut_group)
 
     # matrix transform to screen colour space
@@ -195,11 +195,11 @@ def populate_ocio_group_transform_for_CO_CS_EOTF(
 
 
 def populate_ocio_group_transform_for_CO_EOTF_CS(
-        calibration_cs_name: str, group: ocio.GroupTransform, output_folder: str, results: dict) -> None:
+        clf_name: str, group: ocio.GroupTransform, output_folder: str, results: dict) -> None:
     """ Populate the OCIO group transform for the CO_EOTF_CS calculation order
 
     Args:
-        calibration_cs_name: The name of the calibration colour space
+        clf_name: The name of the clf file we want to write out
         group: The OCIO group transform to add the transforms to
         output_folder: The folder to write the CLF files to
         results: The results from the calibration
@@ -213,7 +213,7 @@ def populate_ocio_group_transform_for_CO_EOTF_CS(
     # EOTF LUT
     # must be written to a sidecar file, which is named from the config
     if results[constants.Results.ENABLE_EOTF_CORRECTION]:
-        lut_filename = os.path.join(output_folder, calibration_cs_name + ".clf")
+        lut_filename = os.path.join(output_folder, clf_name + ".clf")
         eotf_lut_group = create_EOTF_LUT(lut_filename, results)
         group.appendTransform(eotf_lut_group)
 

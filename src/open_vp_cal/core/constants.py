@@ -305,6 +305,9 @@ class CalculationOrder:
     CO_EOTF_CS = "EOTF > CS"
     CO_ALL = [CO_CS_EOTF, CO_EOTF_CS]
     CO_DEFAULT = CO_EOTF_CS
+    CS_ONLY_STRING = "CS_Only"
+    CO_CS_EOTF_STRING = "CS_EOTF"
+    CO_EOTF_CS_STRING = "EOTF_CS"
 
 
 class PQ:

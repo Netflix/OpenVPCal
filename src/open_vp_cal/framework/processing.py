@@ -288,8 +288,18 @@ class Processing:
                 continue
 
             led_wall.processing_results.ocio_config_output_file = ocio_config_output_file
+            if led_wall.calculation_order == constants.CalculationOrder.CO_CS_EOTF:
+                calc_order_string = constants.CalculationOrder.CO_CS_EOTF_STRING
+            else:
+                calc_order_string = constants.CalculationOrder.CO_EOTF_CS_STRING
+            if not led_wall.enable_eotf_correction:
+                calc_order_string = constants.CalculationOrder.CS_ONLY_STRING
+
+            lut_name = (f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}_"
+                        f"{led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName()}_"
+                        f"{calc_order_string}.cube")
             lut_output_file = os.path.join(
-                calibration_folder, f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}.cube"
+                calibration_folder, lut_name
             )
 
             ocio_utils.bake_3d_lut(

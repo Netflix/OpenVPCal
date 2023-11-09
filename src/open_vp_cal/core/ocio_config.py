@@ -466,26 +466,29 @@ class OcioConfigWriter:
         calibration_preview_cs = self.get_calibration_preview_cs(led_wall_settings)
         group_preview = ocio.GroupTransform()
         group_preview.appendTransform(self.get_reference_to_target_matrix(led_wall_settings))
+        EOTF_CS_string = CalculationOrder.CO_EOTF_CS_STRING
+        CS_EOTF_string = CalculationOrder.CO_CS_EOTF_STRING
         if results[Results.CALCULATION_ORDER] == CalculationOrder.CO_EOTF_CS:
 
             # matrix transform to screen colour space
             ocio_utils.populate_ocio_group_transform_for_CO_EOTF_CS(
-                calibration_cs.getName(), group, self._output_folder, results)
+                "_".join([calibration_cs.getName(), EOTF_CS_string]), group, self._output_folder, results)
 
             ocio_utils.populate_ocio_group_transform_for_CO_CS_EOTF(
-                calibration_preview_cs.getName(), group_preview,
+                "_".join([calibration_preview_cs.getName(), CS_EOTF_string]),
+                group_preview,
                 self._output_folder, results
             )
 
         elif results[Results.CALCULATION_ORDER] == CalculationOrder.CO_CS_EOTF:
 
             ocio_utils.populate_ocio_group_transform_for_CO_CS_EOTF(
-                calibration_cs.getName(), group,
+                "_".join([calibration_cs.getName(), CS_EOTF_string]), group,
                 self._output_folder,
                 results
             )
             ocio_utils.populate_ocio_group_transform_for_CO_EOTF_CS(
-                calibration_preview_cs.getName(), group_preview,
+                "_".join([calibration_preview_cs.getName(), EOTF_CS_string]), group_preview,
                 self._output_folder,
                 results
             )
