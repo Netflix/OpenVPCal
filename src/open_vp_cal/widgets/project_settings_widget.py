@@ -863,6 +863,8 @@ class ProjectSettingsController(QObject):
         self.project_settings_view.custom_logo_button.clicked.connect(self.open_logo_select_dialog)
         self.plate_settings_view.external_white_point_file_button.clicked.connect(
             self.open_external_white_point_file_dialog)
+
+        self.match_reference_wall_widget.stateChanged.connect(self.on_match_reference_wall_changed)
         self.model.led_wall_removed.connect(self.on_led_wall_removed)
         self.model.led_wall_added.connect(self.on_led_wall_added)
         self.model.register_custom_gamut_from_load.connect(self.add_custom_gamut_to_ui)
@@ -924,16 +926,21 @@ class ProjectSettingsController(QObject):
         led_wall = self.model.get_led_wall(led_wall_name)
         valid = led_wall.has_valid_white_balance_options()
         r, g, b = constants.RED
-
-        style_sheet = f"border: 2px solid rgb({r}, {g}, {b});" if not valid else ""
+        error_style_sheet = f"border: 2px solid rgb({r}, {g}, {b});"
+        style_sheet = error_style_sheet if not valid else ""
 
         self.plate_settings_view.auto_wb_source.setStyleSheet(style_sheet if led_wall.auto_wb_source else "")
-        self.reference_wall_widget.setStyleSheet(style_sheet if led_wall.match_reference_wall else "")
         self.match_reference_wall_widget.setStyleSheet(style_sheet if led_wall.match_reference_wall else "")
         self.use_external_white_point_widget.setStyleSheet(style_sheet if led_wall.use_external_white_point else "")
         self.external_white_point_file_widget.setStyleSheet(style_sheet if led_wall.use_external_white_point else "")
         self.external_white_point_file_button_widget.setStyleSheet(
             style_sheet if led_wall.use_external_white_point else "")
+
+        if led_wall.match_reference_wall and not led_wall.reference_wall:
+            self.reference_wall_widget.setStyleSheet(error_style_sheet)
+        else:
+            self.reference_wall_widget.setStyleSheet(style_sheet if led_wall.match_reference_wall else "")
+
 
     def open_logo_select_dialog(self) -> None:
         """ Opens a file dialogue to select a logo image, and sets the path in the model
@@ -1089,6 +1096,21 @@ class ProjectSettingsController(QObject):
             if item_text in walls_to_disable:
                 disabled = False
             self.reference_wall_widget.model().item(idx).setEnabled(disabled)
+
+    def on_match_reference_wall_changed(self, state: int) -> None:
+        """ Triggered when the state of the match_reference_wall checkbox is changed.
+            We enable the reference wall options if the checkbox is checked, and disable them if it is not.
+
+            When we disable it we also set the reference wall to none.
+
+        Args:
+            state: State of the checkbox
+        """
+        if state == Qt.Checked.value:
+            self.reference_wall_widget.setEnabled(True)
+        else:
+            self.reference_wall_widget.setCurrentIndex(0)
+            self.reference_wall_widget.setEnabled(False)
 
     def on_model_data_changed(self, key: str, value: object):
         """

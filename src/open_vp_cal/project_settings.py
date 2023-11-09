@@ -422,3 +422,14 @@ class ProjectSettings:
             if wall.name == name:
                 return wall
         raise ValueError(f'Led wall {name} not found')
+    
+    @property
+    def export_folder(self) -> str:
+        """ Returns the folder to export the calibration results to
+
+        Returns:
+            str: The folder to export the calibration results to
+        """
+        return os.path.join(self.output_folder, constants.ProjectFolders.EXPORT)
+
+    

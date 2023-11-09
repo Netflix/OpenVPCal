@@ -1055,7 +1055,8 @@ class PatchGeneration:
             patch_name (str): The name of the patch.
         """
         folder_path = os.path.join(
-            self.led_wall.project_settings.output_folder, "patches")
+            self.led_wall.project_settings.export_folder, constants.ProjectFolders.PATCHES)
+
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 

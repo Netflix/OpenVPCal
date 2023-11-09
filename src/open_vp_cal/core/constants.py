@@ -338,3 +338,11 @@ class ValidationStatus:
     PASS = "PASS"
     WARNING = "WARNING"
     FAIL = "FAIL"
+
+
+class ProjectFolders:
+    PATCHES = "patches"
+    EXPORT = "export"
+    PLOTS = "plots"
+    RESULTS = "results"
+    SWATCHES = "swatches"

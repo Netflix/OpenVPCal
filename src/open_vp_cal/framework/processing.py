@@ -242,6 +242,10 @@ class Processing:
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
+        results_folder = os.path.join(output_folder, constants.ProjectFolders.RESULTS)
+        if not os.path.exists(results_folder):
+            os.makedirs(results_folder)
+
         ocio_config_output_file = os.path.join(
             output_folder, "Post_Calibration_OpenVPCal.ocio"
         )
@@ -249,20 +253,20 @@ class Processing:
         ocio_config_writer = ocio_config.OcioConfigWriter(output_folder)
         for led_wall in led_walls:
             samples_output_folder = os.path.join(
-                output_folder, f"{led_wall.name}_samples.json"
+                results_folder, f"{led_wall.name}_samples.json"
             )
             with open(samples_output_folder, "w", encoding="utf-8") as handle:
                 json.dump(led_wall.processing_results.samples, handle, indent=4)
 
             reference_samples_output_folder = os.path.join(
-                output_folder, f"{led_wall.name}_reference_samples.json"
+                results_folder, f"{led_wall.name}_reference_samples.json"
             )
 
             with open(reference_samples_output_folder, "w", encoding="utf-8") as handle:
                 json.dump(led_wall.processing_results.reference_samples, handle, indent=4)
 
             calibration_results_file = os.path.join(
-                output_folder,
+                results_folder,
                 led_wall.name + "_calibration_results.json"
             )
             with open(calibration_results_file, "w", encoding="utf-8") as handle:
@@ -307,7 +311,7 @@ class Processing:
 
         """
         walls = Processing._export_calibration(
-            project_settings.output_folder,
+            project_settings.export_folder,
             led_walls, project_settings.ocio_config_path, export_filter=False
         )
 
@@ -477,7 +481,7 @@ class Processing:
         input_gamut = self.led_wall.input_plate_gamut
         working_gamut = constants.ColourSpace.CS_ACES
 
-        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.output_folder)
+        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
         led_wall_for_ocio_generation = self.led_wall
         if self.led_wall.is_verification_wall:
             led_wall_for_ocio_generation = self.led_wall.verification_wall_as_wall

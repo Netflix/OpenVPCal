@@ -577,9 +577,8 @@ class MainWindow(QMainWindow):
     def export_analysis_swatches(self) -> None:
         """ Export the Analysis Swatches in their raw format that was sampled from the camera
         """
-        output_folder = self.project_settings_model.output_folder
-        folder_name = "sample_swatches"
-        swatches_folder = os.path.join(output_folder, folder_name)
+        swatches_folder = os.path.join(
+            self.project_settings_model.export_folder, constants.ProjectFolders.SWATCHES)
         if not os.path.exists(swatches_folder):
             os.mkdir(swatches_folder)
 
@@ -637,7 +636,7 @@ class MainWindow(QMainWindow):
             patch_generator = PatchGeneration(led_wall)
             patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
 
-        config_writer = ocio_config.OcioConfigWriter(project_settings.output_folder)
+        config_writer = ocio_config.OcioConfigWriter(project_settings.export_folder)
         return config_writer.generate_pre_calibration_ocio_config(led_walls)
 
     def load_sequence(self) -> None:
@@ -862,17 +861,21 @@ class MainWindow(QMainWindow):
     def export_plots(self) -> None:
         """ Exports the images of the plotted graphs
         """
+        plots_folder = os.path.join(self.project_settings_model.export_folder, constants.ProjectFolders.PLOTS)
+        if not os.path.exists(plots_folder):
+            os.mkdir(plots_folder)
+
         self.eotf_analysis_view.export_plot(
-            os.path.join(self.project_settings_model.output_folder, "eotf_analysis.png")
+            os.path.join(plots_folder, "eotf_analysis.png")
         )
         self.colour_spaces_view.export_plot(
-            os.path.join(self.project_settings_model.output_folder, "colour_space_analysis.png")
+            os.path.join(plots_folder, "colour_space_analysis.png")
         )
         self.white_point_view.export_plot(
-            os.path.join(self.project_settings_model.output_folder, "white_point_analysis.png")
+            os.path.join(plots_folder, "white_point_analysis.png")
         )
         self.max_distances_view.export_plot(
-            os.path.join(self.project_settings_model.output_folder, "max_distances_view.png")
+            os.path.join(plots_folder, "max_distances_view.png")
         )
 
     def single_camera_across_all_wall(self, led_walls: List[LedWallSettings]) -> bool:
