@@ -1,16 +1,14 @@
 """
 Module which contains the models and views which are used to display the Delta E results
 """
-from PySide6.QtGui import QColor, QBrush
-from PySide6.QtWidgets import QSizePolicy, QSplitter, QLabel, QWidget, QVBoxLayout, QTableView, QListView, QHBoxLayout, \
-    QAbstractItemView, QGridLayout
-from PySide6.QtCore import Qt, QAbstractListModel, QAbstractTableModel, Signal, QModelIndex, QItemSelectionModel, Slot
+from PySide6.QtGui import QColor, QKeySequence
+from PySide6.QtWidgets import QLabel, QWidget, QTableView, QListView, QGridLayout, QApplication
+from PySide6.QtCore import Qt, QAbstractListModel, QAbstractTableModel, QModelIndex, QItemSelectionModel, Slot, QEvent
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import Results
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.widgets.graph_widget import BaseController
-
 
 
 class DeltaELEDWallListModel(QAbstractListModel):
@@ -100,6 +98,50 @@ class DeltaEDataTableModel(QAbstractTableModel):
         self.endResetModel()
 
 
+class DeltaETableView(QTableView):
+    """ A special table view which allows us to copy the data to the clipboard in a tab separated format
+
+    """
+    def keyPressEvent(self, event: QEvent) -> None:
+        """ Override the key press event to allow us to copy the data to the clipboard
+
+        Args:
+            event: The key press event
+        """
+        if event.matches(QKeySequence.Copy):
+            self.copy_selection()
+        else:
+            super().keyPressEvent(event)
+
+    def copy_selection(self) -> None:
+        """ Copy the selected data to the clipboard in a tab separated format
+        """
+        selection = self.selectionModel()
+        indexes = selection.selectedIndexes()
+
+        if len(indexes) < 1:
+            return
+
+        # Sort the indexes based on row and column number
+        indexes.sort(key=lambda index: (index.row(), index.column()))
+
+        # Use set to keep track of the rows that have been added
+        rows_seen = set()
+        clipboard_string = ""
+
+        for index in indexes:
+            data = index.data()
+            if index.row() in rows_seen:
+                clipboard_string += '\t' + str(data)
+            else:
+                clipboard_string += '\n' + str(data)
+                rows_seen.add(index.row())
+
+        # Remove the first newline character
+        clipboard_string = clipboard_string[1:]
+
+        QApplication.clipboard().setText(clipboard_string)
+
 
 class DeltaEWidget(QWidget):
     """View for displaying the LED wall list and data tables."""
@@ -112,13 +154,14 @@ class DeltaEWidget(QWidget):
         self.list_view.setSelectionMode(QListView.ExtendedSelection)
         self.layout.addWidget(self.list_view, 0, 0, 3, 1)  # Span three rows
 
-        self.column_labels = [QLabel(text) for text in ["DELTA_E_RGBW", "DELTA_E_EOTF_RAMP", "DELTA_E_MACBETH"]]
+        self.column_labels = [QLabel(text) for text in [
+            Results.DELTA_E_RGBW, Results.DELTA_E_EOTF_RAMP, Results.DELTA_E_MACBETH]]
         self.green_labels = [QLabel() for _ in range(3)]
-        self.tables = [QTableView() for _ in range(3)]
+        self.tables = [DeltaETableView() for _ in range(3)]
         for i, (col_label, table, green_label) in enumerate(zip(self.column_labels, self.tables, self.green_labels)):
-            self.layout.addWidget(col_label, 0, i + 1)  # Place QLabel at row 0
-            self.layout.addWidget(table, 1, i + 1)  # Place QTableView at row 1
-            self.layout.addWidget(green_label, 2, i + 1)  # Place QLabel at row 2
+            self.layout.addWidget(col_label, 0, i + 1)
+            self.layout.addWidget(table, 1, i + 1)
+            self.layout.addWidget(green_label, 2, i + 1)
 
 
 class DeltaEController(BaseController):
@@ -146,14 +189,14 @@ class DeltaEController(BaseController):
         self.table_model_macbeth = table_model_macbeth
 
         self.view = view
-        self.table_models = [table_model_rgbw, table_model_eotf, table_model_macbeth]  # Store the table models in a list for easy iteration
+        # Store the table models in a list for easy iteration
+        self.table_models = [table_model_rgbw, table_model_eotf, table_model_macbeth]
         for table, table_model in zip(self.view.tables, self.table_models):
             table.setModel(table_model)
 
         self.view.list_view.setModel(model)
         self.view.list_view.selectionModel().selectionChanged.connect(self.update_data)
         self.view.list_view.selectionModel().selectionChanged.connect(self.update_best_delta_labels)
-
 
     def update_data(self, selected, deselected):
         """Updates the data tables based on the selected LED walls."""
@@ -235,10 +278,13 @@ class DeltaEController(BaseController):
         if results_name not in data[led_wall.name]:
             data[led_wall.name][results_name] = {}
 
+        # Trim the last 6 patches from the macbeth as we don't display those in the swatches as we already have far move
+        # grey ramps from our eotf
+        macbeth_deltae_values = results[Results.DELTA_E_MACBETH][:-6]
         data[led_wall.name][results_name] = {
             Results.DELTA_E_RGBW: results[Results.DELTA_E_RGBW],
             Results.DELTA_E_EOTF_RAMP: results[Results.DELTA_E_EOTF_RAMP],
-            Results.DELTA_E_MACBETH: results[Results.DELTA_E_MACBETH],
+            Results.DELTA_E_MACBETH: macbeth_deltae_values,
         }
 
         self.model.set_data(data)
