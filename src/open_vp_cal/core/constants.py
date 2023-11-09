@@ -346,3 +346,4 @@ class ProjectFolders:
     PLOTS = "plots"
     RESULTS = "results"
     SWATCHES = "swatches"
+    CALIBRATION = "calibration"

@@ -246,11 +246,15 @@ class Processing:
         if not os.path.exists(results_folder):
             os.makedirs(results_folder)
 
+        calibration_folder = os.path.join(output_folder, constants.ProjectFolders.CALIBRATION)
+        if not os.path.exists(calibration_folder):
+            os.makedirs(calibration_folder)
+
         ocio_config_output_file = os.path.join(
-            output_folder, "Post_Calibration_OpenVPCal.ocio"
+            calibration_folder, ocio_config.OcioConfigWriter.post_calibration_config_name
         )
 
-        ocio_config_writer = ocio_config.OcioConfigWriter(output_folder)
+        ocio_config_writer = ocio_config.OcioConfigWriter(calibration_folder)
         for led_wall in led_walls:
             samples_output_folder = os.path.join(
                 results_folder, f"{led_wall.name}_samples.json"
@@ -285,7 +289,7 @@ class Processing:
 
             led_wall.processing_results.ocio_config_output_file = ocio_config_output_file
             lut_output_file = os.path.join(
-                output_folder, f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}.cube"
+                calibration_folder, f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}.cube"
             )
 
             ocio_utils.bake_3d_lut(
@@ -481,7 +485,12 @@ class Processing:
         input_gamut = self.led_wall.input_plate_gamut
         working_gamut = constants.ColourSpace.CS_ACES
 
-        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
+        calibration_folder = os.path.join(
+            self.led_wall.project_settings.export_folder, constants.ProjectFolders.CALIBRATION)
+        if not os.path.exists(calibration_folder):
+            os.makedirs(calibration_folder)
+
+        ocio_config_writer = ocio_config.OcioConfigWriter(calibration_folder)
         led_wall_for_ocio_generation = self.led_wall
         if self.led_wall.is_verification_wall:
             led_wall_for_ocio_generation = self.led_wall.verification_wall_as_wall
