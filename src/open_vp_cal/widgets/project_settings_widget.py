@@ -918,7 +918,7 @@ class ProjectSettingsController(QObject):
             widget.setText(self.model.default_data[key][constants.DEFAULT])
 
     def highlight_invalid_settings(self, led_wall_name: str) -> None:
-        """
+        """ Highlights the invalid settings in the UI
 
         Args:
             led_wall_name: State of the checkbox
@@ -940,7 +940,6 @@ class ProjectSettingsController(QObject):
             self.reference_wall_widget.setStyleSheet(error_style_sheet)
         else:
             self.reference_wall_widget.setStyleSheet(style_sheet if led_wall.match_reference_wall else "")
-
 
     def open_logo_select_dialog(self) -> None:
         """ Opens a file dialogue to select a logo image, and sets the path in the model

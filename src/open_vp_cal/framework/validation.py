@@ -6,6 +6,8 @@ or not prior to attempting a calibration
 import math
 from typing import List, Dict
 
+import numpy as np
+
 from open_vp_cal.core.constants import Results, ValidationStatus
 from open_vp_cal.core.structures import ValidationResult
 
@@ -18,7 +20,9 @@ class Validation:
         self._validation = [
             self.exposure_validation,
             self.check_max_screen_white_vs_max_eotf_ramp,
+            self.check_scaled_18_percent,
             self.eotf_validation,
+            self.eotf_clamping_validation,
             self.check_gamut_delta_E
         ]
 
@@ -157,3 +161,71 @@ class Validation:
                 "imaging chain from content engine to LED processor and re shoot the plates"
                 )
         return result
+
+    @staticmethod
+    def check_scaled_18_percent(calibration_results: Dict) -> ValidationResult:
+        """ This validation checks that the scaled 18% patch is within a reasonable range. The measured 18%
+            patch will never be exactly 18%, so when we correct this we want to make sure that the scaled version
+            has not been scaled to an extreme value due to incorrect equipment setup
+
+        Args:
+            calibration_results: The calibration results
+
+        Returns: The result of the validation check
+
+        """
+        result = ValidationResult()
+        result.name = "Check Scaled 18% Validation"
+        measured_18_percent = calibration_results[Results.MEASURED_18_PERCENT_SAMPLE]
+        scaling_factor = calibration_results[Results.EXPOSURE_SCALING_FACTOR]
+        scaled_18 = (measured_18_percent / scaling_factor) * 0.1
+        is_between = 0.15 <= scaled_18 <= 0.30
+        if not is_between:
+            result.status = ValidationStatus.FAIL
+            result.message = (
+                f"When scaled the measured 18 percent patch is not within a reasonable range: {scaled_18}."
+                " Please check that the wall settings match the actual peak luminance of your wall also check your "
+                "imaging chain from content engine to LED processor and re shoot the plates"
+            )
+        return result
+
+    @staticmethod
+    def eotf_clamping_validation(calibration_results: Dict) -> ValidationResult:
+        """ This validation checks that the EOTF is not being clamped by checking that the last few samples of the eotf
+            are not all close to each other. If they are it suggests there is clamping happening
+
+        Args:
+            calibration_results: The calibration results
+
+        Returns: The result of the validation check
+
+        """
+        result = ValidationResult()
+        result.name = "EOTF Clamping Validation"
+
+        eotf_ramps = np.array(calibration_results[Results.PRE_EOTF_RAMPS])
+        eotf_sample_selection = 4
+        last_samples = eotf_ramps[-eotf_sample_selection:]
+
+        message = ""
+
+        def check_too_close(samples, tolerance=0.01):
+            for i in range(samples.size):
+                for j in range(i + 1, samples.size):
+                    if np.isclose(samples[i], samples[j], atol=tolerance):
+                        return True
+            return False
+
+        # Check for each color channel if any of the values are close to each other
+        for i, color in enumerate(['red', 'green', 'blue']):
+            channel_samples = last_samples[:, i]
+            if check_too_close(channel_samples):
+                result.status = ValidationStatus.FAIL
+                message += (
+                    f"The last {eotf_sample_selection} of the eotf in the {color} channel have values "
+                    f"which all seem to be the same, which suggests they are being clamped\n"
+                )
+
+        result.message = message
+        return result
+
