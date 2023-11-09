@@ -178,12 +178,17 @@ class Validation:
         result.name = "Check Scaled 18% Validation"
         measured_18_percent = calibration_results[Results.MEASURED_18_PERCENT_SAMPLE]
         scaling_factor = calibration_results[Results.EXPOSURE_SCALING_FACTOR]
-        scaled_18 = (measured_18_percent / scaling_factor) * 0.1
-        is_between = 0.15 <= scaled_18 <= 0.30
+        target_max_lum_nits = calibration_results[Results.TARGET_MAX_LUM_NITS]
+
+        scaled_18_percent_nits = (measured_18_percent / scaling_factor) * 100
+        min_nits_threshold = target_max_lum_nits * 0.16
+        max_nits_threshold = target_max_lum_nits * 0.20
+
+        is_between = min_nits_threshold <= scaled_18_percent_nits <= max_nits_threshold
         if not is_between:
             result.status = ValidationStatus.FAIL
             result.message = (
-                f"When scaled the measured 18 percent patch is not within a reasonable range: {scaled_18}."
+                f"When scaled the measured 18 percent patch is not within a reasonable range: {scaled_18_percent_nits}."
                 " Please check that the wall settings match the actual peak luminance of your wall also check your "
                 "imaging chain from content engine to LED processor and re shoot the plates"
             )
