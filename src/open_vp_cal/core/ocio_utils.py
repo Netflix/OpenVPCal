@@ -19,18 +19,6 @@ if not pkg_resources.parse_version(ocio.__version__) >= pkg_resources.parse_vers
 ):
     raise ImportError("Requires OCIO v2.1 or greater.")
 
-# TODO Fix Independently not the right thing, we need to do this together with frankie tomorrow
-def scale_lut_to_target(lut, new_min=0, new_max=1000):
-    old_min = np.min(lut[:, 0])  # Get the minimum x-value
-    old_max = np.max(lut[:, 0])  # Get the maximum x-value
-
-    scaled_x_values = ((lut[:, 0] - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
-
-    # Replace the x values in the original array
-    lut[:, 0] = scaled_x_values
-
-    return lut
-
 
 def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename) -> None:
     """ Write a LUT to a file in CLF format using PQ

@@ -925,8 +925,7 @@ class ProjectSettingsController(QObject):
         """
         led_wall = self.model.get_led_wall(led_wall_name)
         valid = led_wall.has_valid_white_balance_options()
-        r, g, b = constants.RED
-        error_style_sheet = f"border: 2px solid rgb({r}, {g}, {b});"
+        error_style_sheet = f"border: 2px solid rgb({constants.RED[0]}, {constants.RED[1]}, {constants.RED[2]});"
         style_sheet = error_style_sheet if not valid else ""
 
         self.plate_settings_view.auto_wb_source.setStyleSheet(style_sheet if led_wall.auto_wb_source else "")

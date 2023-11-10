@@ -233,4 +233,3 @@ class Validation:
 
         result.message = message
         return result
-

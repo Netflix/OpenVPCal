@@ -7,8 +7,6 @@ import os
 import os.path
 import tempfile
 
-import cv2
-
 from PySide6 import QtGui
 from PySide6.QtGui import QImage, QPixmap
 

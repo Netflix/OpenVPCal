@@ -344,6 +344,9 @@ class ValidationStatus:
 
 
 class ProjectFolders:
+    """
+    Constants used to describe the folder names within the project
+    """
     PATCHES = "patches"
     EXPORT = "export"
     PLOTS = "plots"

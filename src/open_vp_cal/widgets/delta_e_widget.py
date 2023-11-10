@@ -81,7 +81,8 @@ class DeltaEDataTableModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             led_wall = self.led_walls[index.column()]
             return led_wall["data"][self.key][index.row()]
-        elif role == Qt.BackgroundRole:
+
+        if role == Qt.BackgroundRole:
             led_wall = self.led_walls[index.column()]
             value = led_wall["data"][self.key][index.row()]
             return QColor(*constants.GREEN) if value < constants.DELTA_E_THRESHOLD else QColor(*constants.RED)

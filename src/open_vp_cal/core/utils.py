@@ -515,7 +515,7 @@ def get_cat_for_camera_conversion(camera_colour_space_name: str) -> CAT:
     return camera_conversion_cat
 
 
-def log_results(data: Dict) -> requests.Response:
+def log_results(data: Dict) -> Union[requests.Response, None]:
     """ Logs the usage stats
 
     Args:
@@ -523,7 +523,7 @@ def log_results(data: Dict) -> requests.Response:
 
     """
     if os.getenv(constants.OPEN_VP_CAL_UNIT_TESTING):
-        return
+        return None
 
     try:
         import open_vp_cal
@@ -545,3 +545,4 @@ def log_results(data: Dict) -> requests.Response:
             return response
     except Exception:
         pass
+    return None

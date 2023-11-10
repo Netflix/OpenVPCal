@@ -432,4 +432,3 @@ class ProjectSettings:
         """
         return os.path.join(self.output_folder, constants.ProjectFolders.EXPORT)
 
-    
