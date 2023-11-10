@@ -87,7 +87,7 @@ class OcioConfigWriter:
         colour_space.setDescription(description)
         return colour_space
 
-    def _get_ocio_config_colour_spaces_for_patch_generation(self, led_wall_settings) -> LedWallColourSpaces:
+    def _get_ocio_config_colour_spaces_for_patch_generation(self, led_wall_settings, preview_export_filter=True) -> LedWallColourSpaces:
         """ Gets the OCIO colour spaces for patch generation
 
         Args:
@@ -408,11 +408,14 @@ class OcioConfigWriter:
         )
         return ref_to_target_matrix_transform
 
-    def _get_openvpcal_colour_spaces(self, led_wall_settings: LedWallSettings) -> LedWallColourSpaces:
+    def _get_openvpcal_colour_spaces(self,
+                                     led_wall_settings: LedWallSettings,
+                                     preview_export_filter: bool = True) -> LedWallColourSpaces:
         """ Gets The OpenVPCal Colour Spaces we need to write to disk as an ocio config
 
         Args:
             led_wall_settings: The LED wall settings we want the colour spaces for
+            preview_export_filter: Whether we want to write out the preview clf or not
 
         Returns: The colour spaces for the given LED wall settings
 
@@ -427,7 +430,8 @@ class OcioConfigWriter:
         # Get Calibration Colour Space and Calibration Preview Colour Space Adding A Reference To Target Matrix
         calibration_cs, calibration_preview_cs = self.get_calibration_and_calibration_preview_cs(
             led_wall_settings,
-            results
+            results,
+            preview_export_filter=preview_export_filter
         )
         led_wall_colour_spaces.calibration_cs = calibration_cs
         led_wall_colour_spaces.calibration_preview_cs = calibration_preview_cs
@@ -449,13 +453,15 @@ class OcioConfigWriter:
         return led_wall_colour_spaces
 
     def get_calibration_and_calibration_preview_cs(
-            self, led_wall_settings: LedWallSettings, results: dict) -> typing.Tuple[ColorSpace, ColorSpace]:
+            self, led_wall_settings: LedWallSettings, results: dict,
+            preview_export_filter: bool = True) -> typing.Tuple[ColorSpace, ColorSpace]:
         """ Get the calibration colour space for the given led wall, we also get the preview colour space for use in
             UI applications
 
         Args:
             led_wall_settings: The LED wall settings we want the colour space for
             results: The results of the calibration we want to add into the description
+            preview_export_filter: Whether we want to write out the preview clf or not
 
         Returns: The calibration colour space and the calibration preview colour space
 
@@ -474,11 +480,12 @@ class OcioConfigWriter:
             ocio_utils.populate_ocio_group_transform_for_CO_EOTF_CS(
                 "_".join([calibration_cs.getName(), EOTF_CS_string]), group, self._output_folder, results)
 
-            ocio_utils.populate_ocio_group_transform_for_CO_CS_EOTF(
-                "_".join([calibration_preview_cs.getName(), CS_EOTF_string]),
-                group_preview,
-                self._output_folder, results
-            )
+            if preview_export_filter:
+                ocio_utils.populate_ocio_group_transform_for_CO_CS_EOTF(
+                    "_".join([calibration_preview_cs.getName(), CS_EOTF_string]),
+                    group_preview,
+                    self._output_folder, results
+                )
 
         elif results[Results.CALCULATION_ORDER] == CalculationOrder.CO_CS_EOTF:
 
@@ -487,11 +494,12 @@ class OcioConfigWriter:
                 self._output_folder,
                 results
             )
-            ocio_utils.populate_ocio_group_transform_for_CO_EOTF_CS(
-                "_".join([calibration_preview_cs.getName(), EOTF_CS_string]), group_preview,
-                self._output_folder,
-                results
-            )
+            if preview_export_filter:
+                ocio_utils.populate_ocio_group_transform_for_CO_EOTF_CS(
+                    "_".join([calibration_preview_cs.getName(), EOTF_CS_string]), group_preview,
+                    self._output_folder,
+                    results
+                )
 
         else:
             raise RuntimeError("Unknown calculation order: " + results[Results.CALCULATION_ORDER])
@@ -632,7 +640,7 @@ class OcioConfigWriter:
 
         colour_spaces = {}
         for led_wall in led_walls:
-            led_wall_colour_spaces = colour_space_function(led_wall)
+            led_wall_colour_spaces = colour_space_function(led_wall, preview_export_filter=preview_export_filter)
             led_wall.processing_results.led_wall_colour_spaces = led_wall_colour_spaces
             colour_spaces[led_wall.name] = led_wall_colour_spaces
 
