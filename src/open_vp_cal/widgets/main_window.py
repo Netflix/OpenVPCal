@@ -20,6 +20,7 @@ from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.processing import Processing
 from open_vp_cal.framework.validation import Validation
+from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.widgets.bar_chart_widget import ChartModel, ChartController, ChartView
 from open_vp_cal.widgets.calibration_matrix_widget import MatrixModel, MatrixView, MatrixController
 from open_vp_cal.widgets.colourspaces_widget import ColorSpacesView, WhitePointsView, ColorSpacesController, \
@@ -83,6 +84,7 @@ class MainWindow(QMainWindow):
         self.action_save_layout = None
         self.action_save_project_settings = None
         self.action_save_project_settings_as = None
+        self.action_export_selection_as = None
         self.action_stage_view_window = None
         self.action_swatch_viewer = None
         self.action_timeline_window = None
@@ -363,6 +365,7 @@ class MainWindow(QMainWindow):
         self.load_sequence_action.triggered.connect(self.load_sequence)
         self.action_save_project_settings.triggered.connect(self.on_save_project)
         self.action_save_project_settings_as.triggered.connect(self.save_project_settings_as)
+        self.action_export_selection_as.triggered.connect(self.export_selection_as)
         self.action_load_project_settings.triggered.connect(self.load_project_settings)
         self.action_new_project_settings.triggered.connect(self.new_project)
         self.action_generate_patterns.triggered.connect(self.generate_patterns)
@@ -399,6 +402,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.action_load_project_settings)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.action_save_project_settings_as)
+        self.file_menu.addAction(self.action_export_selection_as)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.action_generate_patterns)
         self.file_menu.addAction(self.action_export_swatches)
@@ -436,6 +440,7 @@ class MainWindow(QMainWindow):
         self.action_new_project_settings = QAction("New Project", self)
         self.action_save_project_settings = QAction("Save Project", self)
         self.action_save_project_settings_as = QAction("Save Project As...", self)
+        self.action_export_selection_as = QAction("Export Selection As...", self)
         self.action_load_project_settings = QAction("Load Project", self)
         self.action_generate_patterns = QAction("Generate New Patterns", self)
         self.action_save_layout = QAction("Save Layout As...", self)
@@ -1108,16 +1113,62 @@ class MainWindow(QMainWindow):
             self.save_project_settings(inform_completion=False)
             self.task_completed()
 
+    def export_selection_as(self) -> None:
+        """ Exports the selected led walls, and any of their references
+
+        Returns:
+
+        """
+        folder = select_folder()
+        if folder:
+            # Get All The Walls Selected And Any They Reference
+            all_walls_to_export = []
+            selected_led_walls = self.stage_controller.selected_led_walls()
+            for led_wall_name in selected_led_walls:
+                led_wall = self.project_settings_model.get_led_wall(led_wall_name)
+                all_walls_to_export.append(led_wall_name)
+
+                reference_wall = led_wall.reference_wall
+                if reference_wall:
+                    all_walls_to_export.append(led_wall_name)
+
+                verification_wall = led_wall.verification_wall
+                if verification_wall:
+                    all_walls_to_export.append(verification_wall)
+
+            # Make Sure We Have A Unique List Of Walls To Export
+            all_walls_to_export = list(set(all_walls_to_export))
+
+            # Make A New Project Settings Model With Only The Walls We Want To Export
+            current_folder = self.project_settings_model.output_folder
+            self.project_settings_model.output_folder = folder
+            new_project_settings = self.save_project_settings(inform_completion=False)
+            self.project_settings_model.output_folder = current_folder
+
+            export_project = ProjectSettings.from_json(new_project_settings)
+            for led_wall in export_project.led_walls:
+                if led_wall.name not in all_walls_to_export:
+                    export_project.remove_led_wall(led_wall.name)
+
+            filename = os.path.join(
+                export_project.output_folder,
+                DEFAULT_PROJECT_SETTINGS_NAME
+            )
+            export_project.to_json(filename)
+            self.task_completed()
+
     def on_save_project(self) -> None:
         """ Callback for when the save action is called
         """
         self.save_project_settings(inform_completion=True)
 
-    def save_project_settings(self, inform_completion: bool = True) -> None:
+    def save_project_settings(self, inform_completion: bool = True) -> str:
         """ Saves the current project settings to disk using the output_folder as the project name
 
         Args:
             inform_completion: Whether we want to inform the user of completion or not
+
+        Returns The file path of the saved project settings
         """
         filename = os.path.join(
             self.project_settings_model.output_folder,
@@ -1127,6 +1178,7 @@ class MainWindow(QMainWindow):
         self.project_settings_model.to_json(filename)
         if inform_completion:
             self.task_completed()
+        return filename
 
     def load_project_settings(self):
         """ Loads project settings from disk
