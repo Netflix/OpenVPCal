@@ -21,7 +21,7 @@ LUT_LEN = 4096
 DEFAULT = "default"
 OPTIONS = "options"
 
-DELTA_E_THRESHOLD = 2.0
+DELTA_E_THRESHOLD = 1.0
 
 RED = (162, 44, 41)
 GREEN = (60, 179, 113)
