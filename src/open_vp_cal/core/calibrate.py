@@ -365,11 +365,8 @@ def get_ocio_reference_to_target_matrix(
     if ocio_reference_cs is None:
         ocio_reference_cs = colour.RGB_COLOURSPACES[ColourSpace.CS_ACES]
 
-    if ocio_reference_cs.name == ColourSpace.CS_ACES:
-        cs_cat = CAT.CAT_CAT02
-
     if cs_cat is None:
-        cs_cat = CAT.CAT_CAT02
+        cs_cat = CAT.CAT_BRADFORD
 
     reference_to_target_matrix = colour.matrix_RGB_to_RGB(
         input_colourspace=ocio_reference_cs,
