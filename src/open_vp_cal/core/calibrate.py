@@ -123,9 +123,9 @@ def eotf_correction_calculation(
         if max_value > peak_lum:
             scale_factor = peak_lum / max_value
 
-            lut_r *= scale_factor
-            lut_g *= scale_factor
-            lut_b *= scale_factor
+            lut_r[:, 0] *= scale_factor
+            lut_g[:, 0] *= scale_factor
+            lut_b[:, 0] *= scale_factor
 
     return lut_r, lut_g, lut_b
 
