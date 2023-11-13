@@ -65,5 +65,4 @@ class LedWallColourSpaces:
     view_transform = None
     pre_calibration_view_transform = None
     display_colour_space_cs = None
-    aces_to_cie_d65_cat02_cs = None
     transfer_function_only_cs = None
