@@ -760,13 +760,13 @@ def run(
                 eotf_ramp_camera_native_gamut, native_camera_gamut_cs, target_cs, None
             )
 
-            rgbw_measurements_camera_target = colour.RGB_to_RGB(
+            rgbw_measurements_target = colour.RGB_to_RGB(
                 rgbw_measurements_camera_native_gamut, native_camera_gamut_cs, target_cs, None
             )
 
             eotf_ramp_screen_target = [ca.vector_dot(target_to_screen_matrix, m) for m in eotf_ramp_target]
-            screen_white_measurements_target = ca.vector_dot(target_to_screen_matrix, rgbw_measurements_camera_target[3])
-            white_balance_offset_matrix = utils.create_white_balance_matrix(screen_white_measurements_target)
+            rgbw_measurements_target = ca.vector_dot(target_to_screen_matrix, rgbw_measurements_target)
+            white_balance_offset_matrix = utils.create_white_balance_matrix(rgbw_measurements_target[3])
 
             # eotf_signal_value_rgb = ca.vector_dot(inversed_white_balance_offset_matrix, eotf_signal_value_rgb)
             eotf_ramp_screen_target = [ca.vector_dot(white_balance_offset_matrix, m) for m in eotf_ramp_screen_target]
@@ -775,7 +775,7 @@ def run(
                 eotf_ramp_screen_target,
                 eotf_signal_values,
                 eotf_signal_value_rgb,
-                delta_e_ICtCP_eotf_ramp,
+                delta_e_eotf_ramp,
                 avoid_clipping=avoid_clipping,
                 peak_lum=peak_lum
             )
@@ -804,15 +804,16 @@ def run(
                 macbeth_measurements_target_calibrated, target_cs, native_camera_gamut_cs,None
             )
 
-            rgbw_measurements_camera_target = apply_luts(
-                rgbw_measurements_camera_target,
+            rgbw_measurements_target = apply_luts(
+                rgbw_measurements_target,
                 lut_r,
                 lut_g,
-                lut_b
+                lut_b,
+                inverse=False
             )
 
             rgbw_measurements_camera_native_gamut = colour.RGB_to_RGB(
-                rgbw_measurements_camera_target, target_cs, native_camera_gamut_cs,None
+                rgbw_measurements_target, target_cs, native_camera_gamut_cs,None
             )
 
             screen_cs, _, calibrated_screen_cs = extract_screen_cs(
