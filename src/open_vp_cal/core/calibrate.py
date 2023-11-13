@@ -133,8 +133,7 @@ def eotf_correction_calculation(
 def resample_lut(lut, values):
     """Resample the provided LUT at the given values.
 
-    Uses piecewise linear interpolation with clamping outside the data
-    range.
+    Uses piecewise linear interpolation
 
     Args:
         lut (array-like): list of (y,x) pairs in ascending order
@@ -321,6 +320,7 @@ def apply_luts(
         lut_r,
         lut_g,
         lut_b,
+        inverse=False
 ):
     """Apply luts to the given RGB values.
 
@@ -329,6 +329,7 @@ def apply_luts(
         lut_r: LUT for R channel
         lut_g: LUT for G channel
         lut_b: LUT for B channel
+        inverse: Whether we want to apply the lut as the inverse or not
 
     Returns:
         outputs_RGB (array-like): RGB values
@@ -337,9 +338,10 @@ def apply_luts(
     inputs_g = np.asarray(inputs_rgb)[:, 1]
     inputs_b = np.asarray(inputs_rgb)[:, 2]
 
-    output_r = np.interp(inputs_r, lut_r[:, 0], lut_r[:, 1])
-    output_g = np.interp(inputs_g, lut_g[:, 0], lut_g[:, 1])
-    output_b = np.interp(inputs_b, lut_b[:, 0], lut_b[:, 1])
+    x_idx, y_idx = (0, 1) if not inverse else (1, 0)
+    output_r = np.interp(inputs_r, lut_r[:, x_idx], lut_r[:, y_idx])
+    output_g = np.interp(inputs_g, lut_g[:, x_idx], lut_g[:, y_idx])
+    output_b = np.interp(inputs_b, lut_b[:, x_idx], lut_b[:, y_idx])
 
     return np.stack((output_r, output_g, output_b), axis=1)
 
@@ -349,7 +351,7 @@ def get_ocio_reference_to_target_matrix(
         target_cs: RGB_Colourspace, cs_cat: str = None, ocio_reference_cs: RGB_Colourspace = None):
     """ Get a matrix which goes from the reference space of ocio config, to the target space provided.
         If not ocio reference cs is provided, it defaults to ACES2065-1
-        If no cat is provided, it defaults to CAT02
+        If no cat is provided, it defaults to Bradford
 
     Args:
         input_plate_cs: the input plate colourspace
@@ -958,7 +960,7 @@ def run(
             eotf_ramp_target,
             eotf_signal_values,
             eotf_signal_value_rgb,
-            delta_e_ICtCP_eotf_ramp,
+            delta_e_eotf_ramp,
             avoid_clipping=avoid_clipping,
             peak_lum=peak_lum
         )
@@ -967,12 +969,15 @@ def run(
         rgbw_measurements_target = colour.RGB_to_RGB(
             rgbw_measurements_camera_native_gamut, native_camera_gamut_cs, target_cs, None
         )
+
         rgbw_measurements_target = apply_luts(
             rgbw_measurements_target,
             lut_r,
             lut_g,
-            lut_b
+            lut_b,
+            inverse=False
         )
+
         rgbw_measurements_camera_native_gamut = colour.RGB_to_RGB(
             rgbw_measurements_target, target_cs, native_camera_gamut_cs, None
         )
@@ -1018,6 +1023,7 @@ def run(
             lut_r,
             lut_g,
             lut_b,
+            inverse=False
         )
         eotf_ramp_camera_native_gamut_calibrated = colour.RGB_to_RGB(
             eotf_ramp_camera_target_calibrated, target_cs, native_camera_gamut_cs, None
@@ -1029,7 +1035,7 @@ def run(
 
         macbeth_measurements_target_calibrated = apply_luts(
             macbeth_measurements_target_calibrated,
-            lut_r, lut_g, lut_b
+            lut_r, lut_g, lut_b, inverse=False
         )
         macbeth_measurements_camera_native_gamut_calibrated = colour.RGB_to_RGB(
             macbeth_measurements_target_calibrated, target_cs, native_camera_gamut_cs, None
