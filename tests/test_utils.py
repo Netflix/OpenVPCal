@@ -144,7 +144,11 @@ class TestProject(TestUtils):
 
     def get_results_file(self, led_wall):
         file_name = f"{led_wall.name}_calibration_results.json"
-        results_file = os.path.join(self.get_sample_project_folder(), file_name)
+        results_file = os.path.join(
+            self.get_sample_project_folder(),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.RESULTS,
+            file_name)
         return results_file
 
     def get_results(self, led_wall):
@@ -169,6 +173,9 @@ class TestProject(TestUtils):
 
     def get_sample_project_settings(self):
         return os.path.join(self.get_sample_project_folder(), "project_settings.json")
+
+    def get_sample_plates(self):
+        return os.path.join(self.get_test_resources_folder(), "Plates")
 
     def get_sample_project_plates(self):
         return os.path.join(self.get_test_resources_folder(), self.project_name, "Plates")
