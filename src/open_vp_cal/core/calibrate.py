@@ -701,15 +701,7 @@ def run(
 
     # measured_18_diff = 0.18 / grey_measurements_white_balanced_native_gamut_green
 
-    max_white_XYZ = colour.RGB_to_XYZ(
-        max_white_camera_native_gamut,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.matrix_RGB_to_XYZ
-    )
-    max_white_xyY = colour.XYZ_to_xyY(max_white_XYZ)
-
-    target_over_white = 1/max_white_xyY[2]
+    target_over_white = 1 / max_white_camera_native_gamut[1]
     exposure_scaling_factor = 1.0 / (peak_lum * target_over_white)
     max_white_delta = max_white_camera_native_gamut[1] / eotf_ramp_camera_native_gamut[-1][1]
 
