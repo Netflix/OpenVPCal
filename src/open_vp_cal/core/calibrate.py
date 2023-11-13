@@ -711,7 +711,6 @@ def run(
         TARGET_TO_XYZ_MATRIX: The computed target colour space to XYZ matrix
         REFERENCE_TO_XYZ_MATRIX: The computed reference colour space to XYZ matrix
         REFERENCE_TO_INPUT_MATRIX: The computed reference to input plate colour space matrix
-        E_TO_D65_MATRIX: The E to D65 White Point conversion matrix
     """
     if target_to_screen_cat == constants.CAT.CAT_NONE:
         target_to_screen_cat = None
@@ -1087,7 +1086,6 @@ def run(
         Results.TARGET_TO_XYZ_MATRIX: target_to_XYZ_matrix.tolist(),
         Results.REFERENCE_TO_XYZ_MATRIX: reference_to_XYZ_matrix.tolist(),
         Results.REFERENCE_TO_INPUT_MATRIX: reference_to_input_matrix.tolist(),
-        Results.E_TO_D65_MATRIX: constants.E_toD65_matrix.tolist(),
         Results.MAX_WHITE_DELTA: max_white_delta,
         Results.EOTF_LINEARITY: eotf_linearity,
         Results.AVOID_CLIPPING: avoid_clipping
