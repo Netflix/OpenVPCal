@@ -500,107 +500,6 @@ def deltaE_ICtCp(
     delta_e_wrgb = np.roll(delta_e_rgbw, shift=1)
     return delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth
 
-def deltaE_CIE2000(
-        reference_samples: Dict,
-        rgbw_measurements_camera_native_gamut: np.ndarray,
-        eotf_ramp_camera_native_gamut: List[np.ndarray],
-        macbeth_measurements_camera_native_gamut: List[np.ndarray],
-        target_cs: RGB_Colourspace, native_camera_gamut_cs: RGB_Colourspace, target_max_lum_nits: int
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """ Calculates the deltaE between the reference samples and the measured samples for RGBW, eotf ramp, and macbeth
-        chart
-
-        The DeltaE is based on the normalized values, rather than the absolute nit values
-
-    Args:
-        reference_samples: The reference samples
-        rgbw_measurements_camera_native_gamut: The RGBW measurements in the camera native gamut
-        eotf_ramp_camera_native_gamut: The eotf ramp measurements in the camera native gamut
-        macbeth_measurements_camera_native_gamut: The macbeth measurements in the camera native gamut
-        target_cs: The target colour space
-        native_camera_gamut_cs: The native camera gamut colour space
-        target_max_lum_nits: The maximum luminance of the target led wall expressed in nits
-
-    Returns: The deltaE values for RGBW, eotf ramp, and macbeth chart
-
-    """
-    peak_lum = 16.5
-    rgbw_measurements_camera_native_gamut_norm = rgbw_measurements_camera_native_gamut / peak_lum
-    rgbw_measurements_camera_native_gamut_norm = np.clip(
-        rgbw_measurements_camera_native_gamut_norm, 0, None)
-
-    rgbw_measurements_XYZ = colour.RGB_to_XYZ(
-        rgbw_measurements_camera_native_gamut_norm,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.matrix_RGB_to_XYZ
-    )
-    rgbw_samples_LAB = colour.XYZ_to_Lab(rgbw_measurements_XYZ)
-
-    eotf_ramp_camera_native_gamut_normalized = np.array(eotf_ramp_camera_native_gamut) / peak_lum
-    eotf_ramp_camera_native_gamut_normalized = np.clip(
-        eotf_ramp_camera_native_gamut_normalized, 0, None)
-    eotf_ramp_measurements_XYZ = colour.RGB_to_XYZ(
-        eotf_ramp_camera_native_gamut_normalized,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.matrix_RGB_to_XYZ
-    )
-
-    eotf_ramp_samples_LAB = colour.XYZ_to_Lab(eotf_ramp_measurements_XYZ)
-
-    macbeth_measurements_camera_native_gamut_norm = np.array(macbeth_measurements_camera_native_gamut) / peak_lum
-    macbeth_measurements_camera_native_gamut_norm = np.clip(
-        macbeth_measurements_camera_native_gamut_norm, 0, None)
-
-    macbeth_measurements_XYZ = colour.RGB_to_XYZ(
-        macbeth_measurements_camera_native_gamut_norm,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.whitepoint,
-        native_camera_gamut_cs.matrix_RGB_to_XYZ
-    )
-    macbeth_samples_LAB = colour.XYZ_to_Lab(macbeth_measurements_XYZ)
-
-    # Combine The RGB And Grey References Into One Array and Get The Macbeth Reference Samples
-    rgbw_reference_samples = np.concatenate(
-        (reference_samples[Measurements.DESATURATED_RGB], [reference_samples[Measurements.GREY]])
-    )
-    rgbw_reference_samples_norm = np.array(rgbw_reference_samples) / peak_lum
-    rgbw_references_XYZ = colour.RGB_to_XYZ(
-        rgbw_reference_samples_norm,
-        target_cs.whitepoint,
-        target_cs.whitepoint,
-        target_cs.matrix_RGB_to_XYZ
-    )
-    rgbw_references_LAB = colour.XYZ_to_Lab(rgbw_references_XYZ)
-
-    macbeth_reference_samples = reference_samples[Measurements.MACBETH]
-    macbeth_reference_samples_norm = np.array(macbeth_reference_samples) / peak_lum
-    macbeth_references_XYZ = colour.RGB_to_XYZ(
-        macbeth_reference_samples_norm,
-        target_cs.whitepoint,
-        target_cs.whitepoint,
-        target_cs.matrix_RGB_to_XYZ
-    )
-    macbeth_references_LAB = colour.XYZ_to_Lab(macbeth_references_XYZ)
-
-    # Convert The Grey Ramp Reference Samples From The Target Colour Space To Rec 2020
-    eotf_ramp_reference_samples = reference_samples[Measurements.EOTF_RAMP]
-    eotf_ramp_reference_samples_norm = np.array(eotf_ramp_reference_samples) / peak_lum
-    eotf_ramp_reference_XYZ = colour.RGB_to_XYZ(
-        eotf_ramp_reference_samples_norm,
-        target_cs.whitepoint,
-        target_cs.whitepoint,
-        target_cs.matrix_RGB_to_XYZ
-    )
-    eotf_ramp_reference_LAB = colour.XYZ_to_Lab(eotf_ramp_reference_XYZ)
-
-    delta_e_rgbw = colour.difference.delta_E_CIE2000(rgbw_samples_LAB, rgbw_references_LAB)
-    delta_e_eotf_ramp = colour.difference.delta_E_CIE2000(eotf_ramp_samples_LAB, eotf_ramp_reference_LAB)
-    delta_e_macbeth = colour.difference.delta_E_CIE2000(macbeth_samples_LAB, macbeth_references_LAB)
-    delta_e_wrgb = np.roll(delta_e_rgbw, shift=1)
-    return delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth
-
 
 def calculate_eotf_linearity(eotf_signal_values: List, eotf_ramp_camera_native_gamut: List) -> List:
     """ Calculate the difference between the eotf signal values and the eotf ramp values, for each channel
@@ -823,12 +722,7 @@ def run(
     ]
 
     # 8) We do the deltaE analysis
-    _, delta_e_ICtCP_eotf_ramp, delt_a_e_macbeth = deltaE_ICtCp(
-        reference_samples, rgbw_measurements_camera_native_gamut, eotf_ramp_camera_native_gamut,
-        macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs, target_max_lum_nits
-    )
-
-    delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth = deltaE_CIE2000(
+    delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth = deltaE_ICtCp(
         reference_samples, rgbw_measurements_camera_native_gamut, eotf_ramp_camera_native_gamut,
         macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs, target_max_lum_nits
     )
