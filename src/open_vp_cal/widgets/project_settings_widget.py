@@ -71,67 +71,67 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         default_led_wall = LedWallSettings(self, constants.DEFAULT)
 
         self.default_data = {
-            constants.ProjectSettings.OUTPUT_FOLDER: {constants.DEFAULT: self.output_folder},
-            constants.LedWallSettings.TARGET_GAMUT: {
+            constants.ProjectSettingsKeys.OUTPUT_FOLDER: {constants.DEFAULT: self.output_folder},
+            constants.LedWallSettingsKeys.TARGET_GAMUT: {
                 constants.OPTIONS: target_gamut_options,
                 constants.DEFAULT: default_led_wall.target_gamut},
-            constants.LedWallSettings.TARGET_EOTF: {
+            constants.LedWallSettingsKeys.TARGET_EOTF: {
                 constants.OPTIONS: constants.EOTF.EOTF_ALL, constants.DEFAULT: default_led_wall.target_eotf
             },
-            constants.LedWallSettings.INPUT_PLATE_GAMUT: {
+            constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: {
                 constants.OPTIONS: constants.ColourSpace.CS_ALL, constants.DEFAULT: default_led_wall.input_plate_gamut
             },
-            constants.LedWallSettings.NATIVE_CAMERA_GAMUT: {
+            constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: {
                 constants.OPTIONS: constants.CameraColourSpace.CS_ALL,
                 constants.DEFAULT: default_led_wall.native_camera_gamut
             },
-            constants.LedWallSettings.TARGET_TO_SCREEN_CAT: {
+            constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: {
                 constants.OPTIONS: constants.CAT.CAT_ALL_WITH_NONE,
                 constants.DEFAULT: default_led_wall.target_to_screen_cat
             },
-            constants.LedWallSettings.REFERENCE_TO_TARGET_CAT: {
+            constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT: {
                 constants.OPTIONS: constants.CAT.CAT_ALL,
                 constants.DEFAULT: default_led_wall.reference_to_target_cat
             },
-            constants.LedWallSettings.MATCH_REFERENCE_WALL: {
+            constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: {
                 constants.DEFAULT: default_led_wall.match_reference_wall
             },
-            constants.LedWallSettings.REFERENCE_WALL: {
+            constants.LedWallSettingsKeys.REFERENCE_WALL: {
                 constants.OPTIONS: [""], constants.DEFAULT: default_led_wall.reference_wall
             },
-            constants.LedWallSettings.AUTO_WB_SOURCE: {
+            constants.LedWallSettingsKeys.AUTO_WB_SOURCE: {
                 constants.DEFAULT: default_led_wall.auto_wb_source
             },
-            constants.LedWallSettings.ENABLE_EOTF_CORRECTION: {
+            constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION: {
                 constants.DEFAULT: default_led_wall.enable_eotf_correction
             },
-            constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION: {
+            constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION: {
                 constants.DEFAULT: default_led_wall.enable_gamut_compression
             },
-            constants.LedWallSettings.PRIMARIES_SATURATION: {
+            constants.LedWallSettingsKeys.PRIMARIES_SATURATION: {
                 constants.DEFAULT: default_led_wall.primaries_saturation,
                 "min": 0.0, "max": 1.0, "step": 0.01, "decimals": 2
             },
-            constants.LedWallSettings.TARGET_MAX_LUM_NITS: {
+            constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS: {
                 constants.DEFAULT: default_led_wall.target_max_lum_nits,
                 "min": 0, "max": constants.PQ.PQ_MAX_NITS, "step": 100
             },
-            constants.LedWallSettings.NUM_GREY_PATCHES: {
+            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: {
                 constants.DEFAULT: default_led_wall.num_grey_patches, "min": 0, "max": 100, "step": 1},
-            constants.ProjectSettings.FRAMES_PER_PATCH: {
+            constants.ProjectSettingsKeys.FRAMES_PER_PATCH: {
                 constants.DEFAULT: self.frames_per_patch, "min": 0, "max": 100, "step": 1},
-            constants.ProjectSettings.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
-            constants.ProjectSettings.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
-            constants.ProjectSettings.FILE_FORMAT: {
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
+            constants.ProjectSettingsKeys.FILE_FORMAT: {
                 constants.OPTIONS: constants.FileFormats.FF_ALL, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
-            constants.LedWallSettings.CALCULATION_ORDER: {
+            constants.LedWallSettingsKeys.CALCULATION_ORDER: {
                 constants.OPTIONS: constants.CalculationOrder.CO_ALL,
                 constants.DEFAULT: default_led_wall.calculation_order
             },
-            constants.LedWallSettings.AVOID_CLIPPING: {
+            constants.LedWallSettingsKeys.AVOID_CLIPPING: {
                 constants.DEFAULT: default_led_wall.avoid_clipping
             },
-            constants.ProjectSettings.CUSTOM_LOGO_PATH: {constants.DEFAULT: self.custom_logo_path},
+            constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: {constants.DEFAULT: self.custom_logo_path},
         }
 
     def set_data(self, key: str, value: object):
@@ -778,84 +778,84 @@ class ProjectSettingsController(QObject):
         # Connect view signals to model slots
         self.led_settings_view.target_gamut.currentIndexChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.TARGET_GAMUT, self.led_settings_view.target_gamut.currentText())
+                constants.LedWallSettingsKeys.TARGET_GAMUT, self.led_settings_view.target_gamut.currentText())
         )
         self.led_settings_view.target_eotf.currentIndexChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.TARGET_EOTF, self.led_settings_view.target_eotf.currentText())
+                constants.LedWallSettingsKeys.TARGET_EOTF, self.led_settings_view.target_eotf.currentText())
         )
         self.led_settings_view.target_max_lum_nits.valueChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.TARGET_MAX_LUM_NITS, self.led_settings_view.target_max_lum_nits.value())
+                constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, self.led_settings_view.target_max_lum_nits.value())
         )
         self.led_settings_view.primaries_saturation.valueChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.PRIMARIES_SATURATION, self.led_settings_view.primaries_saturation.value())
+                constants.LedWallSettingsKeys.PRIMARIES_SATURATION, self.led_settings_view.primaries_saturation.value())
         )
         self.led_settings_view.num_grey_patches.valueChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.NUM_GREY_PATCHES, self.led_settings_view.num_grey_patches.value()))
+                constants.LedWallSettingsKeys.NUM_GREY_PATCHES, self.led_settings_view.num_grey_patches.value()))
 
         self.project_settings_view.frames_per_patch.valueChanged.connect(
             lambda: self.model.set_data(
-                constants.ProjectSettings.FRAMES_PER_PATCH, self.project_settings_view.frames_per_patch.value())
+                constants.ProjectSettingsKeys.FRAMES_PER_PATCH, self.project_settings_view.frames_per_patch.value())
         )
         self.project_settings_view.output_folder.textChanged.connect(
             lambda: self.model.set_data(
-                constants.ProjectSettings.OUTPUT_FOLDER, self.project_settings_view.output_folder.text()))
+                constants.ProjectSettingsKeys.OUTPUT_FOLDER, self.project_settings_view.output_folder.text()))
         self.project_settings_view.file_format.currentIndexChanged.connect(
             lambda: self.model.set_data(
-                constants.ProjectSettings.FILE_FORMAT, self.project_settings_view.file_format.currentText()))
+                constants.ProjectSettingsKeys.FILE_FORMAT, self.project_settings_view.file_format.currentText()))
         self.project_settings_view.resolution_width.valueChanged.connect(
             lambda: self.model.set_data(
-                constants.ProjectSettings.RESOLUTION_WIDTH, self.project_settings_view.resolution_width.value()))
+                constants.ProjectSettingsKeys.RESOLUTION_WIDTH, self.project_settings_view.resolution_width.value()))
         self.project_settings_view.resolution_height.valueChanged.connect(
             lambda: self.model.set_data(
-                constants.ProjectSettings.RESOLUTION_HEIGHT, self.project_settings_view.resolution_height.value()))
+                constants.ProjectSettingsKeys.RESOLUTION_HEIGHT, self.project_settings_view.resolution_height.value()))
         self.plate_settings_view.input_plate_gamut.currentIndexChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.INPUT_PLATE_GAMUT, self.plate_settings_view.input_plate_gamut.currentText()))
+                constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT, self.plate_settings_view.input_plate_gamut.currentText()))
         self.plate_settings_view.native_camera_gamut.currentIndexChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.NATIVE_CAMERA_GAMUT,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT,
                                         self.plate_settings_view.native_camera_gamut.currentText()))
         self.plate_settings_view.match_reference_wall.stateChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.MATCH_REFERENCE_WALL,
+                constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL,
                 self.plate_settings_view.match_reference_wall.isChecked()))
         self.plate_settings_view.reference_wall.currentIndexChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.REFERENCE_WALL, self.plate_settings_view.reference_wall.currentText()))
+                constants.LedWallSettingsKeys.REFERENCE_WALL, self.plate_settings_view.reference_wall.currentText()))
         self.plate_settings_view.use_external_white_point.stateChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT,
+                constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT,
                 self.plate_settings_view.use_external_white_point.isChecked()))
         self.plate_settings_view.external_white_point_file.textChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE,
+                constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE,
                 self.plate_settings_view.external_white_point_file.text()))
         self.led_analysis_settings_view.target_to_screen_cat.currentIndexChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.TARGET_TO_SCREEN_CAT,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT,
                                         self.led_analysis_settings_view.target_to_screen_cat.currentText()))
         self.led_analysis_settings_view.reference_to_target_cat.currentIndexChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.REFERENCE_TO_TARGET_CAT,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT,
                                         self.led_analysis_settings_view.reference_to_target_cat.currentText()))
         self.plate_settings_view.auto_wb_source.stateChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.AUTO_WB_SOURCE,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.AUTO_WB_SOURCE,
                                         self.plate_settings_view.auto_wb_source.isChecked()))
         self.led_analysis_settings_view.enable_gamut_compression.stateChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION,
                                         self.led_analysis_settings_view.enable_gamut_compression.isChecked()))
         self.led_analysis_settings_view.avoid_clipping.stateChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.AVOID_CLIPPING,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.AVOID_CLIPPING,
                                         self.led_analysis_settings_view.avoid_clipping.isChecked()))
         self.led_analysis_settings_view.enable_eotf_correction.stateChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.ENABLE_EOTF_CORRECTION,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION,
                                         self.led_analysis_settings_view.enable_eotf_correction.isChecked()))
         self.led_analysis_settings_view.calculation_order.currentIndexChanged.connect(
-            lambda: self.model.set_data(constants.LedWallSettings.CALCULATION_ORDER,
+            lambda: self.model.set_data(constants.LedWallSettingsKeys.CALCULATION_ORDER,
                                         self.led_analysis_settings_view.calculation_order.currentText()))
         self.project_settings_view.custom_logo_path.textChanged.connect(
-            lambda: self.model.set_data(constants.ProjectSettings.CUSTOM_LOGO_PATH,
+            lambda: self.model.set_data(constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH,
                                         self.project_settings_view.custom_logo_path.text()))
 
         self.led_settings_view.gamut_dialog_button.clicked.connect(self.open_custom_gamut_dialog)
@@ -949,7 +949,7 @@ class ProjectSettingsController(QObject):
         )
         if not filename:
             return
-        self.model.set_data(constants.ProjectSettings.CUSTOM_LOGO_PATH, filename)
+        self.model.set_data(constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH, filename)
 
     def open_external_white_point_file_dialog(self)-> None:
         """ Opens a file dialogue to select an image to use as a reference to an external white point analysis,
@@ -961,8 +961,8 @@ class ProjectSettingsController(QObject):
         )
         if not filename:
             return
-        self.model.set_data(constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT, True)
-        self.model.set_data(constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE, filename)
+        self.model.set_data(constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT, True)
+        self.model.set_data(constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE, filename)
 
     def open_folder_select_dialog(self) -> None:
         """
@@ -970,7 +970,7 @@ class ProjectSettingsController(QObject):
         """
         folder = utils.select_folder()
         if folder:
-            self.model.set_data(constants.ProjectSettings.OUTPUT_FOLDER, folder)
+            self.model.set_data(constants.ProjectSettingsKeys.OUTPUT_FOLDER, folder)
 
     def open_custom_gamut_dialog(self) -> None:
         """
@@ -982,7 +982,7 @@ class ProjectSettingsController(QObject):
 
             primaries, gamut_name = values
             self.model.add_custom_primary(gamut_name, primaries)
-            self.model.set_data(constants.LedWallSettings.TARGET_GAMUT, gamut_name)
+            self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
             self.add_custom_gamut_to_ui(gamut_name)
 
     def add_custom_gamut_to_ui(self, gamut_name: str) -> None:

@@ -16,30 +16,30 @@ class TestLedWallSettings(TestBase):
         self.json_path = "test.json"
 
         self.sample = {
-            constants.LedWallSettings.NAME: "Wall1",
-            constants.LedWallSettings.ENABLE_EOTF_CORRECTION: True,
-            constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION: True,
-            constants.LedWallSettings.AUTO_WB_SOURCE: True,
-            constants.LedWallSettings.INPUT_SEQUENCE_FOLDER: "filepath",
-            constants.LedWallSettings.CALCULATION_ORDER: constants.CalculationOrder.CO_CS_EOTF,
-            constants.LedWallSettings.PRIMARIES_SATURATION: 0.7,
-            constants.LedWallSettings.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_ACES,
-            constants.LedWallSettings.NUM_GREY_PATCHES: 30,
-            constants.LedWallSettings.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_CAT02,
-            constants.LedWallSettings.ROI: [342, 685, 119, 470],
-            constants.LedWallSettings.SHADOW_ROLLOFF: 0.008,
-            constants.LedWallSettings.TARGET_MAX_LUM_NITS: 1000,
-            constants.LedWallSettings.TARGET_GAMUT: constants.ColourSpace.CS_BT2020,
-            constants.LedWallSettings.TARGET_EOTF: constants.EOTF.EOTF_ST2084,
-            constants.LedWallSettings.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_CAT02,
-            constants.LedWallSettings.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.RED_WIDE_GAMUT,
-            constants.LedWallSettings.MATCH_REFERENCE_WALL: False,
-            constants.LedWallSettings.REFERENCE_WALL: "",
-            constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT: False,
-            constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE: "",
-            constants.LedWallSettings.IS_VERIFICATION_WALL: False,
-            constants.LedWallSettings.VERIFICATION_WALL: "",
-            constants.LedWallSettings.AVOID_CLIPPING: True
+            constants.LedWallSettingsKeys.NAME: "Wall1",
+            constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION: True,
+            constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION: True,
+            constants.LedWallSettingsKeys.AUTO_WB_SOURCE: True,
+            constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER: "filepath",
+            constants.LedWallSettingsKeys.CALCULATION_ORDER: constants.CalculationOrder.CO_CS_EOTF,
+            constants.LedWallSettingsKeys.PRIMARIES_SATURATION: 0.7,
+            constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_ACES,
+            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: 30,
+            constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_CAT02,
+            constants.LedWallSettingsKeys.ROI: [342, 685, 119, 470],
+            constants.LedWallSettingsKeys.SHADOW_ROLLOFF: 0.008,
+            constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS: 1000,
+            constants.LedWallSettingsKeys.TARGET_GAMUT: constants.ColourSpace.CS_BT2020,
+            constants.LedWallSettingsKeys.TARGET_EOTF: constants.EOTF.EOTF_ST2084,
+            constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_CAT02,
+            constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.RED_WIDE_GAMUT,
+            constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: False,
+            constants.LedWallSettingsKeys.REFERENCE_WALL: "",
+            constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT: False,
+            constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE: "",
+            constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
+            constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
+            constants.LedWallSettingsKeys.AVOID_CLIPPING: True
         }
 
     def tearDown(self):
@@ -51,7 +51,7 @@ class TestLedWallSettings(TestBase):
         sample_keys = list(self.sample.keys())
         sample_keys.sort()
 
-        constants_all = constants.LedWallSettings.ALL.copy()
+        constants_all = constants.LedWallSettingsKeys.ALL.copy()
         constants_all.sort()
         self.assertEqual(sample_keys, constants_all)
 
@@ -157,7 +157,7 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(self.wall.reference_wall_as_wall.name, new_wall.name)
 
         # Set we cant set ourselves as a reference
-        self.assertRaises(ValueError, setattr, self.wall, constants.LedWallSettings.REFERENCE_WALL, self.wall)
+        self.assertRaises(ValueError, setattr, self.wall, constants.LedWallSettingsKeys.REFERENCE_WALL, self.wall)
 
     def test_json_conversion(self):
         with open(self.json_path, 'w', encoding="utf-8") as file:

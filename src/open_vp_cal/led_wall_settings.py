@@ -23,30 +23,30 @@ class LedWallSettings:
         self._sequence_loader_class = SequenceLoader
 
         self._default_led_settings = {
-            constants.LedWallSettings.NAME: name,
-            constants.LedWallSettings.ENABLE_EOTF_CORRECTION: True,
-            constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION: True,
-            constants.LedWallSettings.AUTO_WB_SOURCE: False,
-            constants.LedWallSettings.INPUT_SEQUENCE_FOLDER: '',
-            constants.LedWallSettings.NUM_GREY_PATCHES: 33,
-            constants.LedWallSettings.PRIMARIES_SATURATION: 0.7,
-            constants.LedWallSettings.CALCULATION_ORDER: constants.CalculationOrder.CO_DEFAULT,
-            constants.LedWallSettings.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_DEFAULT_REF,
-            constants.LedWallSettings.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.CS_DEFAULT,
-            constants.LedWallSettings.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_BRADFORD,
-            constants.LedWallSettings.ROI: [],
-            constants.LedWallSettings.SHADOW_ROLLOFF: 0.008,
-            constants.LedWallSettings.TARGET_MAX_LUM_NITS: 1000,
-            constants.LedWallSettings.TARGET_GAMUT: constants.ColourSpace.CS_DEFAULT_TARGET,
-            constants.LedWallSettings.TARGET_EOTF: constants.EOTF.EOTF_DEFAULT,
-            constants.LedWallSettings.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_NONE,
-            constants.LedWallSettings.MATCH_REFERENCE_WALL: False,
-            constants.LedWallSettings.REFERENCE_WALL: "",
-            constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT: False,
-            constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE: "",
-            constants.LedWallSettings.IS_VERIFICATION_WALL: False,
-            constants.LedWallSettings.VERIFICATION_WALL: "",
-            constants.LedWallSettings.AVOID_CLIPPING: True
+            constants.LedWallSettingsKeys.NAME: name,
+            constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION: True,
+            constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION: True,
+            constants.LedWallSettingsKeys.AUTO_WB_SOURCE: False,
+            constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER: '',
+            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: 33,
+            constants.LedWallSettingsKeys.PRIMARIES_SATURATION: 0.7,
+            constants.LedWallSettingsKeys.CALCULATION_ORDER: constants.CalculationOrder.CO_DEFAULT,
+            constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_DEFAULT_REF,
+            constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.CS_DEFAULT,
+            constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_BRADFORD,
+            constants.LedWallSettingsKeys.ROI: [],
+            constants.LedWallSettingsKeys.SHADOW_ROLLOFF: 0.008,
+            constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS: 1000,
+            constants.LedWallSettingsKeys.TARGET_GAMUT: constants.ColourSpace.CS_DEFAULT_TARGET,
+            constants.LedWallSettingsKeys.TARGET_EOTF: constants.EOTF.EOTF_DEFAULT,
+            constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_NONE,
+            constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: False,
+            constants.LedWallSettingsKeys.REFERENCE_WALL: "",
+            constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT: False,
+            constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE: "",
+            constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
+            constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
+            constants.LedWallSettingsKeys.AVOID_CLIPPING: True
         }
 
         self._led_settings = copy.deepcopy(self._default_led_settings)
@@ -76,7 +76,7 @@ class LedWallSettings:
         Returns:
             str: A list of custom primaries and a custom name for led wall we are calibrating
         """
-        return self._led_settings[constants.LedWallSettings.NAME]
+        return self._led_settings[constants.LedWallSettingsKeys.NAME]
 
     @name.setter
     def name(self, value: str):
@@ -85,7 +85,7 @@ class LedWallSettings:
         Args:
             value (str): The name of the LED wall
         """
-        self._led_settings[constants.LedWallSettings.NAME] = value
+        self._led_settings[constants.LedWallSettingsKeys.NAME] = value
 
     def clear_led_settings(self):
         """
@@ -102,7 +102,7 @@ class LedWallSettings:
         Returns:
             bool: Whether we want to avoid clipping or not
         """
-        return self._led_settings[constants.LedWallSettings.AVOID_CLIPPING]
+        return self._led_settings[constants.LedWallSettingsKeys.AVOID_CLIPPING]
 
     @avoid_clipping.setter
     def avoid_clipping(self, value: bool):
@@ -111,7 +111,7 @@ class LedWallSettings:
         Args:
             value (bool): Whether we want to avoid clipping on the LED wall or not
         """
-        self._set_property(constants.LedWallSettings.AVOID_CLIPPING, value)
+        self._set_property(constants.LedWallSettingsKeys.AVOID_CLIPPING, value)
 
     @property
     def enable_eotf_correction(self) -> bool:
@@ -120,7 +120,7 @@ class LedWallSettings:
         Returns:
             bool: Whether eotf correction is enabled or disabled
         """
-        return self._led_settings[constants.LedWallSettings.ENABLE_EOTF_CORRECTION]
+        return self._led_settings[constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION]
 
     @enable_eotf_correction.setter
     def enable_eotf_correction(self, value: bool):
@@ -129,7 +129,7 @@ class LedWallSettings:
         Args:
             value (bool): Whether eotf correction is enabled or disabled
         """
-        self._set_property(constants.LedWallSettings.ENABLE_EOTF_CORRECTION, value)
+        self._set_property(constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION, value)
 
     @property
     def enable_gamut_compression(self) -> bool:
@@ -138,7 +138,7 @@ class LedWallSettings:
         Returns:
             bool: Whether enable gamut compression is enabled or disabled
         """
-        return self._led_settings[constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION]
+        return self._led_settings[constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION]
 
     @enable_gamut_compression.setter
     def enable_gamut_compression(self, value: bool):
@@ -147,7 +147,7 @@ class LedWallSettings:
         Args:
             value (bool): Whether enable gamut compression is enabled or disabled
         """
-        self._set_property(constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION, value)
+        self._set_property(constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION, value)
 
     @property
     def auto_wb_source(self) -> bool:
@@ -156,7 +156,7 @@ class LedWallSettings:
         Returns:
             bool: Whether auto white balance is enabled or disabled
         """
-        return self._led_settings[constants.LedWallSettings.AUTO_WB_SOURCE]
+        return self._led_settings[constants.LedWallSettingsKeys.AUTO_WB_SOURCE]
 
     @auto_wb_source.setter
     def auto_wb_source(self, value: bool):
@@ -165,7 +165,7 @@ class LedWallSettings:
         Args:
             value (bool): Whether auto white balance is enabled or disabled
         """
-        self._set_property(constants.LedWallSettings.AUTO_WB_SOURCE, value)
+        self._set_property(constants.LedWallSettingsKeys.AUTO_WB_SOURCE, value)
 
     @property
     def input_sequence_folder(self) -> str:
@@ -174,7 +174,7 @@ class LedWallSettings:
         Returns:
             str: The input sequence folder.
         """
-        return self._led_settings[constants.LedWallSettings.INPUT_SEQUENCE_FOLDER]
+        return self._led_settings[constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER]
 
     @input_sequence_folder.setter
     def input_sequence_folder(self, value: str):
@@ -183,7 +183,7 @@ class LedWallSettings:
         Args:
             value (str): The input sequence folder.
         """
-        self._led_settings[constants.LedWallSettings.INPUT_SEQUENCE_FOLDER] = value
+        self._led_settings[constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER] = value
 
     @property
     def calculation_order(self) -> constants.CalculationOrder:
@@ -192,7 +192,7 @@ class LedWallSettings:
         Returns:
             constants.CalculationOrder: The calculation order of the calculations
         """
-        return self._led_settings[constants.LedWallSettings.CALCULATION_ORDER]
+        return self._led_settings[constants.LedWallSettingsKeys.CALCULATION_ORDER]
 
     @calculation_order.setter
     def calculation_order(self, value: str):
@@ -201,7 +201,7 @@ class LedWallSettings:
         Args:
             value (constants.CalculationOrder): The calculation order of the calculations
         """
-        self._set_property(constants.LedWallSettings.CALCULATION_ORDER, value)
+        self._set_property(constants.LedWallSettingsKeys.CALCULATION_ORDER, value)
 
     @property
     def primaries_saturation(self) -> float:
@@ -210,7 +210,7 @@ class LedWallSettings:
         Returns:
             float: The primaries saturation.
         """
-        return self._led_settings[constants.LedWallSettings.PRIMARIES_SATURATION]
+        return self._led_settings[constants.LedWallSettingsKeys.PRIMARIES_SATURATION]
 
     @primaries_saturation.setter
     def primaries_saturation(self, value: float):
@@ -219,7 +219,7 @@ class LedWallSettings:
         Args:
             value (float): The primaries saturation.
         """
-        self._set_property(constants.LedWallSettings.PRIMARIES_SATURATION, value)
+        self._set_property(constants.LedWallSettingsKeys.PRIMARIES_SATURATION, value)
 
     @property
     def input_plate_gamut(self) -> constants.ColourSpace:
@@ -228,7 +228,7 @@ class LedWallSettings:
         Returns:
             constants.ColourSpace: The input colorspace of the plate
         """
-        return self._led_settings[constants.LedWallSettings.INPUT_PLATE_GAMUT]
+        return self._led_settings[constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT]
 
     @input_plate_gamut.setter
     def input_plate_gamut(self, value: constants.ColourSpace):
@@ -237,7 +237,7 @@ class LedWallSettings:
         Args:
             value (constants.ColourSpace): The colour space we want to set the input too for the plate
         """
-        self._set_property(constants.LedWallSettings.INPUT_PLATE_GAMUT, value)
+        self._set_property(constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT, value)
 
     @property
     def native_camera_gamut(self) -> constants.CameraColourSpace:
@@ -246,7 +246,7 @@ class LedWallSettings:
         Returns:
             constants.ColourSpace: The native colorspace of the camera the plate was shot with originally
         """
-        return self._led_settings[constants.LedWallSettings.NATIVE_CAMERA_GAMUT]
+        return self._led_settings[constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT]
 
     @native_camera_gamut.setter
     def native_camera_gamut(self, value: constants.CameraColourSpace):
@@ -255,7 +255,7 @@ class LedWallSettings:
         Args:
             value (constants.CameraColourSpace): The native colorspace of the camera the plate was shot with originally
         """
-        self._set_property(constants.LedWallSettings.NATIVE_CAMERA_GAMUT, value)
+        self._set_property(constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT, value)
 
     @property
     def num_grey_patches(self) -> int:
@@ -264,7 +264,7 @@ class LedWallSettings:
         Returns:
             int: The number of grey patches used to ramp the number of nits
         """
-        return self._led_settings[constants.LedWallSettings.NUM_GREY_PATCHES]
+        return self._led_settings[constants.LedWallSettingsKeys.NUM_GREY_PATCHES]
 
     @num_grey_patches.setter
     def num_grey_patches(self, value: int):
@@ -273,7 +273,7 @@ class LedWallSettings:
         Args:
             value (int): The number of grey patches used to ramp the number of nits
         """
-        self._set_property(constants.LedWallSettings.NUM_GREY_PATCHES, value)
+        self._set_property(constants.LedWallSettingsKeys.NUM_GREY_PATCHES, value)
 
     @property
     def reference_to_target_cat(self) -> constants.CAT:
@@ -282,7 +282,7 @@ class LedWallSettings:
         Returns:
             constants.ColourSpace: The reference to target cat
         """
-        return self._led_settings[constants.LedWallSettings.REFERENCE_TO_TARGET_CAT]
+        return self._led_settings[constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT]
 
     @reference_to_target_cat.setter
     def reference_to_target_cat(self, value: constants.CAT):
@@ -291,7 +291,7 @@ class LedWallSettings:
         Args:
             value (constants.CAT): The reference to a target cat
         """
-        self._set_property(constants.LedWallSettings.REFERENCE_TO_TARGET_CAT, value)
+        self._set_property(constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT, value)
 
     @property
     def roi(self) -> List[int]:
@@ -301,7 +301,7 @@ class LedWallSettings:
             Any: The region of interest (ROI).
         """
 
-        return self._led_settings[constants.LedWallSettings.ROI]
+        return self._led_settings[constants.LedWallSettingsKeys.ROI]
 
     @roi.setter
     def roi(self, value: List[int]):
@@ -310,7 +310,7 @@ class LedWallSettings:
         Args:
             value (Any): The region of interest (ROI).
         """
-        self._led_settings[constants.LedWallSettings.ROI] = value
+        self._led_settings[constants.LedWallSettingsKeys.ROI] = value
 
     @property
     def shadow_rolloff(self) -> float:
@@ -319,7 +319,7 @@ class LedWallSettings:
         Returns:
             float: The shadow rolloff
         """
-        return self._led_settings[constants.LedWallSettings.SHADOW_ROLLOFF]
+        return self._led_settings[constants.LedWallSettingsKeys.SHADOW_ROLLOFF]
 
     @shadow_rolloff.setter
     def shadow_rolloff(self, value: float):
@@ -328,7 +328,7 @@ class LedWallSettings:
         Args:
             value (float): the shadow rolloff
         """
-        self._set_property(constants.LedWallSettings.SHADOW_ROLLOFF, value)
+        self._set_property(constants.LedWallSettingsKeys.SHADOW_ROLLOFF, value)
 
     @property
     def target_gamut(self) -> constants.ColourSpace:
@@ -337,7 +337,7 @@ class LedWallSettings:
         Returns:
             constants.ColourSpace: The target colorspace
         """
-        return self._led_settings[constants.LedWallSettings.TARGET_GAMUT]
+        return self._led_settings[constants.LedWallSettingsKeys.TARGET_GAMUT]
 
     @target_gamut.setter
     def target_gamut(self, value: constants.ColourSpace):
@@ -346,7 +346,7 @@ class LedWallSettings:
         Args:
             value (constants.ColourSpace): the colour space we want to set the target as
         """
-        self._set_property(constants.LedWallSettings.TARGET_GAMUT, value)
+        self._set_property(constants.LedWallSettingsKeys.TARGET_GAMUT, value)
 
     @property
     def target_eotf(self) -> constants.EOTF:
@@ -355,7 +355,7 @@ class LedWallSettings:
         Returns:
             constants.EOTF: The target eotf
         """
-        return self._led_settings[constants.LedWallSettings.TARGET_EOTF]
+        return self._led_settings[constants.LedWallSettingsKeys.TARGET_EOTF]
 
     @target_eotf.setter
     def target_eotf(self, value: constants.EOTF):
@@ -364,7 +364,7 @@ class LedWallSettings:
         Args:
             value (constants.EOTF): the eotf for the target
         """
-        self._set_property(constants.LedWallSettings.TARGET_EOTF, value)
+        self._set_property(constants.LedWallSettingsKeys.TARGET_EOTF, value)
 
     @property
     def target_max_lum_nits(self) -> int:
@@ -373,7 +373,7 @@ class LedWallSettings:
         Returns:
             int: target max luminance in nits.
         """
-        return self._led_settings[constants.LedWallSettings.TARGET_MAX_LUM_NITS]
+        return self._led_settings[constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS]
 
     @target_max_lum_nits.setter
     def target_max_lum_nits(self, value: int):
@@ -382,7 +382,7 @@ class LedWallSettings:
         Args:
             value (int): target max luminance in nits.
         """
-        self._set_property(constants.LedWallSettings.TARGET_MAX_LUM_NITS, value)
+        self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, value)
 
     @property
     def target_to_screen_cat(self) -> constants.CAT:
@@ -391,7 +391,7 @@ class LedWallSettings:
         Returns:
             constants.CAT: The target screen cat
         """
-        return self._led_settings[constants.LedWallSettings.TARGET_TO_SCREEN_CAT]
+        return self._led_settings[constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT]
 
     @target_to_screen_cat.setter
     def target_to_screen_cat(self, value: constants.CAT):
@@ -400,7 +400,7 @@ class LedWallSettings:
         Args:
             value (constants.CAT): the target screen cat
         """
-        self._set_property(constants.LedWallSettings.TARGET_TO_SCREEN_CAT, value)
+        self._set_property(constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT, value)
 
     @classmethod
     def from_json_file(cls, project_settings: "ProjectSettings", json_file: str):
@@ -504,7 +504,7 @@ class LedWallSettings:
         Returns:
             bool: Gets whether we want to use an external white point from a reference LED or not
         """
-        return self._led_settings[constants.LedWallSettings.MATCH_REFERENCE_WALL]
+        return self._led_settings[constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL]
 
     @match_reference_wall.setter
     def match_reference_wall(self, value: bool):
@@ -513,7 +513,7 @@ class LedWallSettings:
         Args:
             value (bool): Whether to use the external white point from a reference LED or not
         """
-        self._set_property(constants.LedWallSettings.MATCH_REFERENCE_WALL, value)
+        self._set_property(constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL, value)
 
     @property
     def reference_wall(self) -> str:
@@ -522,7 +522,7 @@ class LedWallSettings:
         Returns:
             str: The name of the led wall we want to use as the reference wall
         """
-        return self._led_settings[constants.LedWallSettings.REFERENCE_WALL]
+        return self._led_settings[constants.LedWallSettingsKeys.REFERENCE_WALL]
 
     @property
     def reference_wall_as_wall(self) -> Union["LedWallSettings", None]:
@@ -544,7 +544,7 @@ class LedWallSettings:
             value: The LED wall we want to set as the reference wall
         """
         if not value:
-            self._led_settings[constants.LedWallSettings.REFERENCE_WALL] = value
+            self._led_settings[constants.LedWallSettingsKeys.REFERENCE_WALL] = value
             return
 
         if isinstance(value, LedWallSettings):
@@ -556,7 +556,7 @@ class LedWallSettings:
         # We get the led wall to make sure it exists and is added to the project
         led_wall = self.project_settings.get_led_wall(value)
 
-        self._set_property(constants.LedWallSettings.REFERENCE_WALL, led_wall.name)
+        self._set_property(constants.LedWallSettingsKeys.REFERENCE_WALL, led_wall.name)
 
     @property
     def use_external_white_point(self) -> bool:
@@ -565,7 +565,7 @@ class LedWallSettings:
         Returns:
             bool: Gets whether we want to use an external white point or not
         """
-        return self._led_settings[constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT]
+        return self._led_settings[constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT]
 
     @use_external_white_point.setter
     def use_external_white_point(self, value: bool):
@@ -574,7 +574,7 @@ class LedWallSettings:
         Args:
             value (bool): Whether to use the external white point or not
         """
-        self._set_property(constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT, value)
+        self._set_property(constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT, value)
 
     @property
     def external_white_point_file(self) -> str:
@@ -583,7 +583,7 @@ class LedWallSettings:
         Returns:
             str: The filepath which contains the image we want to sample to calculate the external white point from
         """
-        return self._led_settings[constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE]
+        return self._led_settings[constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE]
 
     @external_white_point_file.setter
     def external_white_point_file(self, value: str):
@@ -593,7 +593,7 @@ class LedWallSettings:
             value (str): The filepath which contains the image we want to sample to calculate the external
             white point from
         """
-        self._set_property(constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE, value)
+        self._set_property(constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE, value)
 
     @property
     def verification_wall(self) -> str:
@@ -602,7 +602,7 @@ class LedWallSettings:
         Returns:
             str: The name of the led wall which this wall linked for verification
         """
-        return self._led_settings[constants.LedWallSettings.VERIFICATION_WALL]
+        return self._led_settings[constants.LedWallSettingsKeys.VERIFICATION_WALL]
 
     @property
     def verification_wall_as_wall(self) -> Union["LedWallSettings", None]:
@@ -626,7 +626,7 @@ class LedWallSettings:
             value: The LED wall which this instance is intended to verify
         """
         if not value:
-            self._led_settings[constants.LedWallSettings.VERIFICATION_WALL] = value
+            self._led_settings[constants.LedWallSettingsKeys.VERIFICATION_WALL] = value
             return
 
         if isinstance(value, LedWallSettings):
@@ -638,7 +638,7 @@ class LedWallSettings:
         # We get the led wall to make sure it exists and is added to the project
         led_wall = self.project_settings.get_led_wall(value)
 
-        self._led_settings[constants.LedWallSettings.VERIFICATION_WALL] = led_wall.name
+        self._led_settings[constants.LedWallSettingsKeys.VERIFICATION_WALL] = led_wall.name
 
     @property
     def is_verification_wall(self) -> bool:
@@ -648,7 +648,7 @@ class LedWallSettings:
         Returns:
             bool: Whether this wall is a verification wall or not
         """
-        return self._led_settings[constants.LedWallSettings.IS_VERIFICATION_WALL]
+        return self._led_settings[constants.LedWallSettingsKeys.IS_VERIFICATION_WALL]
 
     @is_verification_wall.setter
     def is_verification_wall(self, value: bool) -> None:
@@ -661,7 +661,7 @@ class LedWallSettings:
         Args:
             value: Whether this wall is to be set as a Verification wall or not
         """
-        self._led_settings[constants.LedWallSettings.IS_VERIFICATION_WALL] = value
+        self._led_settings[constants.LedWallSettingsKeys.IS_VERIFICATION_WALL] = value
 
     def has_valid_white_balance_options(self) -> bool:
         """ Checks whether the white balance options are valid or not, we can only have one of these options

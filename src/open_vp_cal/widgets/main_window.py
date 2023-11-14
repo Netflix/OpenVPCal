@@ -563,7 +563,7 @@ class MainWindow(QMainWindow):
         if folder:
             self.clear_project_settings()
             self.project_settings_model.output_folder = folder
-            self.project_settings_model.set_data(constants.ProjectSettings.OUTPUT_FOLDER, folder)
+            self.project_settings_model.set_data(constants.ProjectSettingsKeys.OUTPUT_FOLDER, folder)
             self.save_project_settings(inform_completion=False)
         self.load_default_layout()
 
@@ -1109,7 +1109,7 @@ class MainWindow(QMainWindow):
         folder = select_folder()
         if folder:
             self.project_settings_model.output_folder = folder
-            self.project_settings_model.set_data(constants.ProjectSettings.OUTPUT_FOLDER, folder)
+            self.project_settings_model.set_data(constants.ProjectSettingsKeys.OUTPUT_FOLDER, folder)
             self.save_project_settings(inform_completion=False)
             self.task_completed()
 

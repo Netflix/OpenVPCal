@@ -20,14 +20,14 @@ class TestProjectSettings(TestBase):
             constants.VERSION: open_vp_cal.__version__,
             "project_settings":
                 {
-                    constants.ProjectSettings.FILE_FORMAT: "exr",
-                    constants.ProjectSettings.RESOLUTION_WIDTH: 3840,
-                    constants.ProjectSettings.RESOLUTION_HEIGHT: 2160,
-                    constants.ProjectSettings.OUTPUT_FOLDER: "",
-                    constants.ProjectSettings.CUSTOM_LOGO_PATH: "",
-                    constants.ProjectSettings.OCIO_CONFIG_PATH: "test",
-                    constants.ProjectSettings.FRAMES_PER_PATCH: 1,
-                    constants.ProjectSettings.PROJECT_CUSTOM_PRIMARIES: {
+                    constants.ProjectSettingsKeys.FILE_FORMAT: "exr",
+                    constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
+                    constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,
+                    constants.ProjectSettingsKeys.OUTPUT_FOLDER: "",
+                    constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",
+                    constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "test",
+                    constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
+                    constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {
                         "TestPrimaries1": [
                             [
                                 0.7347,
@@ -47,32 +47,32 @@ class TestProjectSettings(TestBase):
                             ]
                         ]
                     },
-                    constants.ProjectSettings.LED_WALLS: [
+                    constants.ProjectSettingsKeys.LED_WALLS: [
                         {
-                            constants.LedWallSettings.NAME: "Wall1",
-                            constants.LedWallSettings.ENABLE_EOTF_CORRECTION: True,
-                            constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION: True,
-                            constants.LedWallSettings.AUTO_WB_SOURCE: True,
-                            constants.LedWallSettings.INPUT_SEQUENCE_FOLDER: "",
-                            constants.LedWallSettings.CALCULATION_ORDER: constants.CalculationOrder.CO_CS_EOTF,
-                            constants.LedWallSettings.PRIMARIES_SATURATION: 0.7,
-                            constants.LedWallSettings.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_ACES,
-                            constants.LedWallSettings.NATIVE_CAMERA_GAMUT: constants.ColourSpace.CS_ACES,
-                            constants.LedWallSettings.NUM_GREY_PATCHES: 30,
-                            constants.LedWallSettings.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_CAT02,
-                            constants.LedWallSettings.ROI: [342, 685, 119, 470],
-                            constants.LedWallSettings.SHADOW_ROLLOFF: 0.008,
-                            constants.LedWallSettings.TARGET_MAX_LUM_NITS: 1000,
-                            constants.LedWallSettings.TARGET_GAMUT: constants.ColourSpace.CS_BT2020,
-                            constants.LedWallSettings.TARGET_EOTF: constants.EOTF.EOTF_ST2084,
-                            constants.LedWallSettings.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_CAT02,
-                            constants.LedWallSettings.MATCH_REFERENCE_WALL: False,
-                            constants.LedWallSettings.REFERENCE_WALL: "",
-                            constants.LedWallSettings.USE_EXTERNAL_WHITE_POINT: False,
-                            constants.LedWallSettings.EXTERNAL_WHITE_POINT_FILE: "",
-                            constants.LedWallSettings.VERIFICATION_WALL: "",
-                            constants.LedWallSettings.IS_VERIFICATION_WALL: False,
-                            constants.LedWallSettings.AVOID_CLIPPING: True
+                            constants.LedWallSettingsKeys.NAME: "Wall1",
+                            constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION: True,
+                            constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION: True,
+                            constants.LedWallSettingsKeys.AUTO_WB_SOURCE: True,
+                            constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER: "",
+                            constants.LedWallSettingsKeys.CALCULATION_ORDER: constants.CalculationOrder.CO_CS_EOTF,
+                            constants.LedWallSettingsKeys.PRIMARIES_SATURATION: 0.7,
+                            constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_ACES,
+                            constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: constants.ColourSpace.CS_ACES,
+                            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: 30,
+                            constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_CAT02,
+                            constants.LedWallSettingsKeys.ROI: [342, 685, 119, 470],
+                            constants.LedWallSettingsKeys.SHADOW_ROLLOFF: 0.008,
+                            constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS: 1000,
+                            constants.LedWallSettingsKeys.TARGET_GAMUT: constants.ColourSpace.CS_BT2020,
+                            constants.LedWallSettingsKeys.TARGET_EOTF: constants.EOTF.EOTF_ST2084,
+                            constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_CAT02,
+                            constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: False,
+                            constants.LedWallSettingsKeys.REFERENCE_WALL: "",
+                            constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT: False,
+                            constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE: "",
+                            constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
+                            constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
+                            constants.LedWallSettingsKeys.AVOID_CLIPPING: True
                         }
                     ]
                 }
@@ -81,8 +81,8 @@ class TestProjectSettings(TestBase):
         self._led_json_file = tempfile.NamedTemporaryFile(suffix=".json", delete=False).name
         with open(self._led_json_file, "w") as handle:
             json.dump(
-                self.test_settings[constants.ProjectSettings.PROJECT_SETTINGS]
-                [constants.ProjectSettings.LED_WALLS][0], handle)
+                self.test_settings[constants.ProjectSettingsKeys.PROJECT_SETTINGS]
+                [constants.ProjectSettingsKeys.LED_WALLS][0], handle)
         self.led_wall = LedWallSettings.from_json_file(self.settings, self._led_json_file)
 
 
@@ -133,14 +133,14 @@ class TestProjectSettings(TestBase):
 
         # Load settings from file
         loaded_settings = ProjectSettings.from_json(test_json_file)
-        for key in self.test_settings[constants.ProjectSettings.PROJECT_SETTINGS]:
-            if key == constants.ProjectSettings.LED_WALLS:
+        for key in self.test_settings[constants.ProjectSettingsKeys.PROJECT_SETTINGS]:
+            if key == constants.ProjectSettingsKeys.LED_WALLS:
                 led_walls = getattr(loaded_settings, key)
                 for led_wall in led_walls:
                     self.assertIsInstance(led_wall, LedWallSettings)
             else:
                 self.assertEqual(
-                    self.test_settings[constants.ProjectSettings.PROJECT_SETTINGS][key], getattr(loaded_settings, key))
+                    self.test_settings[constants.ProjectSettingsKeys.PROJECT_SETTINGS][key], getattr(loaded_settings, key))
 
         # Save settings to file and compare
         loaded_settings.to_json(test_json_file)
@@ -156,7 +156,7 @@ class TestProjectSettings(TestBase):
             json_data = json.load(file)
 
         ps = ProjectSettings()
-        for key in json_data[constants.ProjectSettings.PROJECT_SETTINGS]:
+        for key in json_data[constants.ProjectSettingsKeys.PROJECT_SETTINGS]:
             self.assertTrue(hasattr(ps, key), f"Missing Property '{key}' found in the loaded json file")
 
     def test_add_led_wall(self):

@@ -46,7 +46,7 @@ class Configuration:
 
         """
         result = ConfigurationResult()
-        result.param = constants.LedWallSettings.ENABLE_EOTF_CORRECTION
+        result.param = constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION
         result.value = False
 
         eotf_linearity = calibration_results[Results.EOTF_LINEARITY]
@@ -74,7 +74,7 @@ class Configuration:
 
         """
         result = ConfigurationResult()
-        result.param = constants.LedWallSettings.ENABLE_GAMUT_COMPRESSION
+        result.param = constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION
         result.value = False
 
         max_distances = calibration_results[Results.MAX_DISTANCES]

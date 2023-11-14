@@ -63,7 +63,7 @@ class CopyFormats:
     CSV = "CSV"
 
 
-class ProjectSettings:
+class ProjectSettingsKeys:
     """
     Constants for the project settings attribute names
     """
@@ -81,7 +81,7 @@ class ProjectSettings:
            FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES]
 
 
-class LedWallSettings:
+class LedWallSettingsKeys:
     """
     Constants for the LED wall settings attribute names
     """

@@ -18,15 +18,15 @@ class ProjectSettings:
     def __init__(self):
         """Initialize an empty ProjectSettings object."""
         self._default_project_settings = {
-            constants.ProjectSettings.FILE_FORMAT: constants.FileFormats.FF_DEFAULT,
-            constants.ProjectSettings.RESOLUTION_WIDTH: 3840,
-            constants.ProjectSettings.RESOLUTION_HEIGHT: 2160,
-            constants.ProjectSettings.OUTPUT_FOLDER: os.path.join(str(Path.home()), "OpenVPCal_output"),
-            constants.ProjectSettings.OCIO_CONFIG_PATH: "",
-            constants.ProjectSettings.CUSTOM_LOGO_PATH: "",
-            constants.ProjectSettings.FRAMES_PER_PATCH: 1,
-            constants.ProjectSettings.LED_WALLS: [],
-            constants.ProjectSettings.PROJECT_CUSTOM_PRIMARIES: {},
+            constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.FF_DEFAULT,
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,
+            constants.ProjectSettingsKeys.OUTPUT_FOLDER: os.path.join(str(Path.home()), "OpenVPCal_output"),
+            constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "",
+            constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",
+            constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
+            constants.ProjectSettingsKeys.LED_WALLS: [],
+            constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -45,7 +45,7 @@ class ProjectSettings:
         Returns:
             str: The filepath to the custom logo for the pattern generation
         """
-        return self._project_settings[constants.ProjectSettings.CUSTOM_LOGO_PATH]
+        return self._project_settings[constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH]
 
     @custom_logo_path.setter
     def custom_logo_path(self, value: str):
@@ -54,7 +54,7 @@ class ProjectSettings:
         Args:
             value (bool): File path to a custom logo
         """
-        self._project_settings[constants.ProjectSettings.CUSTOM_LOGO_PATH] = value
+        self._project_settings[constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH] = value
 
     @property
     def project_custom_primaries(self) -> Dict[str, List[float]]:
@@ -63,7 +63,7 @@ class ProjectSettings:
         Returns:
             dict: The dictionary of the custom primaries
         """
-        return self._project_settings[constants.ProjectSettings.PROJECT_CUSTOM_PRIMARIES]
+        return self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES]
 
     @project_custom_primaries.setter
     def project_custom_primaries(self, value: Dict[str, List[float]]):
@@ -72,7 +72,7 @@ class ProjectSettings:
         Args:
             value: The dictionary for the custom primaries
         """
-        self._project_settings[constants.ProjectSettings.PROJECT_CUSTOM_PRIMARIES] = value
+        self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES] = value
 
     def add_custom_primary(self, name: str, primaries: List[float]):
         """ Adds a custom primary to the project
@@ -81,10 +81,10 @@ class ProjectSettings:
             name (str): The name of the custom primary
             primaries (List[float]): The list of primaries to add
         """
-        if name in self._project_settings[constants.ProjectSettings.PROJECT_CUSTOM_PRIMARIES]:
+        if name in self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES]:
             raise ValueError(f'Custom primary {name} already exists')
 
-        self._project_settings[constants.ProjectSettings.PROJECT_CUSTOM_PRIMARIES][name] = primaries
+        self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES][name] = primaries
 
     @property
     def file_format(self) -> constants.FileFormats:
@@ -93,7 +93,7 @@ class ProjectSettings:
         Returns:
             constants.FileFormats: The file format we want to generate patterns to
         """
-        return self._project_settings[constants.ProjectSettings.FILE_FORMAT]
+        return self._project_settings[constants.ProjectSettingsKeys.FILE_FORMAT]
 
     @file_format.setter
     def file_format(self, value: constants.FileFormats):
@@ -102,7 +102,7 @@ class ProjectSettings:
         Args:
             value (constants.FileFormats): The file format we want to generate patterns to
         """
-        self._project_settings[constants.ProjectSettings.FILE_FORMAT] = value
+        self._project_settings[constants.ProjectSettingsKeys.FILE_FORMAT] = value
 
     @property
     def frames_per_patch(self) -> int:
@@ -111,7 +111,7 @@ class ProjectSettings:
         Returns:
             int: The number of frames per patch to generate
         """
-        return self._project_settings[constants.ProjectSettings.FRAMES_PER_PATCH]
+        return self._project_settings[constants.ProjectSettingsKeys.FRAMES_PER_PATCH]
 
     @frames_per_patch.setter
     def frames_per_patch(self, value: int):
@@ -120,7 +120,7 @@ class ProjectSettings:
         Args:
             value (int): The number of frames per patch we want to generate
         """
-        self._project_settings[constants.ProjectSettings.FRAMES_PER_PATCH] = value
+        self._project_settings[constants.ProjectSettingsKeys.FRAMES_PER_PATCH] = value
 
     @property
     def led_walls(self) -> list:
@@ -131,7 +131,7 @@ class ProjectSettings:
         """
         if not self._project_settings:
             raise ValueError("Project settings not set")
-        return self._project_settings[constants.ProjectSettings.LED_WALLS]
+        return self._project_settings[constants.ProjectSettingsKeys.LED_WALLS]
 
     @led_walls.setter
     def led_walls(self, value: list):
@@ -146,7 +146,7 @@ class ProjectSettings:
                 values.append(item)
             else:
                 values.append(self._led_wall_class.from_json_string(self, json.dumps(item)))
-        self._project_settings[constants.ProjectSettings.LED_WALLS] = values
+        self._project_settings[constants.ProjectSettingsKeys.LED_WALLS] = values
 
     @property
     def ocio_config_path(self) -> str:
@@ -155,7 +155,7 @@ class ProjectSettings:
         Returns:
             str: The OCIO config path.
         """
-        return self._project_settings[constants.ProjectSettings.OCIO_CONFIG_PATH]
+        return self._project_settings[constants.ProjectSettingsKeys.OCIO_CONFIG_PATH]
 
     @ocio_config_path.setter
     def ocio_config_path(self, value: str):
@@ -166,7 +166,7 @@ class ProjectSettings:
         Args:
             value (str): The OCIO config path.
         """
-        self._project_settings[constants.ProjectSettings.OCIO_CONFIG_PATH] = value
+        self._project_settings[constants.ProjectSettingsKeys.OCIO_CONFIG_PATH] = value
 
     @property
     def output_folder(self) -> str:
@@ -175,7 +175,7 @@ class ProjectSettings:
         Returns:
             str: The folder path
         """
-        return self._project_settings[constants.ProjectSettings.OUTPUT_FOLDER]
+        return self._project_settings[constants.ProjectSettingsKeys.OUTPUT_FOLDER]
 
     @output_folder.setter
     def output_folder(self, value: str):
@@ -184,7 +184,7 @@ class ProjectSettings:
         Args:
             value (str): The folder path for the outputs
         """
-        self._project_settings[constants.ProjectSettings.OUTPUT_FOLDER] = value
+        self._project_settings[constants.ProjectSettingsKeys.OUTPUT_FOLDER] = value
 
     @property
     def resolution_width(self) -> int:
@@ -193,7 +193,7 @@ class ProjectSettings:
         Returns:
             int: The resolution width of the patterns we are going to generate
         """
-        return self._project_settings[constants.ProjectSettings.RESOLUTION_WIDTH]
+        return self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_WIDTH]
 
     @resolution_width.setter
     def resolution_width(self, value: int):
@@ -202,7 +202,7 @@ class ProjectSettings:
         Args:
             value (int): The resolution width
         """
-        self._project_settings[constants.ProjectSettings.RESOLUTION_WIDTH] = value
+        self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_WIDTH] = value
 
     @property
     def resolution_height(self) -> int:
@@ -211,7 +211,7 @@ class ProjectSettings:
         Returns:
             int: The resolution height of the patterns we are going to generate
         """
-        return self._project_settings[constants.ProjectSettings.RESOLUTION_HEIGHT]
+        return self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT]
 
     @resolution_height.setter
     def resolution_height(self, value: int):
@@ -220,7 +220,7 @@ class ProjectSettings:
         Args:
             value (int): The resolution height
         """
-        self._project_settings[constants.ProjectSettings.RESOLUTION_HEIGHT] = value
+        self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
 
     @classmethod
     def from_json(cls, json_file: str):
@@ -244,14 +244,14 @@ class ProjectSettings:
         reference_wall_map = {}
         verification_wall_map = {}
         for wall in instance.led_walls:
-            reference_wall_map[wall[constants.LedWallSettings.NAME]] = wall[
-                constants.LedWallSettings.REFERENCE_WALL
+            reference_wall_map[wall[constants.LedWallSettingsKeys.NAME]] = wall[
+                constants.LedWallSettingsKeys.REFERENCE_WALL
             ]
-            verification_wall_map[wall[constants.LedWallSettings.NAME]] = wall[
-                constants.LedWallSettings.VERIFICATION_WALL
+            verification_wall_map[wall[constants.LedWallSettingsKeys.NAME]] = wall[
+                constants.LedWallSettingsKeys.VERIFICATION_WALL
             ]
-            del wall[constants.LedWallSettings.REFERENCE_WALL]
-            del wall[constants.LedWallSettings.VERIFICATION_WALL]
+            del wall[constants.LedWallSettingsKeys.REFERENCE_WALL]
+            del wall[constants.LedWallSettingsKeys.VERIFICATION_WALL]
             walls.append(instance._led_wall_class.from_dict(instance, wall))
         instance.led_walls = walls
 
@@ -279,7 +279,7 @@ class ProjectSettings:
         """
         with open(json_file, 'r', encoding='utf-8') as file:
             data = json.load(file)
-            project_settings = data[constants.ProjectSettings.PROJECT_SETTINGS]
+            project_settings = data[constants.ProjectSettingsKeys.PROJECT_SETTINGS]
             return project_settings
 
     def to_json(self, json_file: str):
@@ -302,10 +302,10 @@ class ProjectSettings:
         led_wall_serialized = []
         for led_wall in self.led_walls:
             led_wall_serialized.append(led_wall.to_dict())
-        output[constants.ProjectSettings.LED_WALLS] = led_wall_serialized
+        output[constants.ProjectSettingsKeys.LED_WALLS] = led_wall_serialized
         data = {
             constants.VERSION: open_vp_cal.__version__,
-            constants.ProjectSettings.PROJECT_SETTINGS: output
+            constants.ProjectSettingsKeys.PROJECT_SETTINGS: output
         }
         return data
 
