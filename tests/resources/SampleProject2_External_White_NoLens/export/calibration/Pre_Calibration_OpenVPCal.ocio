@@ -239,7 +239,7 @@ view_transforms:
     name: OpenVPCal PreCalibration
     family: Display
     description: The OpenVPCal Pre Calibrated native Output
-    from_scene_reference: !<ColorSpaceTransform> {src: ACES2065-1, dst: ACES2065-1 to XYZ D65 CAT02}
+    from_scene_reference: !<BuiltinTransform> {style: UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD}
 
 display_colorspaces:
   - !<ColorSpace>
@@ -380,7 +380,6 @@ display_colorspaces:
     allocation: uniform
     from_display_reference: !<GroupTransform>
       children:
-        - !<MatrixTransform> {matrix: [1.052157, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.918358, 0, 0, 0, 0, 1], direction: inverse}
         - !<MatrixTransform> {matrix: [0.626291067514769, 0.158169289546552, 0.16599556999035, 0, 0.278251010484232, 0.641416271011264, 0.0803327185045043, 0, 0.000633622990692817, 0.0656731349922501, 1.02275099277694, 0, 0, 0, 0, 1], direction: inverse}
         - !<BuiltinTransform> {style: CURVE - ST-2084_to_LINEAR, direction: inverse}
 
@@ -1118,19 +1117,6 @@ colorspaces:
     from_scene_reference: !<GroupTransform>
       children:
         - !<BuiltinTransform> {style: CURVE - ST-2084_to_LINEAR, direction: inverse}
-
-  - !<ColorSpace>
-    name: ACES2065-1 to XYZ D65 CAT02
-    family: Utility
-    equalitygroup: ""
-    bitdepth: 32f
-    description: Convert from ACES2065-1 to CIE XYZ D65 tristimulus values using CAT02
-    isdata: false
-    encoding: scene-linear
-    allocation: uniform
-    from_scene_reference: !<GroupTransform>
-      children:
-        - !<MatrixTransform> {matrix: [0.9525523959, 0, 9.36786e-05, 0, 0.3439664498, 0.7281660966, -0.0721325464, 0, 0, 0, 1.0088251844, 0, 0, 0, 0, 1]}
 
   - !<ColorSpace>
     name: ROE_Gamut - ST 2084
