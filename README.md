@@ -18,14 +18,15 @@ Linux - :warning: (Supported But Untested)
 ## Installation
 
 ### Binaries
-For most users the easiest way to install OpenVPCal is to download the latest release from the [releases page],
+For most users the easiest way to install OpenVPCal is to download the latest release from the [Release](https://github.com/Netflix-Skunkworks/OpenVPCal/releases/),
 and download the pre built installer for your platform.
 
 ### From Source
 #### Install Dependencies
 Ensure the following dependencies are installed on your system:
 
-    git    
+    git
+    git lfs
     Python-64-bit=3.10.1
     pkg-config
 
@@ -41,7 +42,7 @@ The following dependencies to OpenImageIO are critical to be included in its com
     freetype
 
 #### Build From Source    
-1. Clone the repository
+1. Clone the repository _(Note: Repo uses a large git lfs store, on windows, consider using GIT_LFS_SKIP_SMUDGE=1 to initially clone, and git lfs pull)_
 2. Ensure you have the dependencies installed
 3. run the "build.bat" or "build.sh" depending on your platform
 
