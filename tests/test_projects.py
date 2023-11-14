@@ -24,10 +24,10 @@ class BaseTestProjectPlateReuse(TestProject):
             led_wall.input_sequence_folder = unit_test_input_folder_path
 
 
-class TestProject3_ROE_WrongWB(BaseTestProjectPlateReuse):
+class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
     project_name = "SampleProject7_ROE_WRONGWB"
 
-    def test_project3_roe_wrong_wb(self):
+    def test_project7_roe_wrong_wb(self):
         results = self.run_cli(self.project_settings)
         for led_wall_name, result in results.items():
             led_wall = self.project_settings.get_led_wall(led_wall_name)

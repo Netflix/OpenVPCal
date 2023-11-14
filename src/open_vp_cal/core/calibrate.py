@@ -832,10 +832,7 @@ def run(
             )
 
     elif calculation_order == CalculationOrder.CO_EOTF_CS:  # Calc 1Ds->3x3
-        # inversed_white_balance_matrix = np.linalg.inv(white_balance_matrix)
-        # eotf_signal_value_rgb = ca.vector_dot(inversed_white_balance_matrix, eotf_signal_value_rgb)
         if not enable_plate_white_balance:
-            # inversed_white_balance_matrix = np.linalg.inv(white_balance_matrix)
             eotf_ramp_camera_native_gamut = [ca.vector_dot(white_balance_matrix, m) for m in
                                              eotf_ramp_camera_native_gamut]
 

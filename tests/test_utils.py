@@ -158,13 +158,21 @@ class TestProject(TestUtils):
 
     def get_samples(self, led_wall):
         file_name = f"{led_wall.name}_samples.json"
-        results_file = os.path.join(self.get_sample_project_folder(), file_name)
+        results_file = os.path.join(
+            self.get_sample_project_folder(),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.RESULTS,
+            file_name)
         with open(results_file, "r", encoding="utf-8") as handle:
             return json.load(handle)
 
     def get_reference_samples(self, led_wall):
         file_name = f"{led_wall.name}_reference_samples.json"
-        results_file = os.path.join(self.get_sample_project_folder(), file_name)
+        results_file = os.path.join(
+            self.get_sample_project_folder(),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.RESULTS,
+            file_name)
         with open(results_file, "r", encoding="utf-8") as handle:
             return json.load(handle)
 
@@ -184,7 +192,15 @@ class TestProject(TestUtils):
         return os.path.join(self.get_test_output_folder(), self.project_name)
 
     def get_post_calibration_ocio_config(self):
-        return os.path.join(self.get_sample_project_folder(), "Post_Calibration_OpenVPCal.ocio")
+        return os.path.join(
+            self.get_sample_project_folder(),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.CALIBRATION,
+            "Post_Calibration_OpenVPCal.ocio")
 
     def get_pre_calibration_ocio_config(self):
-        return os.path.join(self.get_sample_project_folder(), "Pre_Calibration_OpenVPCal.ocio")
+        return os.path.join(
+            self.get_sample_project_folder(),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.CALIBRATION,
+            "Pre_Calibration_OpenVPCal.ocio")

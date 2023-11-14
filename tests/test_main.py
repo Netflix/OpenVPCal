@@ -5,6 +5,7 @@ import os
 import tempfile
 from json import JSONDecodeError
 
+from open_vp_cal.core import constants
 from open_vp_cal.main import validate_file_path, validate_folder_path, validate_project_settings, generate_patterns
 from test_utils import TestBase, TestProject
 
@@ -137,7 +138,8 @@ class TestCLIGeneratePatterns(TestProject):
         )
         os.remove(temp_project_settings)
 
-        patches_folder = os.path.join(self.project_settings.output_folder, "patches")
+        patches_folder = os.path.join(
+            self.project_settings.output_folder, constants.ProjectFolders.EXPORT, constants.ProjectFolders.PATCHES)
         files = os.listdir(patches_folder)
         self.assertTrue(len(files), 1)
         images = os.listdir(os.path.join(patches_folder, files[0], self.project_settings.file_format))
