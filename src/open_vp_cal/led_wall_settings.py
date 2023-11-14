@@ -33,7 +33,7 @@ class LedWallSettings:
             constants.LedWallSettings.CALCULATION_ORDER: constants.CalculationOrder.CO_DEFAULT,
             constants.LedWallSettings.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_DEFAULT_REF,
             constants.LedWallSettings.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.CS_DEFAULT,
-            constants.LedWallSettings.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_CAT02,
+            constants.LedWallSettings.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_BRADFORD,
             constants.LedWallSettings.ROI: [],
             constants.LedWallSettings.SHADOW_ROLLOFF: 0.008,
             constants.LedWallSettings.TARGET_MAX_LUM_NITS: 1000,

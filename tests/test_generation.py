@@ -17,13 +17,15 @@ class TestSequenceLoader(TestBase):
         file_paths = patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
         expected_root_folder = os.path.join(
             self.get_test_output_folder(),
-            "patches",
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.PATCHES,
             "OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084",
             self.project_settings.file_format,
         )
         reference_root_folder = os.path.join(
             self.get_test_resources_folder(),
-            "patches",
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.PATCHES,
             "OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084"
         )
         for file_path in file_paths:

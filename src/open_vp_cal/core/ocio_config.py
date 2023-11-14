@@ -108,9 +108,6 @@ class OcioConfigWriter:
         led_wall_colour_spaces.target_with_inv_eotf_cs = self.get_target_gamut_and_transfer_function_cs(
             led_wall_settings)
 
-        # Aces TO CIE
-        led_wall_colour_spaces.aces_to_cie_d65_cat02_cs = self.get_aces_to_cie_d65_cat02_cs()
-
         # View Transform
         led_wall_colour_spaces.pre_calibration_view_transform = self.get_pre_calibration_view_transform_vt()
 
@@ -141,12 +138,6 @@ class OcioConfigWriter:
         group.prependTransform(
             ocio.MatrixTransform(
                 ocio_utils.numpy_matrix_to_ocio_matrix(target_to_XYZ_matrix.tolist()),
-                direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE
-            )
-        )
-        group.prependTransform(
-            ocio.MatrixTransform(
-                ocio_utils.numpy_matrix_to_ocio_matrix(constants.E_toD65_matrix.tolist()),
                 direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE
             )
         )
@@ -209,35 +200,16 @@ class OcioConfigWriter:
             pre_calibration_view_transform_name,
             pre_calibration_view_transform_description
         )
+
+        builtin_acesd_to_XYZ_D65_bradford = ocio.BuiltinTransform(
+            "UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD",
+            direction=ocio.TransformDirection.TRANSFORM_DIR_FORWARD,
+        )
+
         pre_calibration_view_transform.setTransform(
-            ocio.ColorSpaceTransform(
-                src=constants.ColourSpace.CS_ACES, dst=self.get_aces_to_cie_d65_cat02_cs().getName()
-            ), ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE
+            builtin_acesd_to_XYZ_D65_bradford, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE
         )
         return pre_calibration_view_transform
-
-    def get_aces_to_cie_d65_cat02_cs(self) -> ocio.ColorSpace:
-        """ Get the OCIO colour space for converting ACES to CIE D65 CAT02
-
-        Returns: The OCIO colour space for converting ACES to CIE D65 CAT02
-
-        """
-        aces_to_cie_d65_cat02_cs = self._get_colour_space(
-            "ACES2065-1 to XYZ D65 CAT02",
-            "Convert from ACES2065-1 to CIE XYZ D65 tristimulus values using CAT02",
-        )
-        aces_to_cie_d65_cat02_cs.setFamily("Utility")
-        aces_to_cie_d65_cat02_cs.setAllocation(ocio.Allocation.ALLOCATION_UNIFORM)
-
-        group = ocio.GroupTransform()
-        aces_cs = colour.RGB_COLOURSPACES[constants.ColourSpace.CS_ACES]
-        group.appendTransform(
-            ocio.MatrixTransform(
-                numpy_matrix_to_ocio_matrix(aces_cs.matrix_RGB_to_XYZ),
-            )
-        )
-        aces_to_cie_d65_cat02_cs.setTransform(group, ocio.COLORSPACE_DIR_FROM_REFERENCE)
-        return aces_to_cie_d65_cat02_cs
 
     def get_target_gamut_and_transfer_function_cs(self, led_wall_settings: LedWallSettings) -> ColorSpace:
         """ Get the target gamut and transfer function colour space for the given led wall
@@ -436,9 +408,6 @@ class OcioConfigWriter:
         led_wall_colour_spaces.calibration_cs = calibration_cs
         led_wall_colour_spaces.calibration_preview_cs = calibration_preview_cs
 
-        # Aces TO CIE
-        led_wall_colour_spaces.aces_to_cie_d65_cat02_cs = self.get_aces_to_cie_d65_cat02_cs()
-
         # Pre-Calibration View Transform
         led_wall_colour_spaces.pre_calibration_view_transform = self.get_pre_calibration_view_transform_vt()
 
@@ -528,8 +497,6 @@ class OcioConfigWriter:
         Returns: The OCIO view transform for post-calibration
 
         """
-        aces_to_cie_d65_cat02_cs = self.get_aces_to_cie_d65_cat02_cs()
-
         view_transform_description, view_transform_name = self.get_post_calibration_view_transform_metadata(
             led_wall_settings)
 
@@ -540,10 +507,14 @@ class OcioConfigWriter:
                 src=constants.ColourSpace.CS_ACES, dst=self.get_calibration_space_metadata(led_wall_settings)
             )
         )
+
+        builtin_aces_to_XYZ_D65_bradford = ocio.BuiltinTransform(
+            "UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD",
+            direction=ocio.TransformDirection.TRANSFORM_DIR_FORWARD,
+        )
+
         group.appendTransform(
-            ocio.ColorSpaceTransform(
-                src=constants.ColourSpace.CS_ACES, dst=aces_to_cie_d65_cat02_cs.getName()
-            )
+            builtin_aces_to_XYZ_D65_bradford
         )
         view_transform.setTransform(group, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE)
         return view_transform
@@ -759,10 +730,10 @@ class OcioConfigWriter:
                     config.addColorSpace(lw_cs.calibration_preview_cs)
                     added_colour_spaces.append(lw_cs.calibration_preview_cs.getName())
 
-            if lw_cs.aces_to_cie_d65_cat02_cs:
-                if lw_cs.aces_to_cie_d65_cat02_cs.getName() not in added_colour_spaces:
-                    config.addColorSpace(lw_cs.aces_to_cie_d65_cat02_cs)
-                    added_colour_spaces.append(lw_cs.aces_to_cie_d65_cat02_cs.getName())
+            # if lw_cs.aces_to_cie_d65_cat02_cs:
+            #     if lw_cs.aces_to_cie_d65_cat02_cs.getName() not in added_colour_spaces:
+            #         config.addColorSpace(lw_cs.aces_to_cie_d65_cat02_cs)
+            #         added_colour_spaces.append(lw_cs.aces_to_cie_d65_cat02_cs.getName())
 
             if lw_cs.target_with_inv_eotf_cs:
                 if lw_cs.target_with_inv_eotf_cs.getName() not in added_target_colour_spaces:
