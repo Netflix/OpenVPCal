@@ -6,9 +6,11 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import os
+
 import sys
-sys.path.insert(0, "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/src")
+import os
+current_folder = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(current_folder, "..", "..", "src"))
 
 project = 'OpenVPCal'
 copyright = '2023, Adam Davis'

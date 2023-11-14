@@ -10,9 +10,8 @@ Welcome to OpenVPCal's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   modules
 
-.. automodule:: open_vp_cal
-     :members:
 
 Indices and tables
 ==================

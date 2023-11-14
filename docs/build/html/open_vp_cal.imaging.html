@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>open_vp_cal.imaging package &mdash; OpenVPCal 1.0.0-rc.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=4b0c7688"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="open_vp_cal.resources package" href="open_vp_cal.resources.html" />
+    <link rel="prev" title="open_vp_cal.framework package" href="open_vp_cal.framework.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OpenVPCal
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">open_vp_cal</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="open_vp_cal.html">open_vp_cal package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="open_vp_cal.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="open_vp_cal.core.html">open_vp_cal.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="open_vp_cal.framework.html">open_vp_cal.framework package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">open_vp_cal.imaging package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="open_vp_cal.resources.html">open_vp_cal.resources package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="open_vp_cal.widgets.html">open_vp_cal.widgets package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="open_vp_cal.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="open_vp_cal.html#module-open_vp_cal.led_wall_settings">open_vp_cal.led_wall_settings module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="open_vp_cal.html#module-open_vp_cal.main">open_vp_cal.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="open_vp_cal.html#module-open_vp_cal.project_settings">open_vp_cal.project_settings module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="open_vp_cal.html#module-open_vp_cal">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OpenVPCal</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">open_vp_cal</a></li>
+          <li class="breadcrumb-item"><a href="open_vp_cal.html">open_vp_cal package</a></li>
+      <li class="breadcrumb-item active">open_vp_cal.imaging package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/open_vp_cal.imaging.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="open-vp-cal-imaging-package">
+<h1>open_vp_cal.imaging package<a class="headerlink" href="#open-vp-cal-imaging-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-open_vp_cal.imaging.imaging_utils">
+<span id="open-vp-cal-imaging-imaging-utils-module"></span><h2>open_vp_cal.imaging.imaging_utils module<a class="headerlink" href="#module-open_vp_cal.imaging.imaging_utils" title="Link to this heading"></a></h2>
+<p>The module contains functions for manipulating images using the OpemImageIO library</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.add_text_to_image_buffer">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">add_text_to_image_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.add_text_to_image_buffer" title="Link to this definition"></a></dt>
+<dd><p>Adds text to the given image buffer</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>text: The text to add to the image buffer
+img_buffer: The image buffer to add the text to
+text_color: The colour of the text
+text_size: The size of the text</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.apply_color_conversion">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">apply_color_conversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.apply_color_conversion" title="Link to this definition"></a></dt>
+<dd><p>Applies a colour conversion to the given image buffer from and to the given transforms.
+If no colour config is supplied, it uses the pre-installed studio config</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>image_buffer: The image buffer to convert
+from_transform: The transform to convert from
+to_transform: The transform to convert to</p>
+</dd>
+<dt>Keyword Args:</dt><dd><p>color_config: The colour config to use for the conversion</p>
+</dd>
+</dl>
+<p>Returns: The converted image buffer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.apply_display_conversion">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">apply_display_conversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.apply_display_conversion" title="Link to this definition"></a></dt>
+<dd><p>Applies a given display and view to the image_buffer using the inbuilts ocio config or the one provided</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>image_buffer: The image buffer to convert
+display: The display we want to apply
+view: The view for the display we want to apply</p>
+</dd>
+<dt>Keyword Args:</dt><dd><p>color_config: The colour config to use for the conversion</p>
+</dd>
+</dl>
+<p>Returns: The converted image buffer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.compute_clipped_mean">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">compute_clipped_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.compute_clipped_mean" title="Link to this definition"></a></dt>
+<dd><p>Computes the mean of the given channel after clipping the outliers using standard deviation</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>image: The image we want to get clipped mean from
+channel_idx: the channel we want to get the mean from
+sigma: the multiplier for the standard deviation for the clipping</p>
+</dd>
+</dl>
+<p>Returns: The average value of the channel after clipping the outliers</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.convert_to_grayscale">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">convert_to_grayscale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_image_buf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_colour_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sRGB'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.convert_to_grayscale" title="Link to this definition"></a></dt>
+<dd><p>Convert an image to grayscale</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>input_image_buf: The input image buffer we want to convert to grey scale
+input_colour_space: The colour space of the input image buffer</p>
+</dd>
+</dl>
+<p>Returns: The converted image buffer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.create_and_stitch_analysis_strips">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">create_and_stitch_analysis_strips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_buffers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ImageBuf</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_buffers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ImageBuf</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ImageBuf</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ImageBuf</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.create_and_stitch_analysis_strips" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Creates and stitches the analysis strips for the given reference and sample buffers, this function creates</dt><dd><p>strips for each of the samples which respect the aspect ratio of 16:9, then stitches them together vertically.</p>
+</dd>
+<dt>Args:</dt><dd><p>reference_buffers: The reference buffers to create the strips for
+sample_buffers: The sample buffers to create the strips for</p>
+</dd>
+</dl>
+<p>Returns: The stitched sample and reference strips</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.detect_green">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">detect_green</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ACES2065-1'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.detect_green" title="Link to this definition"></a></dt>
+<dd><p>For the given values and colour space we convert to xyY and try to determine if the image is green or not</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>values: The values to convert
+colour_space: The colour space to convert from</p>
+</dd>
+</dl>
+<p>Returns: True if the image is green</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.detect_red">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">detect_red</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ACES2065-1'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.detect_red" title="Link to this definition"></a></dt>
+<dd><p>For the given values and colour space we convert to xyY and try to determine if the image is red or not</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>values: The values to convert
+colour_space: The colour space to convert from</p>
+</dd>
+</dl>
+<p>Returns: True if the image is red</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.extract_roi">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">extract_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.extract_roi" title="Link to this definition"></a></dt>
+<dd><p>Extracts a region of interest from the image buffer of this frame.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>input_image:
+roi_input: The region of interest to extract from the image buffer.</p>
+</dd>
+</dl>
+<p>Returns: Oiio.ImageBuf: The extracted region of interest.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.generate_image_cie">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">generate_image_cie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.generate_image_cie" title="Link to this definition"></a></dt>
+<dd><p>Generates and image of the CIE 1931 chromaticity diagram in the correct 0-1 range and position
+within the image. Scaled to the given factor</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>scale: The scale to apply to the image
+file_path: The file path to write the image to</p>
+</dd>
+</dl>
+<p>Returns: True if the image was written successfully</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.get_average_value_above_average">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">get_average_value_above_average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_buf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ImageBuf</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.get_average_value_above_average" title="Link to this definition"></a></dt>
+<dd><dl>
+<dt>Eliminates any pixels which are below the average pixel value of the whole image, ie often black or very dark</dt><dd><p>pixels, this leaves us the pixels from the whole image which are often not black, in this case the patch
+sections.</p>
+<p>We then return the average pixel values for the remaining pixels which gives us a more accurate indicator as
+to the true average</p>
+<p>Used primarily to detect the red and green frames when no ROI has been specificed as this helps isolate the main
+patch area without actually selecting it</p>
+</dd>
+<dt>Args:</dt><dd><p>img_buf: The image buffer to get the average RGB values from</p>
+</dd>
+<dt>Returns: The average RGB values of the image, and the image buffer with the below average pixels highlighted which</dt><dd><p>are removed/masked</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.get_decoupled_white_samples_from_file">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">get_decoupled_white_samples_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">external_white_point_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.get_decoupled_white_samples_from_file" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>For the given file we load the image and get the average value from all the pixels which are above the</dt><dd><p>initial average.</p>
+</dd>
+<dt>Args:</dt><dd><p>external_white_point_file: The file to load the image from</p>
+</dd>
+</dl>
+<p>Returns: The average values of rgb from the image</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.get_oiio_bit_depth">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">get_oiio_bit_depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BASETYPE</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.get_oiio_bit_depth" title="Link to this definition"></a></dt>
+<dd><p>Gets the correct oiio constant for the given bit depth described as an int</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>value: The bit depth we want the constant for</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.get_scaled_cie_spectrum_bg_image">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">get_scaled_cie_spectrum_bg_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.get_scaled_cie_spectrum_bg_image" title="Link to this definition"></a></dt>
+<dd><p>Gets the scaled cie spectrum background image</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>max_scale: The max scale to apply to the image</p>
+</dd>
+</dl>
+<p>Returns: The scaled image</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.image_buf_to_np_array">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">image_buf_to_np_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_buf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.image_buf_to_np_array" title="Link to this definition"></a></dt>
+<dd><p>Convert an OIIO ImageBuf to a NumPy array</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>image_buf: The OIIO ImageBuf to convert</p>
+</dd>
+</dl>
+<p>Returns: The NumPy array representing the image</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.img_buf_from_numpy_array">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">img_buf_from_numpy_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">np_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.img_buf_from_numpy_array" title="Link to this definition"></a></dt>
+<dd><p>Create an Oiio.ImgBuf from a numpy array</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>np_array: The numpy array to create the Oiio.ImgBuf from</p>
+</dd>
+</dl>
+<p>Returns: The Oiio.ImgBuf</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.insert_resized_image">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">insert_resized_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize_percent</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.insert_resized_image" title="Link to this definition"></a></dt>
+<dd><p>Resize imageA by the given percentage and insert it into the center of imageB.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>image_a (oiio.ImageBuf): The image to be resized and inserted.
+image_b (oiio.ImageBuf): The target image where imageA will be inserted.
+resize_percent (float): The percentage by which imageA should be resized.</p>
+</dd>
+<dt>Returns:</dt><dd><p>oiio.ImageBuf: The resulting image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.list_to_roi">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">list_to_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ROI</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.list_to_roi" title="Link to this definition"></a></dt>
+<dd><p>Converts a list to an Oiio.ROI</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>roi: The list to convert</p>
+</dd>
+</dl>
+<p>Returns: The Oiio.ROI</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.load_image">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">load_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.load_image" title="Link to this definition"></a></dt>
+<dd><p>Loads an image from the given file path</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path: The file path to load the image from</p>
+</dd>
+</dl>
+<p>Returns: The image buffer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.load_image_buffer_to_qimage">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">load_image_buffer_to_qimage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="open_vp_cal.html#open_vp_cal.project_settings.ProjectSettings" title="open_vp_cal.project_settings.ProjectSettings"><span class="pre">ProjectSettings</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">QImage</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.load_image_buffer_to_qimage" title="Link to this definition"></a></dt>
+<dd><p>Load an image buffer into a QImage</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>buffer: The image buffer to load
+project_settings: The project settings we want to use to access the correct ocio config</p>
+</dd>
+</dl>
+<p>Returns: The QImage loaded from the buffer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.load_image_buffer_to_qpixmap">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">load_image_buffer_to_qpixmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="open_vp_cal.html#open_vp_cal.project_settings.ProjectSettings" title="open_vp_cal.project_settings.ProjectSettings"><span class="pre">ProjectSettings</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">QPixmap</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.load_image_buffer_to_qpixmap" title="Link to this definition"></a></dt>
+<dd><p>Load an Oiio.ImageBuf into a QPixmap so we can display it</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>buffer: The image buffer to load
+project_settings: The project settings we want to use to access the correct ocio config</p>
+</dd>
+</dl>
+<p>Returns: The QPixmap loaded from the buffer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.nest_analysis_swatches">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">nest_analysis_swatches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(200,</span> <span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_roi_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(100,</span> <span class="pre">100)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.nest_analysis_swatches" title="Link to this definition"></a></dt>
+<dd><p>The function takes a source image and a target image. For each patch of size patch_size in the source image,
+it extracts a central region of size central_roi_size and pastes it into the corresponding location in the target
+image.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>source_img (str): The path of the source image.
+target_img (str): The path of the target image.
+patch_size (tuple[int, int]): The size of the image patch to be processed, default is (200, 200).
+central_roi_size (tuple[int, int]): The size of the central region to be extracted and pasted, default
+is (100, 100).</p>
+</dd>
+<dt>Returns:</dt><dd><p>target_img_path (str): The path of the processed target image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.new_image">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">new_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_colour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.new_image" title="Link to this definition"></a></dt>
+<dd><p>Creates a new image buffer of the given width and height</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>width: The width of the image
+height: The height of the image
+fill_colour: The colour to fill the image with</p>
+</dd>
+</dl>
+<p>Returns: The new image buffer filled with the given colour or black if no colour is given</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.sample_image">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">sample_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_buf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageBuf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.sample_image" title="Link to this definition"></a></dt>
+<dd><p>Samples the given image and returns the average RGB values based on the clipped mean value</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>img_buf: The image buffer to sample</p>
+</dd>
+</dl>
+<p>Returns: The average RGB values of the image</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.stitch_images_horizontally">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">stitch_images_horizontally</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_buffers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.stitch_images_horizontally" title="Link to this definition"></a></dt>
+<dd><p>Takes a list of ImageBuf and stitches them together horizontally.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>img_buffers (List[oiio.ImageBuf]): List of ImageBuf objects</p>
+</dd>
+<dt>Returns:</dt><dd><p>oiio.ImageBuf: Stitched ImageBuf</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.stitch_images_vertically">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">stitch_images_vertically</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_buffers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ImageBuf</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.stitch_images_vertically" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Stacks the given images vertically on top of each other, first image in the list is at the top, last is at</dt><dd><p>the bottom</p>
+</dd>
+<dt>Args:</dt><dd><p>image_buffers: The images to stack</p>
+</dd>
+</dl>
+<p>Returns: A new ImgBuf containing the stacked images</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.imaging_utils.write_image">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.imaging_utils.</span></span><span class="sig-name descname"><span class="pre">write_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_mapping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#open_vp_cal.imaging.imaging_utils.write_image" title="Link to this definition"></a></dt>
+<dd><p>Writes the given image buffer to the file name provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> – The ImageBuf we want to write to disk</p></li>
+<li><p><strong>filename</strong> – the full file path with extension we want to write the file</p></li>
+<li><p><strong>bit_depth</strong> – The bit depth we want to write the image out as</p></li>
+<li><p><strong>channel_mapping</strong> – the order of the channels we want to write out, “RGB”, “BGR”, “RBG” etc we work in rgb by
+default and swap if specified.
+i.e. pattern generators force the swap, the raster stitching keeps what its given</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filepath to the image we just wrote out</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-open_vp_cal.imaging.macbeth">
+<span id="open-vp-cal-imaging-macbeth-module"></span><h2>open_vp_cal.imaging.macbeth module<a class="headerlink" href="#module-open_vp_cal.imaging.macbeth" title="Link to this heading"></a></h2>
+<p>Module dedicated to the creation of colour chart images in given colour spaces, and under certain illuminents</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.macbeth.calculate_gap">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.macbeth.</span></span><span class="sig-name descname"><span class="pre">calculate_gap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chart_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patches_horizontally</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patches_vertically</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#open_vp_cal.imaging.macbeth.calculate_gap" title="Link to this definition"></a></dt>
+<dd><p>Calculates the gap between patches in the chart</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>chart_width: The width of the chart
+chart_height: The height of the chart
+patch_size: The size of the patches
+patches_horizontally: The number of patches horizontally
+patches_vertically: The number of patches vertically</p>
+</dd>
+</dl>
+<p>Returns: The width and height of the gaps between patches</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.macbeth.generate_color_chart">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.macbeth.</span></span><span class="sig-name descname"><span class="pre">generate_color_chart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">patch_colors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1920</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1280</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#open_vp_cal.imaging.macbeth.generate_color_chart" title="Link to this definition"></a></dt>
+<dd><p>Generates a colour chart for the given patch colours</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>patch_colors: A list of RGB values for each patch
+chart_width: The width of the chart in pixels
+chart_height: The height of the chart in pixels</p>
+</dd>
+</dl>
+<p>Returns: An image buffer containing the colour chart</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.macbeth.get_color_checker_aces2065_1">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.macbeth.</span></span><span class="sig-name descname"><span class="pre">get_color_checker_aces2065_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illuminant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1920</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1280</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.macbeth.get_color_checker_aces2065_1" title="Link to this definition"></a></dt>
+<dd><p>Generates a colour chart in ACES2065-1 colour space using the provided illuminant</p>
+<dl class="simple">
+<dt>Keyword Args:</dt><dd><p>illuminant: The illuminant to use for the colour chart
+chart_width: The width of the chart in pixels
+chart_height: The height of the chart in pixels</p>
+</dd>
+</dl>
+<p>Returns: An image buffer containing the colour chart</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.macbeth.get_color_checker_reference_in_xyY">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.macbeth.</span></span><span class="sig-name descname"><span class="pre">get_color_checker_reference_in_xyY</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.macbeth.get_color_checker_reference_in_xyY" title="Link to this definition"></a></dt>
+<dd><p>Gets the colour checker reference in xyY, and the colour checker reference</p>
+<p>Returns: The colour checker reference in xyY, and the colour checker reference</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.macbeth.get_colour_checker_for_colour_space_and_illuminant">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.macbeth.</span></span><span class="sig-name descname"><span class="pre">get_colour_checker_for_colour_space_and_illuminant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">colour_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RGB_Colourspace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illuminant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1920</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chart_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1280</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ImageBuf</span></span></span><a class="headerlink" href="#open_vp_cal.imaging.macbeth.get_colour_checker_for_colour_space_and_illuminant" title="Link to this definition"></a></dt>
+<dd><p>Generates a colour chart in the given colour space using the provided illuminant</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>colour_space: The colour space to use for the colour chart
+illuminant: The illuminant to use for the colour chart
+chart_width: The width of the chart in pixels
+chart_height: The height of the chart in pixels</p>
+</dd>
+</dl>
+<p>Returns: An image buffer containing the colour chart</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="open_vp_cal.imaging.macbeth.get_rgb_references_for_color_checker">
+<span class="sig-prename descclassname"><span class="pre">open_vp_cal.imaging.macbeth.</span></span><span class="sig-name descname"><span class="pre">get_rgb_references_for_color_checker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">colour_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illuminant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#open_vp_cal.imaging.macbeth.get_rgb_references_for_color_checker" title="Link to this definition"></a></dt>
+<dd><p>Gets the RGB references for the colour checker in the given colour space</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>colour_space: The colour space to use for the colour chart
+illuminant: The illuminant to use for the colour chart</p>
+</dd>
+</dl>
+<p>Returns: The RGB references for the colour checker in the given colour space</p>
+</dd></dl>
+
+</section>
+<section id="module-open_vp_cal.imaging">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-open_vp_cal.imaging" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="open_vp_cal.framework.html" class="btn btn-neutral float-left" title="open_vp_cal.framework package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="open_vp_cal.resources.html" class="btn btn-neutral float-right" title="open_vp_cal.resources package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Adam Davis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
