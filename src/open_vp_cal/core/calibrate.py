@@ -18,19 +18,19 @@ from open_vp_cal.core import utils
 def saturate_RGB(samples, factor):
     """ Saturate the given RGB samples by the provided factor.
 
-    Behaviour is based on the Nuke Saturation node, with luminance math in
-    Average mode.  This is a lerp between greyscale (equal R,G,B) computed
-    as the input luminance (via mean of R,G,B) and the original values.
-    'factor' is not clamped to [0,1].
+        Behaviour is based on the Nuke Saturation node, with luminance math in
+        Average mode.  This is a lerp between greyscale (equal R,G,B) computed
+        as the input luminance (via mean of R,G,B) and the original values.
+        'factor' is not clamped to [0,1].
 
     Args:
         samples (array-like): colour samples in RGB colour space
-        factor (float):  Saturation for the output samples.
-                         A value of 1 equals no change.
-                         A value of 0 produces grayscale values.
+        factor (float): Saturation for the output samples. A value of 1 equals no change. A value of 0
+        produces grayscale values.
 
     Returns:
         output samples (array-like)
+
     """
     sample_array = np.array(samples)
     lum = np.mean(sample_array, axis=1, keepdims=True)
@@ -75,20 +75,21 @@ def eotf_correction_calculation(
     """ Compute a LUT to correct the EOTF as measured from grey patches. Any grey patches with a delta E greater than
         the deltaE_threshold are ignored.
 
-    Args:
-        deltaE_threshold: The threshold for delta E values to be considered
-        grey_ramp_screen (array-like): Grey ramp in Screen Colour Space
-        grey_signal_values (array-like): Reference Signal Values For The EOTF
-        grey_signal_value_rgb: Reference Signal Values For The EOTF as RGB values
-        deltaE_grey_ramp: Delta E Values For The Grey Ramp
-        avoid_clipping: If we want to avoid clipping of values on the led wall we scale any values using the peak lum
-            if values go above this
-        peak_lum: The peak luminance of the led wall
+        Args:
+            deltaE_threshold: The threshold for delta E values to be considered
+            grey_ramp_screen (array-like): Grey ramp in Screen Colour Space
+            grey_signal_values (array-like): Reference Signal Values For The EOTF
+            grey_signal_value_rgb: Reference Signal Values For The EOTF as RGB values
+            deltaE_grey_ramp: Delta E Values For The Grey Ramp
+            avoid_clipping: If we want to avoid clipping of values on the led wall we scale any values
+            using the peak lum if values go above this
+            peak_lum: The peak luminance of the led wall
 
-    Returns:
-        lut_r (array-like): 1D LUT with elements as (y,x)
-        lut_g (array-like): 1D LUT with elements as (y,x)
-        lut_b (array-like): 1D LUT with elements as (y,x)
+        Returns:
+            lut_r (array-like): 1D LUT with elements as (y,x)
+            lut_g (array-like): 1D LUT with elements as (y,x)
+            lut_b (array-like): 1D LUT with elements as (y,x)
+
     """
     num_steps = len(grey_ramp_screen)
     assert num_steps > 1
@@ -561,7 +562,7 @@ def run(
     Args:
         measured_samples: a dictionary containing the measured values sampled from the input plate
         reference_samples: a dictionary containing the reference values for the calibration process displayed on
-            the led wall
+        the led wall
         input_plate_gamut: The colour space of the input plate we measured the samples from
         native_camera_gamut: The native colour space of the camera, used to capture the input plate
         target_gamut: The colour space we want to target for the calibration
@@ -575,12 +576,14 @@ def run(
         gamut_compression_shadow_rolloff: A rolloff to apply to dark colours
         reference_to_target_cat: The chromatic adaptation transform method, for reference to target matrix
         reference_wall_external_white_balance_matrix: A precomputed white balance matrix to apply to the input plate
-            samples, used when matching other led walls.
-            By default, the white balance matrix is independently calculated for each wall
+        samples, used when matching other led walls. By default, the white balance matrix is independently
+        calculated for each wall
 
     Returns: A dictionary containing the results of the calibration process in a json serializable format
-        PRE_CALIBRATION_SCREEN_PRIMARIES: (List) The calculated screen colour space primaries CIE1931-xy, pre calibration
-        PRE_CALIBRATION_SCREEN_WHITEPOINT: (List) The calculated screen colour space white point CIE1931-xy, pre calibration
+        PRE_CALIBRATION_SCREEN_PRIMARIES: (List) The calculated screen colour space primaries CIE1931-xy,
+        pre calibration
+        PRE_CALIBRATION_SCREEN_WHITEPOINT: (List) The calculated screen colour space white point CIE1931-xy,
+        pre calibration
         TARGET_GAMUT: The name of the target gamut used for the calibration,
         ENABLE_PLATE_WHITE_BALANCE: (bool) Whether the plate white balance was enabled or not
         ENABLE_GAMUT_COMPRESSION: (bool) Whether the gamut compression was enabled or not
@@ -612,6 +615,7 @@ def run(
         TARGET_TO_XYZ_MATRIX: The computed target colour space to XYZ matrix
         REFERENCE_TO_XYZ_MATRIX: The computed reference colour space to XYZ matrix
         REFERENCE_TO_INPUT_MATRIX: The computed reference to input plate colour space matrix
+
     """
     if target_to_screen_cat == constants.CAT.CAT_NONE:
         target_to_screen_cat = None

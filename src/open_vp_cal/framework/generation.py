@@ -138,11 +138,9 @@ class PatchGeneration:
         return patch_image
 
     def generate_saturation_ramp(self, patch_values: int) -> list[Oiio.ImageBuf]:
-        """ Generates a list of saturation ramp patches.
-            This shows full saturation of the primaries at peak luminance
-            18% of peak luminance,
-            10 steps from 18% peak luminance down to ramp up over a number of steps from 0 to 100% saturation
-        of the primaries
+        """ Generates a list of saturation ramp patches. This shows full saturation of the primaries at peak luminance
+        18% of peak luminance, 10 steps from 18% peak luminance down to ramp up over a number of steps from 0 to 100%
+        saturation of the primaries
 
         Args:
             patch_values: The number of saturation steps we want to take in the ramp
@@ -1087,11 +1085,11 @@ class PatchGeneration:
         # 4. Apply this to the macbeth chart
         # 5. Add another colour space which has the target gamut and the transfer function (2020 pq)
         # 6. Apply the transfer function (ST-2084_to_LINEAR) to the legal patches only
-        # 7. Apply for all things that are not EXR add, the forward colour space from 5
-            to everything with 3 as an input
+        # 7. Apply for all things that are not EXR add, the forward colour space from 5 to everything with 3 as an input
 
         Parameters:
             patch_names (list[str]): The list of patch names.
+
         """
         self.calc_constants()
         ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.output_folder)

@@ -316,10 +316,11 @@ def nest_analysis_swatches(
         target_img (str): The path of the target image.
         patch_size (tuple[int, int]): The size of the image patch to be processed, default is (200, 200).
         central_roi_size (tuple[int, int]): The size of the central region to be extracted and pasted, default
-            is (100, 100).
+        is (100, 100).
 
     Returns:
         target_img_path (str): The path of the processed target image.
+
     """
     # Calculate the central offsets for the region of interest
     central_roi_offset = ((patch_size[0] - central_roi_size[0]) // 2, (patch_size[1] - central_roi_size[1]) // 2)
