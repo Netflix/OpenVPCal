@@ -51,6 +51,11 @@ class LedWallSettings:
 
         self._led_settings = copy.deepcopy(self._default_led_settings)
 
+    def reset_defaults(self):
+        """Reset the LedWallSettings object to its default values."""
+        for key, value in self._default_led_settings.items():
+            self._set_property(key, value)
+
     def _set_property(self, field_name: str, value: Any) -> None:
         """ Sets the internal property data stores for the given field name, and given value.
             If the led wall is a verification wall, it will not set the verification wall's settings

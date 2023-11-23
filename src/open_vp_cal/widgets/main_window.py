@@ -210,6 +210,7 @@ class MainWindow(QMainWindow):
         self.stage_controller.led_wall_removed.connect(self.project_settings_model.remove_led_wall)
         self.stage_controller.led_wall_copied.connect(self.project_settings_model.copy_led_wall)
         self.stage_controller.led_wall_verification_added.connect(self.project_settings_model.add_verification_wall)
+        self.stage_controller.led_wall_reset.connect(self.project_settings_model.reset_led_wall)
         self.stage_view.led_wall_load_sequence.connect(self.load_sequence)
 
         self.project_settings_model.led_wall_added.connect(self.stage_controller.add_led_wall)

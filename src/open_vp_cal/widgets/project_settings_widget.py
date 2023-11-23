@@ -302,6 +302,10 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         for key in self.current_wall.attrs:
             self.data_changed.emit(key, self.get_data(key))
 
+    def reset_led_wall(self, led_wall: str) -> None:
+        super().reset_led_wall(led_wall)
+        self.set_current_wall(led_wall)
+
 
 class CustomGamutDialog(QDialog):
     """

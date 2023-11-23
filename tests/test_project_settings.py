@@ -204,6 +204,19 @@ class TestProjectSettings(TestBase):
         new_settings.to_json(temp_json2)
         self.files_are_equal(temp_json, temp_json2)
 
+    def test_reset_led_wall(self):
+        """Test resetting a led wall to the project settings."""
+        new_wall = self.settings.add_led_wall("AnotherWall")
+
+        new_wall2 = self.settings.add_led_wall("AnotherWall2")
+        self.settings.add_verification_wall(new_wall.name)
+
+        new_wall.reference_wall = new_wall2.name
+        new_wall.match_reference_wall = True
+
+        self.settings.reset_led_wall(new_wall.name)
+
+
 
 
 

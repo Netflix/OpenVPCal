@@ -95,6 +95,7 @@ class StageView(QWidget):
     led_wall_copied = Signal()
     led_wall_added = Signal()
     led_wall_removed = Signal()
+    led_wall_reset = Signal()
     led_wall_load_sequence = Signal()
     verification_wall_added = Signal()
 
@@ -134,6 +135,7 @@ class StageView(QWidget):
         remove_action = QAction("Remove LED Wall", context_menu)
         load_sequence_action = QAction("Load Plate Sequence", context_menu)
         verification_add_action = QAction("Add Verification Wall", context_menu)
+        reset_settings_action = QAction("Reset Wall Settings", context_menu)
 
         context_menu.addAction(add_action)
         context_menu.addAction(copy_action)
@@ -142,16 +144,25 @@ class StageView(QWidget):
         context_menu.addAction(load_sequence_action)
         context_menu.addSeparator()
         context_menu.addAction(verification_add_action)
+        context_menu.addSeparator()
+        context_menu.addAction(reset_settings_action)
 
         add_action.triggered.connect(self.add_led_wall)
         copy_action.triggered.connect(self.copy_led_wall)
         remove_action.triggered.connect(self.remove_led_wall)
         load_sequence_action.triggered.connect(self.load_sequence)
         verification_add_action.triggered.connect(self.add_verification_wall)
+        reset_settings_action.triggered.connect(self.reset_settings)
 
         # Map the position to global coordinates for the menu
         global_position = self.list_view.viewport().mapToGlobal(position)
         context_menu.exec_(global_position)
+
+    @Slot()
+    def reset_settings(self) -> None:
+        """ Emits a signal when the reset LED wall settings action is triggered
+        """
+        self.led_wall_reset.emit()
 
     @Slot()
     def copy_led_wall(self) -> None:
@@ -211,6 +222,7 @@ class StageController(QObject):
     led_wall_added = Signal(str)
     led_wall_removed = Signal(str)
     led_wall_copied = Signal(str, str)
+    led_wall_reset = Signal(str)
     current_led_wall_changed = Signal(str)
     led_wall_selection_changed = Signal(list)
     led_wall_verification_added = Signal(str)
@@ -226,6 +238,7 @@ class StageController(QObject):
         self.view.led_wall_copied.connect(self.copy_led_wall_dialog)
         self.view.led_wall_added.connect(self.add_led_wall_dialog)
         self.view.led_wall_removed.connect(self.remove_led_wall)
+        self.view.led_wall_reset.connect(self.reset_led_wall)
         self.view.verification_wall_added.connect(self.add_verification_wall)
 
     @Slot()
@@ -238,6 +251,14 @@ class StageController(QObject):
         self.model.add_led_wall(led_wall.name)
         last_index = self.model.index(self.model.rowCount() - 1, 0)
         self.view.list_view.setCurrentIndex(last_index)
+
+    @Slot()
+    def reset_led_wall(self):
+        """ Resets the settings for the currently selected led wall """
+        current_index = self.view.list_view.currentIndex().row()
+        if current_index >= 0:
+            wall_name = self.model.item(current_index).text()
+            self.led_wall_reset.emit(wall_name)
 
     @Slot()
     def add_verification_wall(self):
