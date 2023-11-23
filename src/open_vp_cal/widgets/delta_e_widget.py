@@ -85,7 +85,11 @@ class DeltaEDataTableModel(QAbstractTableModel):
         if role == Qt.BackgroundRole:
             led_wall = self.led_walls[index.column()]
             value = led_wall["data"][self.key][index.row()]
-            return QColor(*constants.GREEN) if value < constants.DELTA_E_THRESHOLD else QColor(*constants.RED)
+            if value < constants.DELTA_E_THRESHOLD_IMP:
+                return QColor(*constants.GREEN)
+            if constants.DELTA_E_THRESHOLD_IMP < value < constants.DELTA_E_THRESHOLD_JND:
+                return QColor(*constants.YELLOW)
+            return QColor(*constants.RED)
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
         """Returns the header data for the specified section and orientation."""
@@ -214,7 +218,7 @@ class DeltaEController(BaseController):
         for i, table_model in enumerate(self.table_models):
             green_counts = [
                 sum(1 for value in led_wall["data"][table_model.key]
-                    if value < constants.DELTA_E_THRESHOLD) for led_wall in data_entries
+                    if value < constants.DELTA_E_THRESHOLD_IMP) for led_wall in data_entries
             ]
             max_green_count = max(green_counts) if green_counts else 0
             candidates = [idx for idx, count in enumerate(green_counts) if count == max_green_count]

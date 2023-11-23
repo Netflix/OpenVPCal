@@ -640,6 +640,7 @@ class OcioConfigWriter:
         if not output_file:
             output_file = os.path.join(
                 self._output_folder,
+                constants.ProjectFolders.CALIBRATION,
                 self.pre_calibration_config_name
             )
 

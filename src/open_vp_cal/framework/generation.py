@@ -1092,7 +1092,7 @@ class PatchGeneration:
 
         """
         self.calc_constants()
-        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.output_folder)
+        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
         self.generation_ocio_config_path = ocio_config_writer.generate_pre_calibration_ocio_config([self.led_wall])
         led_wall_name_cleaned = utils.replace_non_alphanumeric(self.led_wall.name, "_")
         target_gamut_cleaned = utils.replace_non_alphanumeric(str(self.led_wall.target_gamut), "_")

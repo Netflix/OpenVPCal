@@ -408,7 +408,7 @@ def deltaE_ICtCp(
         rgbw_measurements_camera_native_gamut: np.ndarray,
         eotf_ramp_camera_native_gamut: List[np.ndarray],
         macbeth_measurements_camera_native_gamut: List[np.ndarray],
-        target_cs: RGB_Colourspace, native_camera_gamut_cs: RGB_Colourspace, target_max_lum_nits: int
+        target_cs: RGB_Colourspace, native_camera_gamut_cs: RGB_Colourspace
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """ Calculates the deltaE between the reference samples and the measured samples for RGBW, eotf ramp, and macbeth
         chart
@@ -422,14 +422,10 @@ def deltaE_ICtCp(
         macbeth_measurements_camera_native_gamut: The macbeth measurements in the camera native gamut
         target_cs: The target colour space
         native_camera_gamut_cs: The native camera gamut colour space
-        target_max_lum_nits: The maximum luminance of the target led wall expressed in nits
 
     Returns: The deltaE values for RGBW, eotf ramp, and macbeth chart
 
     """
-
-    BT2020_cs = colour.RGB_COLOURSPACES[constants.ColourSpace.CS_BT2020]
-
     eotf_ramp_camera_native_gamut = scale_to_absolute_nits(eotf_ramp_camera_native_gamut)
     rgbw_measurements_camera_native_gamut = scale_to_absolute_nits(rgbw_measurements_camera_native_gamut)
     macbeth_measurements_camera_native_gamut = scale_to_absolute_nits(macbeth_measurements_camera_native_gamut)
@@ -439,67 +435,43 @@ def deltaE_ICtCp(
         (reference_samples[Measurements.DESATURATED_RGB], [reference_samples[Measurements.GREY]])
     )
     rgbw_reference_samples = scale_to_absolute_nits(rgbw_reference_samples)
+    rgbw_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
+        rgbw_reference_samples, target_cs, native_camera_gamut_cs, None)
 
     macbeth_reference_samples = reference_samples[Measurements.MACBETH]
     macbeth_reference_samples = scale_to_absolute_nits(macbeth_reference_samples)
-
-    # Convert The RGBW Reference Samples From The Target Colour Space To Rec 2020
-    rgbw_reference_samples_BT2020 = colour.RGB_to_RGB(
-        rgbw_reference_samples, target_cs, BT2020_cs, None
-    )
-
-    macbeth_reference_samples_BT2020 = colour.RGB_to_RGB(
-        macbeth_reference_samples, target_cs, BT2020_cs, None
-    )
+    macbeth_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
+        macbeth_reference_samples, target_cs, native_camera_gamut_cs, None)
 
     # Convert The Grey Ramp Reference Samples From The Target Colour Space To Rec 2020
     eotf_ramp_reference_samples = reference_samples[Measurements.EOTF_RAMP]
     eotf_ramp_reference_samples = scale_to_absolute_nits(eotf_ramp_reference_samples)
-    eotf_ramp_reference_samples_BT2020 = colour.RGB_to_RGB(
-        eotf_ramp_reference_samples, target_cs, BT2020_cs, None
-    )
+    eotf_ramp_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
+        eotf_ramp_reference_samples, target_cs, native_camera_gamut_cs, None)
 
-    # Apply A PQ Encoding To All The Values
-    rgbw_reference_samples_BT2020_pq = eotf_inverse_BT2100_PQ(rgbw_reference_samples_BT2020)
-    eotf_ramp_reference_samples_BT2020_pq = eotf_inverse_BT2100_PQ(eotf_ramp_reference_samples_BT2020)
-    macbeth_reference_samples_BT2020_pq = eotf_inverse_BT2100_PQ(macbeth_reference_samples_BT2020)
 
-    rgbw_measurements_BT2020 = colour.RGB_to_RGB(
-        rgbw_measurements_camera_native_gamut, native_camera_gamut_cs, BT2020_cs, None
-    )
-    eotf_ramp_measurements_BT2020 = colour.RGB_to_RGB(
-        eotf_ramp_camera_native_gamut, native_camera_gamut_cs, BT2020_cs, None
-    )
-    macbeth_measurements_BT2020 = colour.RGB_to_RGB(
-        macbeth_measurements_camera_native_gamut, native_camera_gamut_cs, BT2020_cs, None
-    )
-
-    # Apply A PQ Encoding To All The Values
-    rgbw_samples_BT2020_pq = eotf_inverse_BT2100_PQ(rgbw_measurements_BT2020)
-    eotf_ramp_samples_BT2020_pq = eotf_inverse_BT2100_PQ(eotf_ramp_measurements_BT2020)
-    macbeth_samples_BT2020_pq = eotf_inverse_BT2100_PQ(macbeth_measurements_BT2020)
-
-    rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_samples_BT2020_pq, 'Dolby 2016', target_max_lum_nits)
-    eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_samples_BT2020_pq, 'Dolby 2016', target_max_lum_nits)
-    macbeth_samples_ICtCp = colour.RGB_to_ICtCp(macbeth_samples_BT2020_pq, 'Dolby 2016', target_max_lum_nits)
+    rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_measurements_camera_native_gamut, 'Dolby 2016')
+    eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_camera_native_gamut, 'Dolby 2016')
+    macbeth_samples_ICtCp = colour.RGB_to_ICtCp(macbeth_measurements_camera_native_gamut, 'Dolby 2016')
 
     rgbw_reference_samples_ICtCp = colour.RGB_to_ICtCp(
-        rgbw_reference_samples_BT2020_pq, 'Dolby 2016',
-        target_max_lum_nits
+        rgbw_reference_samples_native_camera_gamut, 'Dolby 2016',
     )
     eotf_ramp_reference_samples_ICtCp = colour.RGB_to_ICtCp(
-        eotf_ramp_reference_samples_BT2020_pq, 'Dolby 2016',
-        target_max_lum_nits
+        eotf_ramp_reference_samples_native_camera_gamut, 'Dolby 2016',
     )
     macbeth_reference_samples_ICtCp = colour.RGB_to_ICtCp(
-        macbeth_reference_samples_BT2020_pq, 'Dolby 2016',
-        target_max_lum_nits)
+        macbeth_reference_samples_native_camera_gamut, 'Dolby 2016',
+    )
 
     delta_e_rgbw = colour.difference.delta_E_ITP(rgbw_samples_ICtCp, rgbw_reference_samples_ICtCp)
     delta_e_eotf_ramp = colour.difference.delta_E_ITP(eotf_ramp_samples_ICtCp, eotf_ramp_reference_samples_ICtCp)
     delta_e_macbeth = colour.difference.delta_E_ITP(macbeth_samples_ICtCp, macbeth_reference_samples_ICtCp)
     delta_e_wrgb = np.roll(delta_e_rgbw, shift=1)
-    return delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth
+
+    # We divide the results by 3 to move the scalar down from 720 to 240 as per
+    # Link from frankie
+    return delta_e_wrgb / 3, delta_e_eotf_ramp / 3, delta_e_macbeth / 3
 
 
 def calculate_eotf_linearity(eotf_signal_values: List, eotf_ramp_camera_native_gamut: List) -> List:
@@ -720,7 +692,7 @@ def run(
     # 8) We do the deltaE analysis
     delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth = deltaE_ICtCp(
         reference_samples, rgbw_measurements_camera_native_gamut, eotf_ramp_camera_native_gamut,
-        macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs, target_max_lum_nits
+        macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs
     )
 
     # 9 If we have disabled eotf correction, we have to force the operation order
