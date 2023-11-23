@@ -271,29 +271,26 @@ class SwatchViewer(QWidget):
                                 sp_np, native_camera_gamut_cs, working_cs, camera_conversion_cat
                             )
 
-                    sample_buffers_white_balanced = imaging_utils.img_buf_from_numpy_array(sp_np)
-
                     # Calibration Is Applied
                     if led_wall.processing_results:
                         if led_wall.processing_results.ocio_config_output_file and preview_calibration:
                             calibration_cs_metadata = OcioConfigWriter.get_calibration_preview_space_metadata(led_wall)
-                            sample_buffers_white_balanced = imaging_utils.apply_color_conversion(
-                                sample_buffers_white_balanced,
+                            imaging_utils.apply_color_converstion_to_np_array(
+                                sp_np,
                                 constants.ColourSpace.CS_ACES,
                                 calibration_cs_metadata[0],
                                 color_config=led_wall.processing_results.ocio_config_output_file
                             )
 
-                    sample_buffers_wb_np = imaging_utils.image_buf_to_np_array(sample_buffers_white_balanced)
                     rf_np = imaging_utils.image_buf_to_np_array(sample_reference_buffers_stitched)
 
                     # For the Macbeth Samples We Need TO Scale Them Down To 100 Nits Range
                     if count >= len(led_wall.processing_results.sample_buffers) - 18:
-                        sample_buffers_wb_np /= (led_wall.target_max_lum_nits * 0.01)
+                        sp_np /= (led_wall.target_max_lum_nits * 0.01)
                         rf_np /= (led_wall.target_max_lum_nits * 0.01)
 
                     # Expose up the array linearly
-                    sp_np_exposed = sample_buffers_wb_np * (2.0 ** exposure_slider_value)
+                    sp_np_exposed = sp_np * (2.0 ** exposure_slider_value)
                     rf_np_exposed = rf_np * (2.0 ** exposure_slider_value)
 
                     # Convert back to an image buffer and convert to srgb for display

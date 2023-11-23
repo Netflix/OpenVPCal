@@ -9,6 +9,7 @@ import tempfile
 
 from PySide6 import QtGui
 from PySide6.QtGui import QImage, QPixmap
+import PyOpenColorIO as ocio
 
 try:
     import OpenImageIO as Oiio
@@ -250,8 +251,6 @@ def apply_color_conversion(
         image_buffer: The image buffer to convert
         from_transform: The transform to convert from
         to_transform: The transform to convert to
-
-    Keyword Args:
         color_config: The colour config to use for the conversion
 
     Returns: The converted image buffer
@@ -260,15 +259,41 @@ def apply_color_conversion(
     if not color_config:
         color_config = ResourceLoader.ocio_config_path()
 
-    converted_buffer = Oiio.ImageBuf()
-    res = Oiio.ImageBufAlgo.colorconvert(
-        converted_buffer, image_buffer, from_transform, to_transform,
-        colorconfig=color_config)
-
-    if not res:
-        raise ValueError("Failed to convert image buffer to display")
-
+    image = image_buf_to_np_array(image_buffer)
+    apply_color_converstion_to_np_array(image, from_transform, to_transform, color_config)
+    converted_buffer = img_buf_from_numpy_array(image)
     return converted_buffer
+
+
+def apply_color_converstion_to_np_array(
+        image: np.array,
+        from_transform: str,
+        to_transform: str,
+        color_config: Union[str, None] = None) -> None:
+    """ Applies a colour conversion to the given image array from and to the given transforms.
+        The conversions are done in place
+
+    Args:
+        image: The image array to convert
+        from_transform: The transform to convert from
+        to_transform: The transform to convert to
+        color_config: The colour config to use for the conversion
+    """
+    if not color_config:
+        color_config = ResourceLoader.ocio_config_path()
+
+    config = ocio.Config().CreateFromFile(color_config)
+    processor = config.getProcessor(from_transform,
+                                    to_transform)
+
+    cpu = processor.getDefaultCPUProcessor()
+
+    # Apply the color transform to the existing RGBA pixel data
+    _, _, channels = image.shape
+    if channels == 3:
+        cpu.applyRGB(image)
+    if channels == 4:
+        cpu.applyRGBA(image)
 
 
 def apply_display_conversion(
@@ -276,14 +301,12 @@ def apply_display_conversion(
         display: str,
         view: str,
         color_config: Union[str, None] = None) -> Oiio.ImageBuf:
-    """ Applies a given display and view to the image_buffer using the inbuilts ocio config or the one provided
+    """ Applies a given display and view to the image_buffer using the inbuilt ocio config or the one provided
 
     Args:
         image_buffer: The image buffer to convert
         display: The display we want to apply
         view: The view for the display we want to apply
-
-    Keyword Args:
         color_config: The colour config to use for the conversion
 
     Returns: The converted image buffer
@@ -292,15 +315,35 @@ def apply_display_conversion(
     if not color_config:
         color_config = ResourceLoader.ocio_config_path()
 
-    converted_buffer = Oiio.ImageBuf()
-    res = Oiio.ImageBufAlgo.ociodisplay(
-        converted_buffer, image_buffer, display, view,
-        colorconfig=color_config)
-
-    if not res:
-        raise ValueError("Failed to convert image buffer to display")
+    image = image_buf_to_np_array(image_buffer)
+    apply_display_conversion_to_np_array(image, display, view, color_config)
+    converted_buffer = img_buf_from_numpy_array(image)
 
     return converted_buffer
+
+
+def apply_display_conversion_to_np_array(
+        image: np.array,
+        display: str,
+        view: str,
+        color_config: Union[str, None] = None) -> None:
+    """ Applies a given display and view to the image using the inbuilt ocio config or the one provided.
+        The conversions are done in place
+
+    Args:
+        image: The image array to convert
+        display: The display we want to apply
+        view: The view for the display we want to apply
+        color_config: The colour config to use for the conversion
+
+    """
+    if not color_config:
+        color_config = ResourceLoader.ocio_config_path()
+
+    config = ocio.Config().CreateFromFile(color_config)
+    processor = config.getProcessor(ocio.ROLE_SCENE_LINEAR, display, view, ocio.TRANSFORM_DIR_FORWARD)
+    cpu = processor.getDefaultCPUProcessor()
+    cpu.applyRGB(image)
 
 
 def nest_analysis_swatches(
