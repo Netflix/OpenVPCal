@@ -38,9 +38,9 @@ class UILayouts:
     Constants for defining the different layouts we want to use for the UI
     """
     ANALYSIS_LAYOUT = "AnalysisLayout.layout"
-    DEFAULT_LAYOUT = "DefaultLayout.layout"
+    PROJECT_LAYOUT = "ProjectLayout.layout"
     ANALYSIS_LAYOUT_WINDOWS = "AnalysisLayout_Windows.layout"
-    DEFAULT_LAYOUT_WINDOWS = "DefaultLayout_Windows.layout"
+    PROJECT_LAYOUT_WINDOWS = "ProjectLayout_Windows.layout"
 
 
 

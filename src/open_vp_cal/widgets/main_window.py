@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
         self.action_led_settings_window = None
         self.action_calibration_settings_window = None
         self.action_load_layout = None
-        self.action_load_default_layout = None
+        self.action_load_project_layout = None
         self.action_load_analysis_layout = None
         self.action_load_project_settings = None
         self.action_calibration_matrix_view_window = None
@@ -372,7 +372,7 @@ class MainWindow(QMainWindow):
         self.action_generate_patterns.triggered.connect(self.generate_patterns)
         self.action_save_layout.triggered.connect(self.on_save_layout)
         self.action_load_layout.triggered.connect(self.on_load_layout)
-        self.action_load_default_layout.triggered.connect(self.load_default_layout)
+        self.action_load_project_layout.triggered.connect(self.load_project_layout)
         self.action_load_analysis_layout.triggered.connect(self.load_analysis_layout)
         self.action_export_swatches.triggered.connect(self.export_analysis_swatches)
 
@@ -413,7 +413,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.action_save_layout)
         self.file_menu.addAction(self.action_load_layout)
         self.file_menu.addSeparator()
-        self.file_menu.addAction(self.action_load_default_layout)
+        self.file_menu.addAction(self.action_load_project_layout)
         self.file_menu.addAction(self.action_load_analysis_layout)
 
     def _add_actions_to_windows_menu(self) -> None:
@@ -446,7 +446,7 @@ class MainWindow(QMainWindow):
         self.action_generate_patterns = QAction("Generate New Patterns", self)
         self.action_save_layout = QAction("Save Layout As...", self)
         self.action_load_layout = QAction("Load Layout...", self)
-        self.action_load_default_layout = QAction("Load Default Layout", self)
+        self.action_load_project_layout = QAction("Load Project Layout", self)
         self.action_load_analysis_layout = QAction("Load Analysis Layout", self)
         self.load_sequence_action = QAction("Load Plate Sequence", self)
         self.action_export_swatches = QAction("Export Debug Swatches", self)
@@ -566,7 +566,7 @@ class MainWindow(QMainWindow):
             self.project_settings_model.output_folder = folder
             self.project_settings_model.set_data(constants.ProjectSettingsKeys.OUTPUT_FOLDER, folder)
             self.save_project_settings(inform_completion=False)
-        self.load_default_layout()
+        self.load_project_layout()
 
     def clear_project_settings(self) -> None:
         """ Clears the current project settings from all the widgets, models and controllers
@@ -1204,7 +1204,7 @@ class MainWindow(QMainWindow):
                         self.run_auto_detect(led_wall)
                     else:
                         self.get_separation_results(led_wall)
-        self.load_default_layout()
+        self.load_project_layout()
 
     def on_save_layout(self):
         """Save the current layout to a file based on a File Dialog selected file name"""
@@ -1234,14 +1234,14 @@ class MainWindow(QMainWindow):
 
         self.load_layout(filename)
 
-    def load_default_layout(self) -> None:
-        """ Loads the default layout from the resources folder
+    def load_project_layout(self) -> None:
+        """ Loads the project layout from the resources folder
         """
-        default_layout = ResourceLoader.default_layout()
-        user_default_layout = str(ResourceLoader.prefs_dir() / constants.UILayouts.DEFAULT_LAYOUT)
-        if os.path.exists(user_default_layout):
-            default_layout = user_default_layout
-        self.load_layout(default_layout)
+        project_layout = ResourceLoader.project_layout()
+        user_project_layout = str(ResourceLoader.prefs_dir() / constants.UILayouts.PROJECT_LAYOUT)
+        if os.path.exists(user_project_layout):
+            project_layout = user_project_layout
+        self.load_layout(project_layout)
 
     def load_analysis_layout(self) -> None:
         """ Loads the analysis layout from the resources folder

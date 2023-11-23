@@ -78,7 +78,7 @@ def open_ui() -> None:
 
     window = MainWindow(f"{product_name} v{version_info}")
     window.show()
-    window.load_default_layout()
+    window.load_project_layout()
     sys.exit(app.exec())
 
 

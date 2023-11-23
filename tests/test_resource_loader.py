@@ -53,12 +53,12 @@ class TestResourceLoader(unittest.TestCase):
         self.assertTrue(os.path.exists(actual))
         self.assertEqual(os.path.basename(actual), expected)
 
-    def test_default_layout(self):
-        actual = ResourceLoader.default_layout()
+    def test_project_layout(self):
+        actual = ResourceLoader.project_layout()
         if platform.system() == "Windows":
-            expected = "DefaultLayout_Windows.layout"
+            expected = "ProjectLayout_Windows.layout"
         else:
-            expected = "DefaultLayout.layout"
+            expected = "ProjectLayout.layout"
         self.assertTrue(os.path.exists(actual))
         self.assertEqual(os.path.basename(actual), expected)
 
