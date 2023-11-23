@@ -1,4 +1,5 @@
 import os
+import platform
 import unittest
 from open_vp_cal.core.resource_loader import ResourceLoader
 
@@ -54,12 +55,18 @@ class TestResourceLoader(unittest.TestCase):
 
     def test_default_layout(self):
         actual = ResourceLoader.default_layout()
-        expected = "DefaultLayout.layout"
+        if platform.system() == "Windows":
+            expected = "DefaultLayout_Windows.layout"
+        else:
+            expected = "DefaultLayout.layout"
         self.assertTrue(os.path.exists(actual))
         self.assertEqual(os.path.basename(actual), expected)
 
     def test_analysis_layout(self):
         actual = ResourceLoader.analysis_layout()
-        expected = "AnalysisLayout.layout"
+        if platform.system() == "Windows":
+            expected = "AnalysisLayout_Windows.layout"
+        else:
+            expected = "AnalysisLayout.layout"
         self.assertTrue(os.path.exists(actual))
         self.assertEqual(os.path.basename(actual), expected)

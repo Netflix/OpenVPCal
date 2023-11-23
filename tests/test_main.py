@@ -28,22 +28,45 @@ class TestArgparseFunctions(TestBase):
             validate_folder_path("nonexistentfolder")
 
     def test_validate_project_settings_valid(self):
-        with tempfile.NamedTemporaryFile(suffix=".json", mode='w') as temp:
-            json.dump({"key": "value"}, temp)
-            temp.seek(0)
-            self.assertEqual(temp.name, validate_project_settings(temp.name))
+        # Create a temporary file
+        fd, path = tempfile.mkstemp(suffix=".json")
+        try:
+            # Write JSON content to the file
+            with open(path, 'w') as temp:
+                json.dump({"key": "value"}, temp)
+
+            # Test that the validate_project_settings function returns the correct path
+            self.assertEqual(path, validate_project_settings(path))
+        finally:
+            # Clean up: close and remove the temporary file
+            os.close(fd)
+            os.remove(path)
 
     def test_validate_project_settings_invalid(self):
-        with tempfile.NamedTemporaryFile(suffix=".json") as temp:
-            with self.assertRaises(JSONDecodeError):
-                validate_project_settings(temp.name)
+        fd, path = tempfile.mkstemp(suffix=".json")
+        try:
+            with open(path, 'w+') as temp:
+                with self.assertRaises(JSONDecodeError):
+                    validate_project_settings(path)
+        finally:
+            os.close(fd)
+            os.remove(path)
 
     def test_validate_project_settings_nonjson(self):
-        with tempfile.NamedTemporaryFile(suffix=".txt", mode='w') as temp:
-            temp.write("not a json file")
-            temp.seek(0)
+        # Create a temporary file
+        fd, path = tempfile.mkstemp(suffix=".txt")
+        try:
+            # Write non-JSON content to the file
+            with open(path, 'w') as temp:
+                temp.write("not a json file")
+
+            # Test that JSONDecodeError is raised
             with self.assertRaises(JSONDecodeError):
-                validate_project_settings(temp.name)
+                validate_project_settings(path)
+        finally:
+            # Clean up: close and remove the temporary file
+            os.close(fd)
+            os.remove(path)
 
 
 class TestProjectCli(TestProject):

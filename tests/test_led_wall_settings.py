@@ -240,3 +240,13 @@ class TestLedWallSettings(TestBase):
         self.project_settings.remove_led_wall(new_wall2.name)
         self.assertEqual(new_wall.reference_wall, "")
         self.assertEqual(new_wall.match_reference_wall, False)
+
+    def test_reset_defaults(self):
+        self.wall.use_external_white_point = True
+        self.assertEqual(self.wall.use_external_white_point, True)
+
+        self.wall.reset_defaults()
+        self.assertEqual(self.wall.use_external_white_point, False)
+
+        self.assertEqual(self.wall._default_led_settings, self.wall._led_settings)
+

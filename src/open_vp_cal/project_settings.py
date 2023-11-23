@@ -432,3 +432,16 @@ class ProjectSettings:
         """
         return os.path.join(self.output_folder, constants.ProjectFolders.EXPORT)
 
+    def reset_led_wall(self, name: str) -> None:
+        """ Resets a LED wall to the default settings but preserves the link to the verification wall
+
+        Args:
+            name (str): The name of the LED wall we want to reset
+        """
+        led_wall = self.get_led_wall(name)
+        verification_wall = led_wall.verification_wall
+        led_wall.verification_wall = ""
+        led_wall.reset_defaults()
+        led_wall.verification_wall = verification_wall
+
+
