@@ -4,7 +4,7 @@
         "file_format": "exr",
         "resolution_width": 3839,
         "resolution_height": 2160,
-        "output_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/SampleProject7_ROE_WRONGWB",
+        "output_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Sample_Project7_ROE_WRONGWB",
         "ocio_config_path": null,
         "custom_logo_path": "",
         "frames_per_patch": 1,

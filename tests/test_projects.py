@@ -25,7 +25,7 @@ class BaseTestProjectPlateReuse(TestProject):
 
 
 class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
-    project_name = "SampleProject7_ROE_WRONGWB"
+    project_name = "Sample_Project7_ROE_WRONGWB"
 
     def test_project7_roe_wrong_wb(self):
         results = self.run_cli(self.project_settings)
