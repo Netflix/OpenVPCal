@@ -32,5 +32,6 @@ class TestSequenceLoader(TestBase):
             base_name = os.path.basename(file_path)
             expected_file_name = os.path.join(expected_root_folder, base_name)
             self.assertTrue(os.path.exists(expected_file_name))
+
             comparison_image = os.path.join(reference_root_folder, base_name)
             self.compare_image_files(comparison_image, file_path, self.project_settings.file_format)
