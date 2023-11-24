@@ -250,7 +250,10 @@ class OcioConfigWriter:
             if tgt_eotf.startswith("gamma "):
                 gamma = float(tgt_eotf[5:])
                 inverse_eotf_group_transform.appendTransform(
-                    ocio.ExponentTransform(value=[gamma, gamma, gamma, 1])
+                    ocio.ExponentTransform(
+                        value=[gamma, gamma, gamma, 1],
+                        negativeStyle=ocio.NegativeStyle.NEGATIVE_PASS_THRU,
+                        direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE)
                 )
             elif tgt_eotf == EOTF.EOTF_ST2084:
                 # OCIO PQ builtin expects 1 to be 100nits
@@ -262,11 +265,17 @@ class OcioConfigWriter:
                 )
             elif tgt_eotf == EOTF.EOTF_BT1886:
                 inverse_eotf_group_transform.appendTransform(
-                    ocio.ExponentTransform(value=2.4, negativeStyle=ocio.NegativeStyle.NEGATIVE_PASS_THRU)
+                    ocio.ExponentTransform(
+                        value=2.4, negativeStyle=ocio.NegativeStyle.NEGATIVE_PASS_THRU,
+                        direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
+                    )
                 )
             elif tgt_eotf == EOTF.EOTF_SRGB:
                 inverse_eotf_group_transform.appendTransform(
-                    ocio.ExponentWithLinearTransform(gamma=2.4, offset=0.055)
+                    ocio.ExponentWithLinearTransform(
+                        gamma=2.4, offset=0.055,
+                        direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
+                    )
                 )
             else:
                 raise RuntimeError("Unknown EOTF: " + tgt_eotf)
