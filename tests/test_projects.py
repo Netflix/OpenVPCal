@@ -5,6 +5,7 @@ import json
 from open_vp_cal.project_settings import ProjectSettings
 from test_utils import TestProject
 
+
 class BaseTestProjectPlateReuse(TestProject):
     def setUp(self):
         super(TestProject, self).setUp()
@@ -43,6 +44,45 @@ class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
+class TestProject7_ROE_WrongWB_CS_EOTF(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project7_ROE_WRONGWB_CS_EOTF"
+
+    def test_project7_roe_wrong_wb(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, result in results.items():
+            led_wall = self.project_settings.get_led_wall(led_wall_name)
+            if led_wall.is_verification_wall:
+                continue
+
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
+            self.assertTrue(os.path.exists(result.ocio_config_output_file))
+            self.assertTrue(os.path.exists(result.lut_output_file))
+            self.assertTrue(os.path.exists(result.calibration_results_file))
+            self.compare_data(expected_results, result.calibration_results)
+
+
+class TestProject7_ROE_WrongWB_CS_Only(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project7_ROE_WRONGWB_CS_Only"
+
+    def test_project7_roe_wrong_wb(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, result in results.items():
+            led_wall = self.project_settings.get_led_wall(led_wall_name)
+            if led_wall.is_verification_wall:
+                continue
+
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
+            self.assertTrue(os.path.exists(result.ocio_config_output_file))
+            self.assertTrue(os.path.exists(result.lut_output_file))
+            self.assertTrue(os.path.exists(result.calibration_results_file))
+            self.compare_data(expected_results, result.calibration_results)
+
 
 class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
     project_name = "Sample_Project1_ROE_Wall1_CSOnly"
@@ -63,6 +103,7 @@ class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
+
 class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
     project_name = "Sample_Project2_ROE_Wall1_CS_EOTF"
 
@@ -81,6 +122,7 @@ class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
+
 
 class TestSample_Project3_ROE_Wall1_EOTF_CS(BaseTestProjectPlateReuse):
     project_name = "Sample_Project3_ROE_Wall1_EOTF_CS"
@@ -120,7 +162,6 @@ class TestSample_Project4_Reference_Wall(BaseTestProjectPlateReuse):
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
-
 
 
 class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
