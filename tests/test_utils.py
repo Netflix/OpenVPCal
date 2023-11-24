@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import shutil
 import tempfile
@@ -204,3 +205,31 @@ class TestProject(TestUtils):
             constants.ProjectFolders.EXPORT,
             constants.ProjectFolders.CALIBRATION,
             "Pre_Calibration_OpenVPCal.ocio")
+
+    def are_close(self, a, b, rel_tol=1e-8):
+        return math.isclose(a, b, rel_tol=rel_tol)
+
+    def compare_data(self, expected, actual):
+        for key, expected_value in expected.items():
+            if key not in actual:
+                return False, f"Key {key} not found in actual data"
+            if isinstance(expected_value, list):
+                for exp_item, act_item in zip(expected_value, actual[key]):
+                    if isinstance(exp_item, list):
+                        for exp_subitem, act_subitem in zip(exp_item, act_item):
+                            if isinstance(exp_subitem, float):
+                                if not self.are_close(exp_subitem, act_subitem):
+                                    return False, f"Mismatch in {key}: expected {exp_subitem}, got {act_subitem}"
+                            elif exp_subitem != act_subitem:
+                                return False, f"Mismatch in {key}: expected {exp_subitem}, got {act_subitem}"
+                    elif isinstance(exp_item, float):
+                        if not self.are_close(exp_item, act_item):
+                            return False, f"Mismatch in {key}: expected {exp_item}, got {act_item}"
+                    elif exp_item != act_item:
+                        return False, f"Mismatch in {key}: expected {exp_item}, got {act_item}"
+            elif isinstance(expected_value, float):
+                if not self.are_close(expected_value, actual[key]):
+                    return False, f"Mismatch in {key}: expected {expected_value}, got {actual[key]}"
+            elif expected_value != actual[key]:
+                return False, f"Mismatch in {key}: expected {expected_value}, got {actual[key]}"
+        return True, "Success"

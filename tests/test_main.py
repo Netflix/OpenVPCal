@@ -90,7 +90,7 @@ class TestProjectCli(TestProject):
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.assertEqual(expected_results, result.calibration_results)
+            self.compare_data(expected_results, result.calibration_results)
 
     def test_run_cli_multi_wall(self):
         # Add A Second Wall
@@ -122,7 +122,7 @@ class TestProjectCli(TestProject):
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.assertEqual(expected_results, result.calibration_results)
+            self.compare_data(expected_results, result.calibration_results)
 
 
 class TestProjectExternalWhite(TestProject):
@@ -142,7 +142,7 @@ class TestProjectExternalWhite(TestProject):
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.assertEqual(expected_results, result.calibration_results)
+            self.compare_data(expected_results, result.calibration_results)
 
     def get_sample_project_plates(self):
         result = super().get_sample_project_plates()
