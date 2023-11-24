@@ -34,6 +34,8 @@ OPEN_VP_CAL_UNIT_TESTING = "OPEN_VP_CAL_UNIT_TESTING"
 LOG_URL = 'https://yl6ov5gen9.execute-api.eu-west-1.amazonaws.com/default/update_openvpcal_database'
 VERSION = "openvp_cal_version"
 
+TARGET_MAX_LUM_NITS_NONE_PQ = 100
+
 
 class UILayouts:
     """

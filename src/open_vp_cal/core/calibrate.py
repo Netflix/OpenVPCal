@@ -589,6 +589,9 @@ def run(
         REFERENCE_TO_INPUT_MATRIX: The computed reference to input plate colour space matrix
 
     """
+    # If we are not working in PQ we force target nits to 100 aka 1.0
+    if target_EOTF != constants.EOTF.EOTF_ST2084:
+        target_max_lum_nits = 100
     if target_to_screen_cat == constants.CAT.CAT_NONE:
         target_to_screen_cat = None
 

@@ -156,6 +156,13 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             setattr(self, key, value)
         self.data_changed.emit(key, value)
 
+        # Because we do not allow the user to set the target nits if working outside of PQ, we add special handling to
+        # reflect these changes in the UI
+        if self.current_wall:
+            if key == constants.LedWallSettingsKeys.TARGET_EOTF or constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS:
+                self.data_changed.emit(
+                    constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, self.current_wall.target_max_lum_nits)
+
     def get_data(self, key: str):
         """
         Retrieves the value of a given key from the stored data.
