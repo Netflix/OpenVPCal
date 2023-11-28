@@ -70,15 +70,14 @@ def achromatic(rgb, shadow_rolloff):
 
 
 def eotf_correction_calculation(
-        grey_ramp_screen, grey_signal_values, grey_signal_value_rgb, deltaE_grey_ramp, avoid_clipping=True,
-        peak_lum=None, deltaE_threshold=10):
+        grey_ramp_screen, grey_signal_value_rgb, deltaE_grey_ramp, avoid_clipping=True,
+        peak_lum=None, deltaE_threshold=20):
     """ Compute a LUT to correct the EOTF as measured from grey patches. Any grey patches with a delta E greater than
         the deltaE_threshold are ignored.
 
         Args:
             deltaE_threshold: The threshold for delta E values to be considered
             grey_ramp_screen (array-like): Grey ramp in Screen Colour Space
-            grey_signal_values (array-like): Reference Signal Values For The EOTF
             grey_signal_value_rgb: Reference Signal Values For The EOTF as RGB values
             deltaE_grey_ramp: Delta E Values For The Grey Ramp
             avoid_clipping: If we want to avoid clipping of values on the led wall we scale any values
@@ -93,7 +92,6 @@ def eotf_correction_calculation(
     """
     num_steps = len(grey_ramp_screen)
     assert num_steps > 1
-    assert len(grey_signal_values) == num_steps
     assert len(grey_signal_value_rgb) == num_steps
     assert len(deltaE_grey_ramp) == num_steps
 
