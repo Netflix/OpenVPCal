@@ -402,7 +402,7 @@ def scale_to_absolute_nits(input_array: Union[List, np.ndarray]) -> List:
 
 
 def deltaE_ICtCp(
-        reference_samples: Dict,
+        rgbw_reference_samples, macbeth_reference_samples, eotf_ramp_reference_samples,
         rgbw_measurements_camera_native_gamut: np.ndarray,
         eotf_ramp_camera_native_gamut: List[np.ndarray],
         macbeth_measurements_camera_native_gamut: List[np.ndarray],
@@ -428,25 +428,18 @@ def deltaE_ICtCp(
     rgbw_measurements_camera_native_gamut = scale_to_absolute_nits(rgbw_measurements_camera_native_gamut)
     macbeth_measurements_camera_native_gamut = scale_to_absolute_nits(macbeth_measurements_camera_native_gamut)
 
-    # Combine The RGB And Grey References Into One Array and Get The Macbeth Reference Samples
-    rgbw_reference_samples = np.concatenate(
-        (reference_samples[Measurements.DESATURATED_RGB], [reference_samples[Measurements.GREY]])
-    )
     rgbw_reference_samples = scale_to_absolute_nits(rgbw_reference_samples)
     rgbw_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
         rgbw_reference_samples, target_cs, native_camera_gamut_cs, None)
 
-    macbeth_reference_samples = reference_samples[Measurements.MACBETH]
     macbeth_reference_samples = scale_to_absolute_nits(macbeth_reference_samples)
     macbeth_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
         macbeth_reference_samples, target_cs, native_camera_gamut_cs, None)
 
     # Convert The Grey Ramp Reference Samples From The Target Colour Space To Rec 2020
-    eotf_ramp_reference_samples = reference_samples[Measurements.EOTF_RAMP]
     eotf_ramp_reference_samples = scale_to_absolute_nits(eotf_ramp_reference_samples)
     eotf_ramp_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
         eotf_ramp_reference_samples, target_cs, native_camera_gamut_cs, None)
-
 
     rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_measurements_camera_native_gamut, 'Dolby 2016')
     eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_camera_native_gamut, 'Dolby 2016')
@@ -468,7 +461,7 @@ def deltaE_ICtCp(
     delta_e_wrgb = np.roll(delta_e_rgbw, shift=1)
 
     # We divide the results by 3 to move the scalar down from 720 to 240 as per
-    # Link from frankie
+    # https://www.portrait.com/resource-center/ictcp-color-difference-metric/
     return delta_e_wrgb / 3, delta_e_eotf_ramp / 3, delta_e_macbeth / 3
 
 
