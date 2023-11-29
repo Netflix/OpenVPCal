@@ -1,0 +1,35 @@
+[
+ {
+    "name": "BP2 v2",
+    "manufacturer": "ROE",
+    "panel_width": 500,
+    "panel_height":  500,
+    "panel_depth":  90,
+    "pixel_pitch": 2.84,
+    "brightness": 1500,
+    "refresh_rate": 7680,
+    "scan_rate": "1/8"
+  },
+  {
+    "name": "C Series",
+    "manufacturer": "AOTO",
+    "panel_width": 500,
+    "panel_height":  500,
+    "panel_depth":  90,
+    "pixel_pitch": 1.875,
+    "brightness": 1200,
+    "refresh_rate": 7680,
+    "scan_rate": "1/8"
+  },
+  {
+    "name": "IL-RSS-ORDF5",
+    "manufacturer": "Infiled",
+    "panel_width": 500,
+    "panel_height":  500,
+    "panel_depth":  85,
+    "pixel_pitch": 5.95,
+    "brightness": 3000,
+    "refresh_rate": 1920,
+    "scan_rate": "1/8"
+  }
+]

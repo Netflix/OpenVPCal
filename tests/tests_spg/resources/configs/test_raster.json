@@ -1,0 +1,39 @@
+[
+  {
+    "name": "raster1",
+    "resolution_width" : 4096,
+    "resolution_height": 2160,
+    "mappings": [
+      {
+        "wall_name": "leftSide",
+        "raster_u": 0,
+        "raster_v": 0,
+        "wall_segment_u_start": 0,
+        "wall_segment_u_end": 0,
+        "wall_segment_v_start": 0,
+        "wall_segment_v_end": 0,
+        "wall_segment_orientation": 0
+      },
+      {
+        "wall_name": "rightSide",
+        "raster_u": 0,
+        "raster_v": 880,
+        "wall_segment_u_start": 0,
+        "wall_segment_u_end": 0,
+        "wall_segment_v_start": 0,
+        "wall_segment_v_end": 0,
+        "wall_segment_orientation": 0
+      },
+      {
+        "wall_name": "backWall",
+        "raster_u": 2992,
+        "raster_v": 0,
+        "wall_segment_u_start": 0,
+        "wall_segment_u_end": 0,
+        "wall_segment_v_start": 0,
+        "wall_segment_v_end": 0,
+        "wall_segment_orientation": 0
+      }
+    ]
+  }
+]
