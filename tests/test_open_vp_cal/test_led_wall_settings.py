@@ -184,9 +184,14 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(verification_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
         self.assertEqual(new_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
 
+        new_wall.target_eotf = constants.EOTF.EOTF_SRGB
+        self.assertEqual(verification_wall.target_eotf, constants.EOTF.EOTF_SRGB)
+
         new_wall.reference_wall = self.led_wall
         self.assertEqual(verification_wall.reference_wall, self.led_wall.name)
 
+        # Ensure we set back to 2084 so that we avoid the fixing of the peak lum being set to 100
+        new_wall.target_eotf = constants.EOTF.EOTF_ST2084
         other_linked_properties = [
             "enable_eotf_correction",
             "enable_gamut_compression",
@@ -199,7 +204,6 @@ class TestLedWallSettings(TestBase):
             "reference_to_target_cat",
             "shadow_rolloff",
             "target_gamut",
-            "target_eotf",
             "target_max_lum_nits",
             "target_to_screen_cat",
             "match_reference_wall",
@@ -208,6 +212,7 @@ class TestLedWallSettings(TestBase):
 
         # We test all the other linked params with false data
         for count, linked_prop in enumerate(other_linked_properties):
+            print (linked_prop)
             setattr(new_wall, linked_prop, count)
             self.assertEqual(getattr(verification_wall, linked_prop), count)
 

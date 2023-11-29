@@ -30,7 +30,7 @@ class TestUtils(unittest.TestCase):
     def get_test_resources_folder(cls):
         return os.path.join(
             cls.get_folder_for_this_file(),
-            "resources",
+            "../resources",
         )
 
     @classmethod
