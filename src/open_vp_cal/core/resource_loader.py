@@ -194,3 +194,12 @@ class ResourceLoader:
 
         """
         return cls._get_resource("logging.bin")
+
+    @classmethod
+    def spg_pattern_basic_config(cls) -> str:
+        """
+
+        Returns: The spg pattern basic config resource
+
+        """
+        return cls._get_resource("spg_pattern_basic_config.json")

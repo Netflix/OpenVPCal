@@ -256,6 +256,7 @@ class CameraColourSpace:
     """
     CS_ACES = "ACES2065-1"
     CS_ACES_CG = "ACEScg"
+    CS_ACES_CCT = "ACEScct"
     ARRI_WIDE_GAMUT_3 = "ARRI Wide Gamut 3"
     ARRI_WIDE_GAMUT_4 = "ARRI Wide Gamut 4"
     BLACKMAGIC_WIDE_GAMUT = "Blackmagic Design Wide Gamut"
@@ -349,3 +350,4 @@ class ProjectFolders:
     RESULTS = "results"
     SWATCHES = "swatches"
     CALIBRATION = "calibration"
+    SPG = "spg"
