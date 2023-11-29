@@ -1,0 +1,50 @@
+{
+  "leftSide": {
+    "id": 0,
+    "name": "leftSide",
+    "panel_name" : "BP2 v2",
+    "panel_count_width" : 17,
+    "panel_count_height": 5,
+    "wall_default_color": [0, 1, 0]
+  },
+  "mainWall" : {
+    "id": 1,
+    "name": "mainWall",
+    "panel_name": "BP2 v2",
+    "panel_count_width": 21,
+    "panel_count_height": 10,
+    "wall_default_color": [1, 0, 0]
+  },
+  "rightSide": {
+    "id": 2,
+    "name": "rightSide",
+    "panel_name" : "BP2 v2",
+    "panel_count_width" : 17,
+    "panel_count_height": 5,
+    "wall_default_color": [0, 0, 1]
+  },
+  "backWall": {
+    "id": 3,
+    "name": "backWall",
+    "panel_name" : "BP2 v2",
+    "panel_count_width" : 4,
+    "panel_count_height": 7,
+    "wall_default_color": [1, 1, 0]
+    },
+  "floorWall" : {
+    "id": 4,
+    "name": "floorWall",
+    "panel_name" : "IL-RSS-ORDF5",
+    "panel_count_width" : 13,
+    "panel_count_height": 13,
+    "wall_default_color": [0, 1, 1]
+  },
+  "videoWall" : {
+    "id": 5,
+    "name": "videoWall",
+    "panel_name" : "C Series",
+    "panel_count_width" : 8,
+    "panel_count_height": 6,
+    "wall_default_color": [1, 0, 1]
+  }
+}
