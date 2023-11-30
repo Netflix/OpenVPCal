@@ -4,7 +4,7 @@ import tempfile
 from open_vp_cal.core import constants, utils
 from open_vp_cal.main import run_cli
 from open_vp_cal.project_settings import ProjectSettings
-from test_utils import TestProject
+from test_open_vp_cal.test_utils import TestProject
 
 import os
 

@@ -1,4 +1,4 @@
-from test_utils import TestProcessorBase
+from test_open_vp_cal.test_utils import TestProcessorBase
 
 from open_vp_cal.framework.sequence_loader import FrameRangeException
 

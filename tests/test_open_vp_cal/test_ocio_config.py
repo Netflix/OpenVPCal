@@ -1,5 +1,5 @@
 from open_vp_cal.core.structures import ProcessingResults
-from test_utils import TestProject
+from test_open_vp_cal.test_utils import TestProject
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 
 

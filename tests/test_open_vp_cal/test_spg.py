@@ -9,4 +9,3 @@ class TestSPG(TestProject):
         led_walls = [self.project_settings.led_walls[0]]
         result = MainWindow.generate_spg_patterns_for_led_walls(
             self.project_settings, led_walls)
-        print (result)

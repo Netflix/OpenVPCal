@@ -3,7 +3,7 @@ import os.path
 
 from open_vp_cal.core import constants
 from open_vp_cal.framework.validation import Validation
-from test_utils import TestBase
+from test_open_vp_cal.test_utils import TestBase
 
 
 class Test_Validation(TestBase):
