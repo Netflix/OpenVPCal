@@ -1,0 +1,47 @@
+{
+    "openvp_cal_version": "1.0.0-rc.3",
+    "project_settings": {
+        "file_format": "dpx",
+        "resolution_width": 3840,
+        "resolution_height": 2160,
+        "output_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Sample_Project8_ACES_CCT_LUT",
+        "ocio_config_path": null,
+        "custom_logo_path": "",
+        "frames_per_patch": 1,
+        "frame_rate": "24",
+        "led_walls": [
+            {
+                "name": "Wall1",
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": true,
+                "auto_wb_source": false,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A108_C007_11296V_001.R3D",
+                "num_grey_patches": 33,
+                "primaries_saturation": 0.7,
+                "calculation_order": "EOTF > CS",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "REDWideGamutRGB",
+                "reference_to_target_cat": "Bradford",
+                "roi": [
+                    605,
+                    1288,
+                    172,
+                    855
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 2100,
+                "target_gamut": "ITU-R BT.2020",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "None",
+                "match_reference_wall": false,
+                "reference_wall": "",
+                "use_external_white_point": false,
+                "external_white_point_file": "",
+                "is_verification_wall": false,
+                "verification_wall": "",
+                "avoid_clipping": true
+            }
+        ],
+        "project_custom_primaries": {}
+    }
+}

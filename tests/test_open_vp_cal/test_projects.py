@@ -2,8 +2,9 @@ import os.path
 import shutil
 import json
 
+from open_vp_cal.core import constants, ocio_config
 from open_vp_cal.project_settings import ProjectSettings
-from test_utils import TestProject
+from test_open_vp_cal.test_utils import TestProject
 
 
 class BaseTestProjectPlateReuse(TestProject):
@@ -216,3 +217,29 @@ class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlat
             self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
+
+
+class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project8_ACES_CCT_LUT"
+
+    def test_project8(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, result in results.items():
+            led_wall = self.project_settings.get_led_wall(led_wall_name)
+            if led_wall.is_verification_wall:
+                continue
+
+            expected_ocio_file = os.path.join(
+                self.get_sample_project_folder(),
+                constants.ProjectFolders.EXPORT,
+                constants.ProjectFolders.CALIBRATION,
+                ocio_config.OcioConfigWriter.post_calibration_config_name)
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
+            self.assertTrue(os.path.exists(result.lut_output_file))
+            self.assertTrue(os.path.exists(result.calibration_results_file))
+            self.files_are_equal(expected_ocio_file, result.ocio_config_output_file)
+            self.compare_data(expected_results, result.calibration_results)
+
