@@ -131,6 +131,9 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             constants.LedWallSettingsKeys.AVOID_CLIPPING: {
                 constants.DEFAULT: default_led_wall.avoid_clipping
             },
+            constants.ProjectSettingsKeys.FRAME_RATE: {
+                constants.DEFAULT: self.frame_rate, constants.OPTIONS: constants.FrameRates.FPS_ALL
+            },
             constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: {constants.DEFAULT: self.custom_logo_path},
         }
 
@@ -499,6 +502,7 @@ class ProjectSettingsView(LockableWidget):
         self.resolution_width = QSpinBox()
         self.resolution_height = QSpinBox()
         self.frames_per_patch = QSpinBox()
+        self.frame_rate = QComboBox()
 
         custom_logo_layout = QHBoxLayout()
         self.custom_logo_path = QLineEdit()
@@ -512,6 +516,7 @@ class ProjectSettingsView(LockableWidget):
         patch_generation_layout.addRow(QLabel("Resolution: Width:"), self.resolution_width)
         patch_generation_layout.addRow(QLabel("Resolution: Height:"), self.resolution_height)
         patch_generation_layout.addRow(QLabel("Frames Per Patch:"), self.frames_per_patch)
+        patch_generation_layout.addRow(QLabel("Frame Rate:"), self.frame_rate)
         patch_generation_layout.addRow(QLabel("Custom Logo:"), custom_logo_layout)
 
         patch_generation_group.setLayout(patch_generation_layout)
@@ -810,6 +815,10 @@ class ProjectSettingsController(QObject):
         self.project_settings_view.frames_per_patch.valueChanged.connect(
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.FRAMES_PER_PATCH, self.project_settings_view.frames_per_patch.value())
+        )
+        self.project_settings_view.frame_rate.currentIndexChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.FRAME_RATE, self.project_settings_view.frame_rate.currentText())
         )
         self.project_settings_view.output_folder.textChanged.connect(
             lambda: self.model.set_data(

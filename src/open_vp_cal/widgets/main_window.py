@@ -653,10 +653,18 @@ class MainWindow(QMainWindow):
         self.task_completed()
 
     @staticmethod
-    def generate_spg_patterns_for_led_walls(project_settings: ProjectSettingsModel, led_walls: List) -> str:
+    def generate_spg_patterns_for_led_walls(
+            project_settings: ProjectSettingsModel, led_walls: List) -> None:
+        """ For the given project settings and list of led walls, generate the patterns for SPG which is used to
+            evaluate and diagnose issues with the imaging chain
+
+        Args:
+            project_settings: The project settings used for the project
+            led_walls: the led walls we want to generate patterns from
+        """
 
         spg_project_settings = SPGProjectSettings()
-        spg_project_settings.frame_rate = 24.0
+        spg_project_settings.frame_rate = int(project_settings.frame_rate)
         spg_project_settings.image_file_format = project_settings.file_format
         spg_project_settings.image_file_bit_depth = 10
         spg_project_settings.output_folder = os.path.join(
@@ -675,6 +683,9 @@ class MainWindow(QMainWindow):
 
         for count, led_wall in enumerate(led_walls):
             idx = count + 1
+
+            # As this is a basic setup we default to a typical panel as we are not doing a deep dive and pixel perfect
+            # match
             spg_panel = SPGLedPanel()
             spg_panel.name = f"Panel_{idx}_{led_wall.name}"
             spg_panel.manufacturer = "Unknown"
@@ -687,6 +698,8 @@ class MainWindow(QMainWindow):
             spg_panel.scan_rate = "1/8"
             spg_led_panels.append(spg_panel)
 
+            # We create a faux led wall which is the largest which we can fit into a given resolution image
+            # as we are not doing a pixel perfect diagnosis
             spg_led_wall = SPGLedWall()
             spg_led_wall.id = idx
             spg_led_wall.name = led_wall.name
@@ -742,7 +755,6 @@ class MainWindow(QMainWindow):
             spg_raster_map_json_file,
             spg_project_settings_json_file,
             ResourceLoader.spg_pattern_basic_config())
-
 
     @staticmethod
     def generate_patterns_for_led_walls(project_settings: ProjectSettingsModel, led_walls: List) -> str:

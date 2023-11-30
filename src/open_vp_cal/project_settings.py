@@ -6,7 +6,7 @@ import os
 import copy
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import open_vp_cal
 from open_vp_cal.core import constants
@@ -27,6 +27,7 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
+            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -221,6 +222,26 @@ class ProjectSettings:
             value (int): The resolution height
         """
         self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
+
+    @property
+    def frame_rate(self) -> str:
+        """ The frame rate for the shooting frame rate for the camera, used in certain SPG patterns
+
+        Returns:
+            str: The shooting frame rate of the camera
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE]
+
+    @frame_rate.setter
+    def frame_rate(self, value: Union[str, int]):
+        """ Sets the frame rate for the shooting frame rate
+
+        Args:
+            value (int): The resolution height
+        """
+        if not isinstance(value, str):
+            value = str(int(value))
+        self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE] = value
 
     @classmethod
     def from_json(cls, json_file: str):
