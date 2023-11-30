@@ -8,6 +8,7 @@
         "ocio_config_path": "",
         "custom_logo_path": "",
         "frames_per_patch": 1,
+        "frame_rate": 24,
         "led_walls": [
             {
                 "name": "AOTO",
