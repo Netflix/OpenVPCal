@@ -10,10 +10,11 @@ import PyOpenColorIO as Ocio
 import colour
 import colour.algebra as ca
 
-from open_vp_cal.core import utils, constants
+from open_vp_cal.core import constants
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.imaging import imaging_utils
+from open_vp_cal.widgets import utils
 
 
 class ImageViewerGraphicsView(QGraphicsView):

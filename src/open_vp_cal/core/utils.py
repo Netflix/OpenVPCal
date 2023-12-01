@@ -10,10 +10,8 @@ import uuid
 from typing import Tuple, Union, List, Dict
 import numpy as np
 
-
 import colour
 import requests
-from PySide6.QtGui import QImage, QColor
 from colour import SpectralShape
 
 from open_vp_cal.core import constants
@@ -106,54 +104,6 @@ def get_grey_signals(target_max_lum_nits, num_grey_patches) -> list[float]:
         patch_nits = pq_to_nits(patch_pq_value)
         grey_signals.append(patch_nits * 0.01)
     return grey_signals
-
-
-def set_pixels(pixel_colour: QColor, qimage: QImage, img_np: "np.Array", width: int, height: int):
-    """ Set the pixels of the QImage
-
-    Args:
-        pixel_colour: The colour to set
-        qimage: The QImage to set the pixels of
-        img_np: The numpy array to get the pixels from
-        width: The index of the array in width
-        height: The index of the array in height
-
-    """
-    pixel_colour.setRgbF(*img_np[height, width])
-    qimage.setPixelColor(width, height, pixel_colour)
-
-
-def create_qimage_rgb32_from_numpy_array(img_np: "np.Array"):
-    """ Create a QImage from a numpy array
-
-    Args:
-        img_np: The numpy array to create the QImage from
-
-    Returns: The QImage in 32 bit
-
-    """
-    img_np, height, width, _ = stack_numpy_array(img_np)
-    qimage = QImage(width, height, QImage.Format_RGB32)
-    color = QColor()
-    _ = [set_pixels(color, qimage, img_np, w, h) for h in range(height) for w in range(width)]
-    return qimage
-
-
-def create_qimage_rgb8_from_numpy_array(img_np):
-    """ Create a QImage from a numpy array
-
-    Args:
-        img_np: The numpy array to create the QImage from
-
-    Returns: The QImage in 8 bit
-
-    """
-    img_np, height, width, channels = stack_numpy_array(img_np)
-    img_np = np.clip(img_np * 255, 0, 255).astype(np.uint8)
-    bytes_per_line = channels * width
-    image_format = QImage.Format_RGB888 if channels == 3 else QImage.Format_RGBA8888
-    qimage = QImage(img_np.data, width, height, bytes_per_line, image_format)
-    return qimage
 
 
 def stack_numpy_array(img_np: "np.Array") -> ("np.Array", int, int, int):

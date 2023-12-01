@@ -1,7 +1,11 @@
 """
 A module to hold ui-specific utility functions
 """
+import numpy as np
+from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QFileDialog, QWidget
+
+from open_vp_cal.core.utils import stack_numpy_array
 
 
 def select_folder() -> str:
@@ -64,3 +68,20 @@ class LockableWidget(QWidget):
         if not self.active_state:
             self.active_state = True
             self._set_active_state(False)
+
+
+def create_qimage_rgb8_from_numpy_array(img_np):
+    """ Create a QImage from a numpy array
+
+    Args:
+        img_np: The numpy array to create the QImage from
+
+    Returns: The QImage in 8 bit
+
+    """
+    img_np, height, width, channels = stack_numpy_array(img_np)
+    img_np = np.clip(img_np * 255, 0, 255).astype(np.uint8)
+    bytes_per_line = channels * width
+    image_format = QImage.Format_RGB888 if channels == 3 else QImage.Format_RGBA8888
+    qimage = QImage(img_np.data, width, height, bytes_per_line, image_format)
+    return qimage
