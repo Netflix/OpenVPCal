@@ -440,13 +440,17 @@ def create_white_balance_matrix(input_rgb_sample: np.ndarray):
     Returns: A 3x3 matrix which can be used to white balance the input RGB values
 
     """
+    green_value = input_rgb_sample[1]
+
     # Green Value / Red Value
-    red_mult_val = input_rgb_sample[1] / input_rgb_sample[0]
+    red_mult_val = green_value / input_rgb_sample[0]
+
+    green_mult_val = green_value / input_rgb_sample[1]
 
     # Green Value / Blue Value
-    blue_mult_val = input_rgb_sample[1] / input_rgb_sample[2]
+    blue_mult_val = green_value / input_rgb_sample[2]
 
-    white_balance_matrix = np.asarray([[red_mult_val, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, blue_mult_val]])
+    white_balance_matrix = np.asarray([[red_mult_val, 0.0, 0.0], [0.0, green_mult_val, 0.0], [0.0, 0.0, blue_mult_val]])
     return white_balance_matrix
 
 
