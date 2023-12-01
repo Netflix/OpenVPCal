@@ -1,6 +1,6 @@
 import json
 
-import utils as utils
+import test_stageassets.utils as utils
 
 from stageassets.ledPanel import LEDPanel
 from stageassets.ledWall import LEDWall

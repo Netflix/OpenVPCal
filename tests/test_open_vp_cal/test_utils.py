@@ -30,7 +30,7 @@ class TestUtils(unittest.TestCase):
     def get_test_resources_folder(cls):
         return os.path.join(
             cls.get_folder_for_this_file(),
-            "../resources",
+            "resources",
         )
 
     @classmethod
@@ -120,7 +120,6 @@ class TestProject(TestUtils):
     def setUp(self):
         super(TestProject, self).setUp()
         self.project_settings = ProjectSettings.from_json(self.get_sample_project_settings())
-
         self.project_settings.output_folder = self.get_output_folder()
         if os.path.exists(self.project_settings.output_folder):
             shutil.rmtree(self.project_settings.output_folder)

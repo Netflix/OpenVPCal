@@ -27,6 +27,8 @@ class TestProjectSettings(TestBase):
                     constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",
                     constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "test",
                     constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
+                    constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_48,
+                    constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: True,
                     constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {
                         "TestPrimaries1": [
                             [
@@ -85,8 +87,8 @@ class TestProjectSettings(TestBase):
                 [constants.ProjectSettingsKeys.LED_WALLS][0], handle)
         self.led_wall = LedWallSettings.from_json_file(self.settings, self._led_json_file)
 
-
-
+        for key in self.settings._default_project_settings.keys():
+            self.assertIn(key, list(self.test_settings[constants.ProjectSettingsKeys.PROJECT_SETTINGS].keys()))
     def tearDown(self):
         os.remove(self._led_json_file)
 

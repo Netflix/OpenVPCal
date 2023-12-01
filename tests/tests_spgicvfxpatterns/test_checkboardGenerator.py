@@ -1,4 +1,4 @@
-import utils as utils
+import tests_spgicvfxpatterns.utils as utils
 
 from spg_icvfxpatterns.PatternGenerators.checkboard import Checkerboard as _Checkerboard
 
