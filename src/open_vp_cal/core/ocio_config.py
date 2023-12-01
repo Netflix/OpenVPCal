@@ -6,7 +6,6 @@ import typing
 from typing import List
 
 import PyOpenColorIO as ocio
-import colour
 from PyOpenColorIO import ColorSpace
 from colour import RGB_COLOURSPACES, matrix_RGB_to_RGB
 from open_vp_cal.core import constants, ocio_utils, utils
@@ -28,6 +27,7 @@ class OcioConfigWriter:
 
     encoding_scene_linear = "scene-linear"
     encoding_hdr_video = "hdr-video"
+    encoding_log = "log"
 
     def __init__(self, output_folder: str):
         self._output_folder = output_folder
@@ -44,7 +44,6 @@ class OcioConfigWriter:
         """
         pre_calibration_view_transform = ocio.ViewTransform(ocio.REFERENCE_SPACE_SCENE)
         pre_calibration_view_transform.setName(name)
-        pre_calibration_view_transform.setFamily(self.family_display)
         pre_calibration_view_transform.setDescription(description)
         return pre_calibration_view_transform
 
@@ -87,7 +86,9 @@ class OcioConfigWriter:
         colour_space.setDescription(description)
         return colour_space
 
-    def _get_ocio_config_colour_spaces_for_patch_generation(self, led_wall_settings, preview_export_filter=True) -> LedWallColourSpaces:
+    def _get_ocio_config_colour_spaces_for_patch_generation(self, led_wall_settings,
+                                                            preview_export_filter=True,
+                                                            export_lut_for_aces_cct=False) -> LedWallColourSpaces:
         """ Gets the OCIO colour spaces for patch generation
 
         Args:
@@ -391,7 +392,8 @@ class OcioConfigWriter:
 
     def _get_openvpcal_colour_spaces(self,
                                      led_wall_settings: LedWallSettings,
-                                     preview_export_filter: bool = True) -> LedWallColourSpaces:
+                                     preview_export_filter: bool = True,
+                                     export_lut_for_aces_cct: bool = False) -> LedWallColourSpaces:
         """ Gets The OpenVPCal Colour Spaces we need to write to disk as an ocio config
 
         Args:
@@ -428,7 +430,88 @@ class OcioConfigWriter:
 
         # Add Transfer Function Only Colour Space (Needs to be in a colour space so oiio can apply it)
         led_wall_colour_spaces.transfer_function_only_cs = self.get_transfer_function_only_cs(led_wall_settings)
+
+        if export_lut_for_aces_cct:
+            led_wall_colour_spaces.aces_cct_view_transform = self.get_aces_cct_view_transform()
+            led_wall_colour_spaces.aces_cct_calibration_view_transform = self.get_aces_cct_calibration_view_transform(
+                led_wall_settings)
+            led_wall_colour_spaces.aces_cct_display_colour_space_cs = self.get_aces_cct_display_colour_space()
+
         return led_wall_colour_spaces
+
+    def get_aces_cct_display_colour_space(self) -> ocio.ColorSpace:
+        """ Gets a display colour space for ACEScct, whilst not used for display it is used to bake
+            luts which go via a ACEScct
+
+        Returns: The ACEScct display colour space
+
+        """
+        aces_cct_display_colour_space = self._get_display_colour_space(
+            "ACES_output",
+            "An ACEScct output",
+            encoding=self.encoding_log,
+
+        )
+        return aces_cct_display_colour_space
+
+    def get_aces_cct_calibration_view_transform_metadata(self, led_wall_settings: LedWallSettings) -> tuple[str, str]:
+        """ The metadata for the ACEScct calibrated view transform
+
+        Args:
+            led_wall_settings: The LED wall settings we want the metadata for
+
+        Returns: The name and the description
+
+        """
+        view_transform_description = "An ACEScct view output, with the OpenVPCal calibration applied"
+        _, view_transform_name = self.get_post_calibration_view_transform_metadata(led_wall_settings)
+        return view_transform_name + "_ACEScct", view_transform_description
+
+    def get_aces_cct_calibration_view_transform(self, led_wall_settings: LedWallSettings) -> ocio.ViewTransform:
+        """ Returns the ACEScct calibrated view transform, which we use for baking luts whcih need to go via aces cct
+
+        Args:
+            led_wall_settings: The LED wall settings we want the view transform for
+
+        Returns: The ACEScct calibrated view transform
+
+        """
+        view_transform_name, view_transform_description = self.get_aces_cct_calibration_view_transform_metadata(
+            led_wall_settings)
+
+        calibration_name = self.get_calibration_space_metadata(led_wall_settings)
+
+        view_transform = self._get_view_transform(view_transform_name, view_transform_description)
+        group = ocio.GroupTransform()
+        group.appendTransform(
+            ocio.ColorSpaceTransform(
+                src=constants.ColourSpace.CS_ACES, dst=calibration_name
+            )
+        )
+        group.appendTransform(
+            ocio.ColorSpaceTransform(
+                src=constants.ColourSpace.CS_ACES, dst=constants.CameraColourSpace.CS_ACES_CCT
+            )
+        )
+
+        view_transform.setTransform(group, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE)
+        return view_transform
+
+    def get_aces_cct_view_transform(self) -> ocio.ViewTransform:
+        """ Get the ACEScct view transform which we use for baking luts that need to go via ACEScct
+
+        Returns: The ACEScct view transform
+
+        """
+        view_transform_name = "ACEScct_view"
+        view_transform_description = "An ACEScct view output"
+        view_transform = self._get_view_transform(view_transform_name, view_transform_description)
+        cs_transform = ocio.ColorSpaceTransform(
+                src=constants.ColourSpace.CS_ACES, dst=constants.CameraColourSpace.CS_ACES_CCT
+            )
+
+        view_transform.setTransform(cs_transform, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE)
+        return view_transform
 
     def get_calibration_and_calibration_preview_cs(
             self, led_wall_settings: LedWallSettings, results: dict,
@@ -481,11 +564,13 @@ class OcioConfigWriter:
 
         else:
             raise RuntimeError("Unknown calculation order: " + results[Results.CALCULATION_ORDER])
+
         # gamut compression fixed function
         if results[Results.ENABLE_GAMUT_COMPRESSION]:
             gamut_comp_group = ocio_utils.create_gamut_compression(results)
             group.appendTransform(gamut_comp_group)
             group_preview.appendTransform(gamut_comp_group)
+
         # Apply The Inverse Reference To Target Matrix "reverse"
         inv_ref_to_target = ocio.MatrixTransform(
             numpy_matrix_to_ocio_matrix(results[Results.REFERENCE_TO_TARGET_MATRIX]),
@@ -587,7 +672,7 @@ class OcioConfigWriter:
     def _generate_ocio_config(
             self, led_walls: List[LedWallSettings], colour_space_function: typing.Callable,
             output_file=None, base_ocio_config=None,
-            preview_export_filter=True) -> str:
+            preview_export_filter=True, export_lut_for_aces_cct=False) -> str:
         """ Generate an OCIO config for the necessary colour spaces and transforms retrieved by the given function
 
         Args:
@@ -620,7 +705,8 @@ class OcioConfigWriter:
 
         colour_spaces = {}
         for led_wall in led_walls:
-            led_wall_colour_spaces = colour_space_function(led_wall, preview_export_filter=preview_export_filter)
+            led_wall_colour_spaces = colour_space_function(
+                led_wall, preview_export_filter=preview_export_filter, export_lut_for_aces_cct=export_lut_for_aces_cct)
             led_wall.processing_results.led_wall_colour_spaces = led_wall_colour_spaces
             colour_spaces[led_wall.name] = led_wall_colour_spaces
 
@@ -660,7 +746,7 @@ class OcioConfigWriter:
 
     def generate_post_calibration_ocio_config(
             self, led_walls: List[LedWallSettings], output_file: str = None, base_ocio_config: str = None,
-            preview_export_filter: bool = False) -> str:
+            preview_export_filter: bool = False, export_lut_for_aces_cct: bool = False) -> str:
         """ Generate an OCIO config for post-calibration with all the necessary colour spaces and transforms.
 
         Args:
@@ -668,6 +754,8 @@ class OcioConfigWriter:
             output_file: The file path to the ocio config we write to disk
             base_ocio_config: The base ocio config path to use
             preview_export_filter: Whether to export the preview colour space or not
+            export_lut_for_aces_cct: Whether to add the colour spaces displays and views needed to export a lut for
+                ACEScct
 
         Returns: The file path to the ocio config we write out
 
@@ -680,7 +768,8 @@ class OcioConfigWriter:
 
         return self._generate_ocio_config(
             led_walls, self._get_openvpcal_colour_spaces, output_file=output_file, base_ocio_config=base_ocio_config,
-            preview_export_filter=preview_export_filter)
+            preview_export_filter=preview_export_filter, export_lut_for_aces_cct=export_lut_for_aces_cct
+        )
 
     @staticmethod
     def write_config(
@@ -721,7 +810,9 @@ class OcioConfigWriter:
 
         added_colour_spaces = []
         added_view_transforms = []
+        added_acess_cct_view_transforms = []
         added_display_colour_spaces = []
+        added_acess_cct_display_colour_spaces = []
         added_target_colour_spaces = []
         pre_calibration_view_transform_added = []
         for _, lw_cs in colour_spaces.items():
@@ -740,11 +831,6 @@ class OcioConfigWriter:
                     config.addColorSpace(lw_cs.calibration_preview_cs)
                     added_colour_spaces.append(lw_cs.calibration_preview_cs.getName())
 
-            # if lw_cs.aces_to_cie_d65_cat02_cs:
-            #     if lw_cs.aces_to_cie_d65_cat02_cs.getName() not in added_colour_spaces:
-            #         config.addColorSpace(lw_cs.aces_to_cie_d65_cat02_cs)
-            #         added_colour_spaces.append(lw_cs.aces_to_cie_d65_cat02_cs.getName())
-
             if lw_cs.target_with_inv_eotf_cs:
                 if lw_cs.target_with_inv_eotf_cs.getName() not in added_target_colour_spaces:
                     config.addColorSpace(lw_cs.target_with_inv_eotf_cs)
@@ -760,6 +846,15 @@ class OcioConfigWriter:
                     config.addViewTransform(lw_cs.view_transform)
                     added_view_transforms.append(lw_cs.view_transform.getName())
 
+            if lw_cs.aces_cct_view_transform:
+                if lw_cs.aces_cct_view_transform.getName() not in added_view_transforms:
+                    config.addViewTransform(lw_cs.aces_cct_view_transform)
+
+            if lw_cs.aces_cct_calibration_view_transform:
+                if lw_cs.aces_cct_calibration_view_transform.getName() not in added_acess_cct_view_transforms:
+                    config.addViewTransform(lw_cs.aces_cct_calibration_view_transform)
+                    added_acess_cct_view_transforms.append(lw_cs.aces_cct_calibration_view_transform.getName())
+
             if lw_cs.calibration_cs:
                 if lw_cs.calibration_cs.getName() not in added_colour_spaces:
                     config.addColorSpace(lw_cs.calibration_cs)
@@ -771,8 +866,18 @@ class OcioConfigWriter:
                     added_display_colour_spaces.append(lw_cs.display_colour_space_cs.getName())
                     config.addDisplayView(lw_cs.display_colour_space_cs.getName(), "Raw", "Raw")
 
+            if lw_cs.aces_cct_display_colour_space_cs:
+                if lw_cs.aces_cct_display_colour_space_cs.getName() not in added_acess_cct_display_colour_spaces:
+                    config.addColorSpace(lw_cs.aces_cct_display_colour_space_cs)
+                    added_acess_cct_display_colour_spaces.append(lw_cs.aces_cct_display_colour_space_cs.getName())
+                    config.addDisplayView(lw_cs.aces_cct_display_colour_space_cs.getName(), "Raw", "Raw")
+
             if lw_cs.display_colour_space_cs and lw_cs.view_transform:
                 config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(), lw_cs.view_transform.getName())
+
+            if lw_cs.aces_cct_display_colour_space_cs and lw_cs.aces_cct_view_transform:
+                config.addDisplaySharedView(
+                    lw_cs.aces_cct_display_colour_space_cs.getName(), lw_cs.aces_cct_view_transform.getName())
 
             if lw_cs.view_transform:
                 config.addSharedView(
@@ -782,12 +887,32 @@ class OcioConfigWriter:
                 active_views += f", {lw_cs.view_transform.getName()}"
                 config.setActiveViews(active_views)
 
+            if lw_cs.aces_cct_view_transform:
+                config.addSharedView(
+                    lw_cs.aces_cct_view_transform.getName(), lw_cs.aces_cct_view_transform.getName(), ocio.OCIO_VIEW_USE_DISPLAY_NAME)
+
+                active_views = config.getActiveViews()
+                active_views += f", {lw_cs.aces_cct_view_transform.getName()}"
+                config.setActiveViews(active_views)
+
+            if lw_cs.aces_cct_calibration_view_transform:
+                config.addSharedView(
+                    lw_cs.aces_cct_calibration_view_transform.getName(),
+                    lw_cs.aces_cct_calibration_view_transform.getName(), ocio.OCIO_VIEW_USE_DISPLAY_NAME)
+
+                active_views = config.getActiveViews()
+                active_views += f", {lw_cs.aces_cct_calibration_view_transform.getName()}"
+                config.setActiveViews(active_views)
+
         for added_display_colour_space in added_display_colour_spaces:
             config.addDisplaySharedView(added_display_colour_space, pre_calibration_view_transform_added[0])
 
             active_displays = config.getActiveDisplays()
             active_displays += f", {added_display_colour_space}"
             config.setActiveDisplays(active_displays)
+
+        for added_acess_cct_display_colour_space in added_acess_cct_display_colour_spaces:
+            config.addDisplaySharedView(added_acess_cct_display_colour_space, added_acess_cct_view_transforms[0])
 
         if pre_calibration_view_transform_added:
             config.addSharedView(
