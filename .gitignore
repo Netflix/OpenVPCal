@@ -6,3 +6,4 @@ dist/**
 **venv/**
 openvpcal.egg-info/**
 .pytest_cache/**
+/tests/tests_spgicvfxpatterns/results/
