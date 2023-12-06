@@ -279,14 +279,20 @@ def apply_color_converstion_to_np_array(
         to_transform: The transform to convert to
         color_config: The colour config to use for the conversion
     """
-    if not color_config:
+    if color_config is None:
         color_config = ResourceLoader.ocio_config_path()
+
+    if not os.path.exists(color_config):
+        raise ValueError("Color config does not exist: " + color_config)
 
     config = ocio.Config().CreateFromFile(color_config)
     processor = config.getProcessor(from_transform,
                                     to_transform)
-
     cpu = processor.getDefaultCPUProcessor()
+
+    # Ensure we only have float32 data to work with OCIO
+    if image.dtype.name != "float32":
+        raise ValueError("Image must be float32 not " + image.dtype.name)
 
     # Apply the color transform to the existing RGBA pixel data
     _, _, channels = image.shape
