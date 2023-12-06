@@ -212,6 +212,25 @@ def run_args(args: argparse.Namespace) -> None:
             args.ocio_config_path)
 
 
+def str2bool(v: str) -> bool:
+    """ Converts a string to a bool value
+
+    Args:
+        v: The value to convert
+
+    Returns: True if the value can be converted to a bool, False otherwise
+
+    """
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 def parse_args() -> argparse.Namespace:
     """ Parses the command line arguments and returns the parsed arguments.
 
@@ -219,7 +238,7 @@ def parse_args() -> argparse.Namespace:
 
     """
     parser = argparse.ArgumentParser(description='Command line arguments')
-    parser.add_argument('--ui', type=bool, default=True, help='UI flag')
+    parser.add_argument('--ui', type=str2bool, default=True, help='UI flag')
     parser.add_argument('--generate_patterns', type=bool, default=False,
                         help='CLI flag to generation calibration patterns for the given project settings')
     parser.add_argument('--project_settings', type=validate_project_settings,
@@ -228,7 +247,7 @@ def parse_args() -> argparse.Namespace:
                         required=False, help='Path to output folder')
     parser.add_argument('--ocio_config_path', type=validate_file_path,
                         required=False, help='Path to OCIO config file')
-    args = parser.parse_args()
+    args = parser.parse_args(sys.argv[1:])
 
     if not args.ui:
         if args.project_settings is None:
