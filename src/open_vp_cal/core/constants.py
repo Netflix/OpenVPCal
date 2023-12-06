@@ -1,8 +1,6 @@
 """
 This file contains constants used throughout the openvpcal calibration process
 """
-import numpy as np
-
 COLOR_WIDGET_GRAPH_SCALE = 1000
 
 OIIO_COMPRESSION_ATTRIBUTE = "compression"
@@ -21,10 +19,12 @@ LUT_LEN = 4096
 DEFAULT = "default"
 OPTIONS = "options"
 
-DELTA_E_THRESHOLD = 1.0
+DELTA_E_THRESHOLD_IMP = 1.0
+DELTA_E_THRESHOLD_JND = 2.0
 
 RED = (162, 44, 41)
 GREEN = (60, 179, 113)
+YELLOW = (252, 186, 3)
 
 KELVIN_TEMPERATURES = [5003, 6000, 6504]
 
@@ -32,15 +32,17 @@ OPEN_VP_CAL_UNIT_TESTING = "OPEN_VP_CAL_UNIT_TESTING"
 LOG_URL = 'https://yl6ov5gen9.execute-api.eu-west-1.amazonaws.com/default/update_openvpcal_database'
 VERSION = "openvp_cal_version"
 
+TARGET_MAX_LUM_NITS_NONE_PQ = 100
+
 
 class UILayouts:
     """
     Constants for defining the different layouts we want to use for the UI
     """
     ANALYSIS_LAYOUT = "AnalysisLayout.layout"
-    DEFAULT_LAYOUT = "DefaultLayout.layout"
+    PROJECT_LAYOUT = "ProjectLayout.layout"
     ANALYSIS_LAYOUT_WINDOWS = "AnalysisLayout_Windows.layout"
-    DEFAULT_LAYOUT_WINDOWS = "DefaultLayout_Windows.layout"
+    PROJECT_LAYOUT_WINDOWS = "ProjectLayout_Windows.layout"
 
 
 
@@ -77,8 +79,21 @@ class ProjectSettingsKeys:
     LED_WALLS = "led_walls"
     PROJECT_CUSTOM_PRIMARIES = "project_custom_primaries"
     PROJECT_SETTINGS = "project_settings"
+    FRAME_RATE = "frame_rate"
+    EXPORT_LUT_FOR_ACES_CCT = "export_lut_for_aces_cct"
     ALL = [FILE_FORMAT, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, OUTPUT_FOLDER, OCIO_CONFIG_PATH, CUSTOM_LOGO_PATH,
-           FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES]
+           FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT]
+
+
+class FrameRates:
+    FPS_24 = 24
+    FPS_25 = 25
+    FPS_30 = 30
+    FPS_48 = 48
+    FPS_50 = 50
+    FPS_60 = 60
+    FPS_ALL = [FPS_24, FPS_25, FPS_30, FPS_48, FPS_50, FPS_60]
+    FPS_DEFAULT = FPS_24
 
 
 class LedWallSettingsKeys:
@@ -252,6 +267,7 @@ class CameraColourSpace:
     """
     CS_ACES = "ACES2065-1"
     CS_ACES_CG = "ACEScg"
+    CS_ACES_CCT = "ACEScct"
     ARRI_WIDE_GAMUT_3 = "ARRI Wide Gamut 3"
     ARRI_WIDE_GAMUT_4 = "ARRI Wide Gamut 4"
     BLACKMAGIC_WIDE_GAMUT = "Blackmagic Design Wide Gamut"
@@ -345,3 +361,4 @@ class ProjectFolders:
     RESULTS = "results"
     SWATCHES = "swatches"
     CALIBRATION = "calibration"
+    SPG = "spg"

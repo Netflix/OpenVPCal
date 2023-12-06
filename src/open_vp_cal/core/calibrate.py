@@ -70,15 +70,14 @@ def achromatic(rgb, shadow_rolloff):
 
 
 def eotf_correction_calculation(
-        grey_ramp_screen, grey_signal_values, grey_signal_value_rgb, deltaE_grey_ramp, avoid_clipping=True,
-        peak_lum=None, deltaE_threshold=10):
+        grey_ramp_screen, grey_signal_value_rgb, deltaE_grey_ramp, avoid_clipping=True,
+        peak_lum=None, deltaE_threshold=20):
     """ Compute a LUT to correct the EOTF as measured from grey patches. Any grey patches with a delta E greater than
         the deltaE_threshold are ignored.
 
         Args:
             deltaE_threshold: The threshold for delta E values to be considered
             grey_ramp_screen (array-like): Grey ramp in Screen Colour Space
-            grey_signal_values (array-like): Reference Signal Values For The EOTF
             grey_signal_value_rgb: Reference Signal Values For The EOTF as RGB values
             deltaE_grey_ramp: Delta E Values For The Grey Ramp
             avoid_clipping: If we want to avoid clipping of values on the led wall we scale any values
@@ -93,7 +92,6 @@ def eotf_correction_calculation(
     """
     num_steps = len(grey_ramp_screen)
     assert num_steps > 1
-    assert len(grey_signal_values) == num_steps
     assert len(grey_signal_value_rgb) == num_steps
     assert len(deltaE_grey_ramp) == num_steps
 
@@ -120,9 +118,9 @@ def eotf_correction_calculation(
         max_r = np.max(np.max(lut_r[:, 0]))
         max_g = np.max(np.max(lut_g[:, 0]))
         max_b = np.max(np.max(lut_b[:, 0]))
-        max_value = max(max_r, max_g, max_b)
-        if max_value > peak_lum:
-            scale_factor = peak_lum / max_value
+        min_value = min(max_r, max_g, max_b)
+        if min_value > peak_lum:
+            scale_factor = peak_lum / min_value
 
             lut_r[:, 0] *= scale_factor
             lut_g[:, 0] *= scale_factor
@@ -251,7 +249,7 @@ def extract_screen_cs(
         macbeth_reference_samples, target_cs, camera_native_cs, None
     )
 
-    colour_matrix1= colour.matrix_colour_correction(
+    colour_matrix1 = colour.matrix_colour_correction(
         macbeth_measurements_camera_native_gamut,
         macbeth_reference_samples_camera_native,
         method='Cheung 2004'
@@ -290,7 +288,6 @@ def extract_screen_cs(
 
     white_point_measurements_target_gamut = ca.vector_dot(
         reference_to_target_matrix, white_measurements_input_plate_gamut)
-
 
     calibrated_white_point_target = ca.vector_dot(
         target_to_screen_matrix, white_point_measurements_target_gamut
@@ -404,11 +401,11 @@ def scale_to_absolute_nits(input_array: Union[List, np.ndarray]) -> List:
 
 
 def deltaE_ICtCp(
-        reference_samples: Dict,
+        rgbw_reference_samples, macbeth_reference_samples, eotf_ramp_reference_samples,
         rgbw_measurements_camera_native_gamut: np.ndarray,
         eotf_ramp_camera_native_gamut: List[np.ndarray],
         macbeth_measurements_camera_native_gamut: List[np.ndarray],
-        target_cs: RGB_Colourspace, native_camera_gamut_cs: RGB_Colourspace, target_max_lum_nits: int
+        target_cs: RGB_Colourspace, native_camera_gamut_cs: RGB_Colourspace
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """ Calculates the deltaE between the reference samples and the measured samples for RGBW, eotf ramp, and macbeth
         chart
@@ -422,84 +419,49 @@ def deltaE_ICtCp(
         macbeth_measurements_camera_native_gamut: The macbeth measurements in the camera native gamut
         target_cs: The target colour space
         native_camera_gamut_cs: The native camera gamut colour space
-        target_max_lum_nits: The maximum luminance of the target led wall expressed in nits
 
     Returns: The deltaE values for RGBW, eotf ramp, and macbeth chart
 
     """
-
-    BT2020_cs = colour.RGB_COLOURSPACES[constants.ColourSpace.CS_BT2020]
-
     eotf_ramp_camera_native_gamut = scale_to_absolute_nits(eotf_ramp_camera_native_gamut)
     rgbw_measurements_camera_native_gamut = scale_to_absolute_nits(rgbw_measurements_camera_native_gamut)
     macbeth_measurements_camera_native_gamut = scale_to_absolute_nits(macbeth_measurements_camera_native_gamut)
 
-    # Combine The RGB And Grey References Into One Array and Get The Macbeth Reference Samples
-    rgbw_reference_samples = np.concatenate(
-        (reference_samples[Measurements.DESATURATED_RGB], [reference_samples[Measurements.GREY]])
-    )
     rgbw_reference_samples = scale_to_absolute_nits(rgbw_reference_samples)
+    rgbw_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
+        rgbw_reference_samples, target_cs, native_camera_gamut_cs, None)
 
-    macbeth_reference_samples = reference_samples[Measurements.MACBETH]
     macbeth_reference_samples = scale_to_absolute_nits(macbeth_reference_samples)
-
-    # Convert The RGBW Reference Samples From The Target Colour Space To Rec 2020
-    rgbw_reference_samples_BT2020 = colour.RGB_to_RGB(
-        rgbw_reference_samples, target_cs, BT2020_cs, None
-    )
-
-    macbeth_reference_samples_BT2020 = colour.RGB_to_RGB(
-        macbeth_reference_samples, target_cs, BT2020_cs, None
-    )
+    macbeth_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
+        macbeth_reference_samples, target_cs, native_camera_gamut_cs, None)
 
     # Convert The Grey Ramp Reference Samples From The Target Colour Space To Rec 2020
-    eotf_ramp_reference_samples = reference_samples[Measurements.EOTF_RAMP]
     eotf_ramp_reference_samples = scale_to_absolute_nits(eotf_ramp_reference_samples)
-    eotf_ramp_reference_samples_BT2020 = colour.RGB_to_RGB(
-        eotf_ramp_reference_samples, target_cs, BT2020_cs, None
-    )
+    eotf_ramp_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
+        eotf_ramp_reference_samples, target_cs, native_camera_gamut_cs, None)
 
-    # Apply A PQ Encoding To All The Values
-    rgbw_reference_samples_BT2020_pq = eotf_inverse_BT2100_PQ(rgbw_reference_samples_BT2020)
-    eotf_ramp_reference_samples_BT2020_pq = eotf_inverse_BT2100_PQ(eotf_ramp_reference_samples_BT2020)
-    macbeth_reference_samples_BT2020_pq = eotf_inverse_BT2100_PQ(macbeth_reference_samples_BT2020)
-
-    rgbw_measurements_BT2020 = colour.RGB_to_RGB(
-        rgbw_measurements_camera_native_gamut, native_camera_gamut_cs, BT2020_cs, None
-    )
-    eotf_ramp_measurements_BT2020 = colour.RGB_to_RGB(
-        eotf_ramp_camera_native_gamut, native_camera_gamut_cs, BT2020_cs, None
-    )
-    macbeth_measurements_BT2020 = colour.RGB_to_RGB(
-        macbeth_measurements_camera_native_gamut, native_camera_gamut_cs, BT2020_cs, None
-    )
-
-    # Apply A PQ Encoding To All The Values
-    rgbw_samples_BT2020_pq = eotf_inverse_BT2100_PQ(rgbw_measurements_BT2020)
-    eotf_ramp_samples_BT2020_pq = eotf_inverse_BT2100_PQ(eotf_ramp_measurements_BT2020)
-    macbeth_samples_BT2020_pq = eotf_inverse_BT2100_PQ(macbeth_measurements_BT2020)
-
-    rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_samples_BT2020_pq, 'Dolby 2016', target_max_lum_nits)
-    eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_samples_BT2020_pq, 'Dolby 2016', target_max_lum_nits)
-    macbeth_samples_ICtCp = colour.RGB_to_ICtCp(macbeth_samples_BT2020_pq, 'Dolby 2016', target_max_lum_nits)
+    rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_measurements_camera_native_gamut, 'Dolby 2016')
+    eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_camera_native_gamut, 'Dolby 2016')
+    macbeth_samples_ICtCp = colour.RGB_to_ICtCp(macbeth_measurements_camera_native_gamut, 'Dolby 2016')
 
     rgbw_reference_samples_ICtCp = colour.RGB_to_ICtCp(
-        rgbw_reference_samples_BT2020_pq, 'Dolby 2016',
-        target_max_lum_nits
+        rgbw_reference_samples_native_camera_gamut, 'Dolby 2016',
     )
     eotf_ramp_reference_samples_ICtCp = colour.RGB_to_ICtCp(
-        eotf_ramp_reference_samples_BT2020_pq, 'Dolby 2016',
-        target_max_lum_nits
+        eotf_ramp_reference_samples_native_camera_gamut, 'Dolby 2016',
     )
     macbeth_reference_samples_ICtCp = colour.RGB_to_ICtCp(
-        macbeth_reference_samples_BT2020_pq, 'Dolby 2016',
-        target_max_lum_nits)
+        macbeth_reference_samples_native_camera_gamut, 'Dolby 2016',
+    )
 
     delta_e_rgbw = colour.difference.delta_E_ITP(rgbw_samples_ICtCp, rgbw_reference_samples_ICtCp)
     delta_e_eotf_ramp = colour.difference.delta_E_ITP(eotf_ramp_samples_ICtCp, eotf_ramp_reference_samples_ICtCp)
     delta_e_macbeth = colour.difference.delta_E_ITP(macbeth_samples_ICtCp, macbeth_reference_samples_ICtCp)
     delta_e_wrgb = np.roll(delta_e_rgbw, shift=1)
-    return delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth
+
+    # We divide the results by 3 to move the scalar down from 720 to 240 as per
+    # https://www.portrait.com/resource-center/ictcp-color-difference-metric/
+    return delta_e_wrgb / 3, delta_e_eotf_ramp / 3, delta_e_macbeth / 3
 
 
 def calculate_eotf_linearity(eotf_signal_values: List, eotf_ramp_camera_native_gamut: List) -> List:
@@ -528,8 +490,8 @@ def calculate_eotf_linearity(eotf_signal_values: List, eotf_ramp_camera_native_g
 
 def create_decoupling_white_balance_matrix(
         grey_measurements_native_camera_gamut, decoupled_lens_white_samples_camera_native_gamut):
-
-    green_scaling_factor = grey_measurements_native_camera_gamut[1] / decoupled_lens_white_samples_camera_native_gamut[1]
+    green_scaling_factor = grey_measurements_native_camera_gamut[1] / decoupled_lens_white_samples_camera_native_gamut[
+        1]
     scaled_decoupled_samples = np.array(decoupled_lens_white_samples_camera_native_gamut) * green_scaling_factor
     red_mult_val = scaled_decoupled_samples[0] / grey_measurements_native_camera_gamut[0]
     blue_mult_val = scaled_decoupled_samples[2] / grey_measurements_native_camera_gamut[2]
@@ -617,6 +579,11 @@ def run(
         REFERENCE_TO_INPUT_MATRIX: The computed reference to input plate colour space matrix
 
     """
+    # If we are not working in PQ we force target nits to 100 aka 1.0
+    if target_EOTF != constants.EOTF.EOTF_ST2084:
+        target_max_lum_nits = 100
+    peak_lum = target_max_lum_nits * 0.01
+
     if target_to_screen_cat == constants.CAT.CAT_NONE:
         target_to_screen_cat = None
 
@@ -642,10 +609,11 @@ def run(
         eotf_ramp_camera_native_gamut, grey_measurements_native_camera_gamut,
         macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
         rgbw_measurements_camera_native_gamut,
-        decoupled_lens_white_samples_camera_native_gamut
-    ) = convert_measured_samples_to_camera_native_cs(
-            camera_conversion_cat, input_plate_cs, measured_samples, native_camera_gamut_cs,
-            decoupled_lens_white_samples
+        eotf_signal_values, decoupled_lens_white_samples_camera_native_gamut,
+        rgbw_reference_samples, macbeth_reference_samples, eotf_ramp_reference_samples
+    ) = convert_samples_to_required_cs(
+        camera_conversion_cat, input_plate_cs, measured_samples, reference_samples, native_camera_gamut_cs,
+        decoupled_lens_white_samples, peak_lum
     )
 
     # 4) We Calculate a decoupled white balance matrix if we have a decoupled lens white samples
@@ -661,17 +629,23 @@ def run(
             macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
             rgbw_measurements_camera_native_gamut
         ) = apply_matrix_to_samples(
-                decoupling_white_balance_matrix, eotf_ramp_camera_native_gamut,
-                grey_measurements_native_camera_gamut,
-                macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
-                rgbw_measurements_camera_native_gamut
-            )
+            decoupling_white_balance_matrix, eotf_ramp_camera_native_gamut,
+            grey_measurements_native_camera_gamut,
+            macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+            rgbw_measurements_camera_native_gamut
+        )
 
     # 4) We Calculate The White Balance Matrix By Balancing The Grey Samples Against The Green Channel Or Use The One
-    # Provided By The External Reference Wall
-    # Green Value / Red Value
+    # Provided By The External Reference Wall, If we are auto white balancing we calculate and apply this in camera
+    # native space, if we are not auto white balancing then this needs to be calculated in target space, and applied
+    # only to the eotf_samples during the EOTF>CS branch
     if reference_wall_external_white_balance_matrix is None:
-        white_balance_matrix = utils.create_white_balance_matrix(grey_measurements_native_camera_gamut)
+        wb_calc_samples = grey_measurements_native_camera_gamut
+        if not enable_plate_white_balance:
+            wb_calc_samples = colour.RGB_to_RGB(
+                grey_measurements_native_camera_gamut, native_camera_gamut_cs, target_cs, None
+            )
+        white_balance_matrix = utils.create_white_balance_matrix(wb_calc_samples)
     else:
         white_balance_matrix = np.array(reference_wall_external_white_balance_matrix)
 
@@ -699,14 +673,13 @@ def run(
 
     # 7) We Get The Green Value From The 18% Grey Patch, Scale This So It Equals 18% Of Peak Luminance
     # Apply This Scaling To RGBW & Grey Ramp Samples
-    peak_lum = target_max_lum_nits * 0.01
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
     grey_measurements_white_balanced_native_gamut_green = grey_measurements_white_balanced_native_gamut[1]
 
-    # measured_18_diff = 0.18 / grey_measurements_white_balanced_native_gamut_green
-
-    target_over_white = 1 / max_white_camera_native_gamut[1]
+    green_value_for_last_eotf_patch = eotf_ramp_camera_native_gamut[-1][1]
+    target_over_white = 1 / green_value_for_last_eotf_patch
     exposure_scaling_factor = 1.0 / (peak_lum * target_over_white)
+
     max_white_delta = max_white_camera_native_gamut[1] / eotf_ramp_camera_native_gamut[-1][1]
 
     rgbw_measurements_camera_native_gamut = rgbw_measurements_camera_native_gamut / exposure_scaling_factor
@@ -719,15 +692,14 @@ def run(
 
     # 8) We do the deltaE analysis
     delta_e_wrgb, delta_e_eotf_ramp, delta_e_macbeth = deltaE_ICtCp(
-        reference_samples, rgbw_measurements_camera_native_gamut, eotf_ramp_camera_native_gamut,
-        macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs, target_max_lum_nits
+        rgbw_reference_samples, macbeth_reference_samples, eotf_ramp_reference_samples,
+        rgbw_measurements_camera_native_gamut, eotf_ramp_camera_native_gamut,
+        macbeth_measurements_camera_native_gamut, target_cs, native_camera_gamut_cs
     )
 
     # 9 If we have disabled eotf correction, we have to force the operation order
     if not enable_EOTF_correction:
         calculation_order = CalculationOrder.CO_CS_EOTF
-
-    eotf_signal_values = measured_samples[Measurements.EOTF_RAMP_SIGNAL]
 
     eotf_signal_value_rgb = np.array([
         [signal, signal, signal] for signal in eotf_signal_values
@@ -772,12 +744,10 @@ def run(
             rgbw_measurements_target = ca.vector_dot(target_to_screen_matrix, rgbw_measurements_target)
             white_balance_offset_matrix = utils.create_white_balance_matrix(rgbw_measurements_target[3])
 
-            # eotf_signal_value_rgb = ca.vector_dot(inversed_white_balance_offset_matrix, eotf_signal_value_rgb)
             eotf_ramp_screen_target = [ca.vector_dot(white_balance_offset_matrix, m) for m in eotf_ramp_screen_target]
 
             lut_r, lut_g, lut_b = eotf_correction_calculation(
                 eotf_ramp_screen_target,
-                eotf_signal_values,
                 eotf_signal_value_rgb,
                 delta_e_eotf_ramp,
                 avoid_clipping=avoid_clipping,
@@ -805,7 +775,7 @@ def run(
             )
 
             macbeth_measurements_camera_native_gamut_calibrated = colour.RGB_to_RGB(
-                macbeth_measurements_target_calibrated, target_cs, native_camera_gamut_cs,None
+                macbeth_measurements_target_calibrated, target_cs, native_camera_gamut_cs, None
             )
 
             rgbw_measurements_target = apply_luts(
@@ -817,7 +787,7 @@ def run(
             )
 
             rgbw_measurements_camera_native_gamut = colour.RGB_to_RGB(
-                rgbw_measurements_target, target_cs, native_camera_gamut_cs,None
+                rgbw_measurements_target, target_cs, native_camera_gamut_cs, None
             )
 
             screen_cs, _, calibrated_screen_cs = extract_screen_cs(
@@ -836,17 +806,16 @@ def run(
             )
 
     elif calculation_order == CalculationOrder.CO_EOTF_CS:  # Calc 1Ds->3x3
-        if not enable_plate_white_balance:
-            eotf_ramp_camera_native_gamut = [ca.vector_dot(white_balance_matrix, m) for m in
-                                             eotf_ramp_camera_native_gamut]
-
-        # 1: Compute LUTs for EOTF correction
         eotf_ramp_target = colour.RGB_to_RGB(
             eotf_ramp_camera_native_gamut, native_camera_gamut_cs, target_cs, None
         )
+
+        if not enable_plate_white_balance:
+            eotf_ramp_target = [ca.vector_dot(white_balance_matrix, m) for m in eotf_ramp_target]
+
+        # 1: Compute LUTs for EOTF correction
         lut_r, lut_g, lut_b, = eotf_correction_calculation(
             eotf_ramp_target,
-            eotf_signal_values,
             eotf_signal_value_rgb,
             delta_e_eotf_ramp,
             avoid_clipping=avoid_clipping,
@@ -1027,12 +996,25 @@ def apply_matrix_to_samples(
     )
 
 
-def convert_measured_samples_to_camera_native_cs(
-        camera_conversion_cat: str,
+def find_closest_below(sorted_numbers, target):
+    closest_index = None
+
+    for index, value in enumerate(sorted_numbers):
+        if value > target:
+            # Stop the search if the current value exceeds the target
+            break
+        closest_index = index
+
+    return closest_index + 1
+
+
+def convert_samples_to_required_cs(
+        camera_conversion_cat: Union[str, constants.CAT],
         input_plate_cs: RGB_Colourspace,
-        measured_samples: Dict, native_camera_gamut_cs: RGB_Colourspace,
-        decoupled_lens_white_samples: np.array) -> Tuple:
-    """ Convert the measured samples to the camera native colour space
+        measured_samples: Dict, reference_samples: Dict, native_camera_gamut_cs: RGB_Colourspace,
+        decoupled_lens_white_samples: np.array, peak_lum: float) -> Tuple:
+    """ Convert the measured and reference samples to the required colour spaces.
+        We also inject synthetic values for the 18% grey which helps us with the calibration
 
     Args:
         camera_conversion_cat: The colour conversion cat we want to use
@@ -1040,10 +1022,15 @@ def convert_measured_samples_to_camera_native_cs(
         measured_samples: The measured samples from the input plate
         native_camera_gamut_cs: The native colour space of the camera, used to capture the input plate
         decoupled_lens_white_samples: An additional sample of the decoupled white
+        reference_samples: The reference samples for the calibration process displayed on the led wall
+        peak_lum: The peak luminance of the led wall
 
     Returns: Tuple containing the converted samples
 
     """
+    eotf_signal_values = list(measured_samples[Measurements.EOTF_RAMP_SIGNAL])
+    closest_18_percent_index = find_closest_below(eotf_signal_values, peak_lum * 0.18)
+    eotf_signal_values.insert(closest_18_percent_index, peak_lum * 0.18)
 
     grey_measurements_native_camera_gamut = colour.RGB_to_RGB(
         measured_samples[Measurements.GREY], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
@@ -1070,6 +1057,19 @@ def convert_measured_samples_to_camera_native_cs(
         measured_samples[Measurements.EOTF_RAMP], input_plate_cs, native_camera_gamut_cs, camera_conversion_cat
     )
 
+    eotf_ramp_camera_native_gamut = np.insert(
+        eotf_ramp_camera_native_gamut, closest_18_percent_index, grey_measurements_native_camera_gamut,
+        axis=0
+    )
+
+    rgbw_reference_samples = np.concatenate(
+        (reference_samples[Measurements.DESATURATED_RGB], [reference_samples[Measurements.GREY]])
+    )
+
+    macbeth_reference_samples = reference_samples[Measurements.MACBETH]
+    eotf_ramp_reference_samples = list(reference_samples[Measurements.EOTF_RAMP])
+    eotf_ramp_reference_samples.insert(closest_18_percent_index, [peak_lum * 0.18, peak_lum * 0.18, peak_lum * 0.18])
+
     decoupled_lens_white_samples_camera_native_gamut = None
     if decoupled_lens_white_samples:
         decoupled_lens_white_samples_camera_native_gamut = colour.RGB_to_RGB(
@@ -1082,15 +1082,19 @@ def convert_measured_samples_to_camera_native_cs(
         macbeth_measurements_camera_native_gamut,
         max_white_camera_native_gamut,
         rgbw_measurements_camera_native_gamut,
-        decoupled_lens_white_samples_camera_native_gamut
+        eotf_signal_values,
+        decoupled_lens_white_samples_camera_native_gamut,
+        rgbw_reference_samples,
+        macbeth_reference_samples,
+        eotf_ramp_reference_samples
     )
 
 
 def get_calibration_colour_spaces(
-            input_plate_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
-            native_camera_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
-            target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
-        ) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
+        input_plate_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
+        native_camera_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
+        target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
+) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
     """ Get the colour spaces needed for the calibration process
 
     Args:

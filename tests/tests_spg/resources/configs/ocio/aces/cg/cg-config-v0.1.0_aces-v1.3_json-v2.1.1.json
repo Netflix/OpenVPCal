@@ -1,0 +1,987 @@
+{
+  "schema_version": {
+    "major": 1,
+    "minor": 0
+  },
+  "profile_version": {
+    "major": 2,
+    "minor": 1
+  },
+  "name": "Academy Color Encoding System - CG Config [COLORSPACES v0.1.0] [ACES v1.3] [OCIO v2.1.1]",
+  "description": "The \"Academy Color Encoding System\" (ACES v1.3) \"CG Config\"\n-----------------------------------------------------------\n\nThis minimalistic \"OpenColorIO\" config is geared toward computer graphics artists requiring a lean config that does not include camera colorspaces and the less common displays and looks.\n\nGenerated with \"OpenColorIO-Config-ACES\" v0.1.1-15-geb59486 on the 2022/05/28 at 13:04.",
+  "search_path": [],
+  "roles": {
+    "color_timing": "ACES - ACEScct",
+    "compositing_log": "ACES - ACEScct",
+    "data": "Utility - Raw",
+    "default": "ACES - ACES2065-1",
+    "cie_xyz_d65_interchange": "CIE-XYZ-D65",
+    "aces_interchange": "ACES - ACES2065-1",
+    "scene_linear": "ACES - ACEScg"
+  },
+  "colorspaces": [
+    {
+      "name": "ACES - ACES2065-1",
+      "family": "ACES",
+      "description": "The \"Academy Color Encoding System\" reference colorspace.",
+      "encoding": "scene-linear"
+    },
+    {
+      "name": "CIE-XYZ-D65",
+      "description": "The \"CIE XYZ (D65)\" display connection colorspace.",
+      "reference_space": "REFERENCE_SPACE_DISPLAY"
+    },
+    {
+      "name": "Utility - Raw",
+      "family": "Utility",
+      "description": "The utility \"Raw\" colorspace.",
+      "is_data": true,
+      "categories": [
+        "file-io"
+      ]
+    },
+    {
+      "name": "ACES - ACEScc",
+      "family": "ACES",
+      "description": "Convert ACEScc to ACES2065-1\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScc_to_ACES.a1.0.3",
+      "to_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACEScc_to_ACES2065-1"
+      },
+      "encoding": "log",
+      "categories": "file-io",
+      "transforms_data": [
+        {
+          "ordering": "100",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScc_to_ACES.a1.0.3",
+          "builtin_transform_style": "ACEScc_to_ACES2065-1",
+          "linked_display_colorspace_style": "",
+          "interface": "ColorSpace",
+          "encoding": "log",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/csc/ACEScc/ACEScsc.Academy.ACEScc_to_ACES.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScc_to_ACES.a1.0.3</ACEStransformID>\n// <ACESuserName>ACEScc to ACES2065-1</ACESuserName>\n\n//\n// ACES Color Space Conversion - ACEScc to ACES\n//\n// converts ACEScc (AP1 w/ ACESlog encoding) to \n//          ACES2065-1 (AP0 w/ linear encoding)\n//\n// This transform follows the formulas from section 4.4 in S-2014-003\n//\n\n// *-*-*-*-*-*-*-*-*\n// ACEScc is intended to be transient and internal to software or hardware \n// systems, and is specifically not intended for interchange or archiving.\n// ACEScc should NOT be written into a container file in actual implementations!\n// *-*-*-*-*-*-*-*-*\n\n\n\nimport \"ACESlib.Transform_Common\";\n\n\n\nfloat ACEScc_to_lin( input varying float in)\n{\n  if (in < -0.3013698630) // (9.72-15)/17.52\n    return (pow( 2., in*17.52-9.72) - pow( 2.,-16.))*2.0;\n  else if ( in < (log2(HALF_MAX)+9.72)/17.52 )\n    return pow( 2., in*17.52-9.72);\n  else // (in >= (log2(HALF_MAX)+9.72)/17.52)\n    return HALF_MAX;\n}\n\n\n\nvoid main\n(   \n    input varying float rIn,\n    input varying float gIn,\n    input varying float bIn,\n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float lin_AP1[3];\n    lin_AP1[0] = ACEScc_to_lin( rIn);\n    lin_AP1[1] = ACEScc_to_lin( gIn);\n    lin_AP1[2] = ACEScc_to_lin( bIn);\n\n    float ACES[3] = mult_f3_f44( lin_AP1, AP1_2_AP0_MAT);\n  \n    rOut = ACES[0];\n    gOut = ACES[1];\n    bOut = ACES[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScc_to_ACES.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ACEScsc",
+              "_namespace": "Academy",
+              "_name": "ACEScc_to_ACES",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "ACEScc",
+              "_target": "ACES2065-1"
+            },
+            "_user_name": "ACEScc to ACES2065-1",
+            "_description": "ACES Color Space Conversion - ACEScc to ACES\n\nconverts ACEScc (AP1 w/ ACESlog encoding) to\nACES2065-1 (AP0 w/ linear encoding)\n\nThis transform follows the formulas from section 4.4 in S-2014-003\n\n*-*-*-*-*-*-*-*-*\nACEScc is intended to be transient and internal to software or hardware\nsystems, and is specifically not intended for interchange or archiving.\nACEScc should NOT be written into a container file in actual implementations!\n*-*-*-*-*-*-*-*-*",
+            "_family": "csc",
+            "_genus": "ACEScc"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ACES - ACEScct",
+      "family": "ACES",
+      "description": "Convert ACEScct to ACES2065-1\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3",
+      "to_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACEScct_to_ACES2065-1"
+      },
+      "encoding": "log",
+      "categories": "file-io,working-space",
+      "transforms_data": [
+        {
+          "ordering": "100",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3",
+          "builtin_transform_style": "ACEScct_to_ACES2065-1",
+          "linked_display_colorspace_style": "",
+          "interface": "ColorSpace",
+          "encoding": "log",
+          "categories": "file-io,working-space",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/csc/ACEScct/ACEScsc.Academy.ACEScct_to_ACES.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3</ACEStransformID>\n// <ACESuserName>ACEScct to ACES2065-1</ACESuserName>\n\n//\n// ACES Color Space Conversion - ACEScct to ACES\n//\n// converts ACEScct (AP1 w/ ACESlog encoding) to \n//          ACES2065-1 (AP0 w/ linear encoding)\n//\n\n// *-*-*-*-*-*-*-*-*\n// ACEScct is intended to be transient and internal to software or hardware \n// systems, and is specifically not intended for interchange or archiving.\n// ACEScct should NOT be written into a container file in actual implementations!\n// *-*-*-*-*-*-*-*-*\n\n\n\nimport \"ACESlib.Transform_Common\";\n\n\n\nconst float X_BRK = 0.0078125;\nconst float Y_BRK = 0.155251141552511;\nconst float A = 10.5402377416545;\nconst float B = 0.0729055341958355;\n\n\n\nfloat ACEScct_to_lin( input varying float in)\n{\n    if (in > Y_BRK)\n        return pow( 2., in*17.52-9.72);\n    else\n        return (in - B) / A;\n}\n\n\n\nvoid main\n(   \n    input varying float rIn,\n    input varying float gIn,\n    input varying float bIn,\n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float lin_AP1[3];\n    lin_AP1[0] = ACEScct_to_lin( rIn);\n    lin_AP1[1] = ACEScct_to_lin( gIn);\n    lin_AP1[2] = ACEScct_to_lin( bIn);\n\n    float ACES[3] = mult_f3_f44( lin_AP1, AP1_2_AP0_MAT);\n  \n    rOut = ACES[0];\n    gOut = ACES[1];\n    bOut = ACES[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ACEScsc",
+              "_namespace": "Academy",
+              "_name": "ACEScct_to_ACES",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "ACEScct",
+              "_target": "ACES2065-1"
+            },
+            "_user_name": "ACEScct to ACES2065-1",
+            "_description": "ACES Color Space Conversion - ACEScct to ACES\n\nconverts ACEScct (AP1 w/ ACESlog encoding) to\nACES2065-1 (AP0 w/ linear encoding)\n\n*-*-*-*-*-*-*-*-*\nACEScct is intended to be transient and internal to software or hardware\nsystems, and is specifically not intended for interchange or archiving.\nACEScct should NOT be written into a container file in actual implementations!\n*-*-*-*-*-*-*-*-*",
+            "_family": "csc",
+            "_genus": "ACEScct"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ACES - ACEScg",
+      "family": "ACES",
+      "description": "Convert ACEScg to ACES2065-1\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScg_to_ACES.a1.0.3",
+      "to_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACEScg_to_ACES2065-1"
+      },
+      "encoding": "scene-linear",
+      "categories": "file-io,working-space",
+      "transforms_data": [
+        {
+          "ordering": "100",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScg_to_ACES.a1.0.3",
+          "builtin_transform_style": "ACEScg_to_ACES2065-1",
+          "linked_display_colorspace_style": "",
+          "interface": "ColorSpace",
+          "encoding": "scene-linear",
+          "categories": "file-io,working-space",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/csc/ACEScg/ACEScsc.Academy.ACEScg_to_ACES.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScg_to_ACES.a1.0.3</ACEStransformID>\n// <ACESuserName>ACEScg to ACES2065-1</ACESuserName>\n\n//\n// ACES Color Space Conversion - ACEScg to ACES\n//\n// converts ACEScg (AP1 w/ linear encoding) to\n//          ACES2065-1 (AP0 w/ linear encoding)\n//\n\n\n\nimport \"ACESlib.Transform_Common\";\n\n\n\nvoid main\n(   \n    input varying float rIn,\n    input varying float gIn,\n    input varying float bIn,\n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float ACEScg[3] = { rIn, gIn, bIn};\n\n    float ACES[3] = mult_f3_f44( ACEScg, AP1_2_AP0_MAT);\n\n    rOut = ACES[0];\n    gOut = ACES[1];\n    bOut = ACES[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScg_to_ACES.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ACEScsc",
+              "_namespace": "Academy",
+              "_name": "ACEScg_to_ACES",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "ACEScg",
+              "_target": "ACES2065-1"
+            },
+            "_user_name": "ACEScg to ACES2065-1",
+            "_description": "ACES Color Space Conversion - ACEScg to ACES\n\nconverts ACEScg (AP1 w/ linear encoding) to\nACES2065-1 (AP0 w/ linear encoding)",
+            "_family": "csc",
+            "_genus": "ACEScg"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Display - sRGB",
+      "family": "Display",
+      "description": "Convert CIE XYZ (D65 white) to sRGB (piecewise EOTF)",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "DISPLAY - CIE-XYZ-D65_to_sRGB"
+      },
+      "reference_space": "REFERENCE_SPACE_DISPLAY",
+      "encoding": "sdr-video",
+      "categories": "file-io",
+      "transforms_data": [
+        {
+          "ordering": "400",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_sRGB",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/sRGB/ODT.Academy.sRGB_100nits_dim.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - sRGB</ACESuserName>\n\n// \n// Output Device Transform - RGB computer monitor\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a desktop computer monitor \n//  typical of those used in motion picture visual effects production. These \n//  monitors may occasionally be referred to as \"sRGB\" displays, however, the \n//  monitor for which this transform is designed does not exactly match the \n//  specifications in IEC 61966-2-1:1999.\n// \n//  The assumed observer adapted white is D65, and the viewing environment is \n//  that of a dim surround. \n//\n//  The monitor specified is intended to be more typical of those found in \n//  visual effects production.\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.709\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.64      0.33\n//              Green:        0.3       0.6\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     100 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in \n//  IEC 61966-2-1:1999.\n//  Note: This EOTF is *NOT* gamma 2.2\n//\n// Signal Range:\n//    This transform outputs full range code values.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//   This ODT has a compensation for viewing environment variables more typical \n//   of those associated with video mastering.\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = REC709_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\n// NOTE: The EOTF is *NOT* gamma 2.4, it follows IEC 61966-2-1:1999\nconst float DISPGAMMA = 2.4; \nconst float OFFSET = 0.055;\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n    // Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);    \n\n    // Apply gamma adjustment to compensate for dim surround\n    linearCV = darkSurround_to_dimSurround( linearCV);\n\n    // Apply desaturation to compensate for luminance difference\n    linearCV = mult_f3_f33( linearCV, ODT_SAT_MAT);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n\n    // Encode linear code values with transfer function\n    float outputCV[3];\n    // moncurve_r with gamma of 2.4 and offset of 0.055 matches the EOTF found in IEC 61966-2-1:1999 (sRGB)\n    outputCV[0] = moncurve_r( linearCV[0], DISPGAMMA, OFFSET);\n    outputCV[1] = moncurve_r( linearCV[1], DISPGAMMA, OFFSET);\n    outputCV[2] = moncurve_r( linearCV[2], DISPGAMMA, OFFSET);\n\n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "RGBmonitor_100nits_dim",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "OCES",
+              "_target": "RGBmonitor_100nits_dim"
+            },
+            "_user_name": "ACES 1.0 Output - sRGB",
+            "_description": "Output Device Transform - RGB computer monitor\n\n\nSummary :\nThis transform is intended for mapping OCES onto a desktop computer monitor\ntypical of those used in motion picture visual effects production. These\nmonitors may occasionally be referred to as \"sRGB\" displays, however, the\nmonitor for which this transform is designed does not exactly match the\nspecifications in IEC 61966-2-1:1999.\n\nThe assumed observer adapted white is D65, and the viewing environment is\nthat of a dim surround.\n\nThe monitor specified is intended to be more typical of those found in\nvisual effects production.\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.709\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.64      0.33\nGreen:        0.3       0.6\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     100 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in\nIEC 61966-2-1:1999.\nNote: This EOTF is *NOT* gamma 2.2\n\nSignal Range:\nThis transform outputs full range code values.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nThis ODT has a compensation for viewing environment variables more typical\nof those associated with video mastering.",
+            "_family": "output_transform",
+            "_genus": "sRGB"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Display - Rec.1886 / Rec.709 Video",
+      "family": "Display",
+      "description": "Convert CIE XYZ (D65 white) to Rec.1886/Rec.709 (HD video)",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "DISPLAY - CIE-XYZ-D65_to_REC.1886-REC.709"
+      },
+      "reference_space": "REFERENCE_SPACE_DISPLAY",
+      "encoding": "sdr-video",
+      "categories": "file-io",
+      "transforms_data": [
+        {
+          "ordering": "410",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_REC.1886-REC.709",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/rec709/ODT.Academy.Rec709_100nits_dim.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - Rec.709</ACESuserName>\n\n// \n// Output Device Transform - Rec709\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a Rec.709 broadcast monitor\n//  that is calibrated to a D65 white point at 100 cd/m^2. The assumed observer \n//  adapted white is D65, and the viewing environment is a dim surround. \n//\n//  A possible use case for this transform would be HDTV/video mastering.\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.709\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.64      0.33\n//              Green:        0.3       0.6\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     100 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in \n//  Rec. ITU-R BT.1886.\n//\n// Signal Range:\n//    By default, this transform outputs full range code values. If instead a \n//    SMPTE \"legal\" signal is desired, there is a runtime flag to output \n//    SMPTE legal signal. In ctlrender, this can be achieved by appending \n//    '-param1 legalRange 1' after the '-ctl odt.ctl' string.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//   This ODT has a compensation for viewing environment variables more typical \n//   of those associated with video mastering.\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = REC709_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\nconst float DISPGAMMA = 2.4; \nconst float L_W = 1.0;\nconst float L_B = 0.0;\n\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut,\n    input varying int legalRange = 0\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n    // Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);\n\n    // Apply gamma adjustment to compensate for dim surround\n    linearCV = darkSurround_to_dimSurround( linearCV);\n\n    // Apply desaturation to compensate for luminance difference\n    linearCV = mult_f3_f33( linearCV, ODT_SAT_MAT);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n\n    // Encode linear code values with transfer function\n    float outputCV[3];\n    outputCV[0] = bt1886_r( linearCV[0], DISPGAMMA, L_W, L_B);\n    outputCV[1] = bt1886_r( linearCV[1], DISPGAMMA, L_W, L_B);\n    outputCV[2] = bt1886_r( linearCV[2], DISPGAMMA, L_W, L_B);\n\n    // Default output is full range, check if legalRange param was set to true\n    if (legalRange == 1) {\n        outputCV = fullRange_to_smpteRange_f3( outputCV);\n    }\n\n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}\n",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "Rec709_100nits_dim",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "OCES",
+              "_target": "Rec709_100nits_dim"
+            },
+            "_user_name": "ACES 1.0 Output - Rec.709",
+            "_description": "Output Device Transform - Rec709\n\n\nSummary :\nThis transform is intended for mapping OCES onto a Rec.709 broadcast monitor\nthat is calibrated to a D65 white point at 100 cd/m^2. The assumed observer\nadapted white is D65, and the viewing environment is a dim surround.\n\nA possible use case for this transform would be HDTV/video mastering.\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.709\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.64      0.33\nGreen:        0.3       0.6\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     100 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in\nRec. ITU-R BT.1886.\n\nSignal Range:\nBy default, this transform outputs full range code values. If instead a\nSMPTE \"legal\" signal is desired, there is a runtime flag to output\nSMPTE legal signal. In ctlrender, this can be achieved by appending\n'-param1 legalRange 1' after the '-ctl odt.ctl' string.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nThis ODT has a compensation for viewing environment variables more typical\nof those associated with video mastering.",
+            "_family": "output_transform",
+            "_genus": "rec709"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Display - Rec.2100-PQ",
+      "family": "Display",
+      "description": "Convert CIE XYZ (D65 white) to Rec.2100-PQ",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "DISPLAY - CIE-XYZ-D65_to_REC.2100-PQ"
+      },
+      "reference_space": "REFERENCE_SPACE_DISPLAY",
+      "encoding": "hdr-video",
+      "categories": "file-io",
+      "transforms_data": [
+        {
+          "ordering": "430",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_REC.2100-PQ",
+          "interface": "ViewTransform",
+          "encoding": "hdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/outputTransform/rec2020/RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - Rec.2020 ST2084 (1000 nits)</ACESuserName>\n\n// \n// Output Transform - Rec.2020 (1000 cd/m^2)\n//\n\n//\n// Summary :\n//  This transform maps ACES onto a Rec.2020 ST.2084 HDR display calibrated \n//  to a D65 white point at 1000 cd/m^2. The assumed observer adapted white is \n//  D65, and the viewing environment is that of a dark surround. Mid-gray\n//  luminance is targeted at 15 cd/m^2.\n//\n// NOTE :\n//  The parameterized \"Output Transform\" function used as basis for this \n//  transform includes a parameter labeled \"SURROUND\". However, as noted in \n//  \"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\n//  and as such currently only supports a rendering intended for dark surround \n//  environments. While it is planned for future releases to fully activate the \n//  this module and provide adjustment for dark/dim/normal surrounds, setting \n//  SURROUND equal to either dim or normal will have no effect at this time.\n//  \n//  That being said, these Output Transforms have been used successfully on\n//  major feature and television projects when mastering for home HDR where a \n//  dim surround environment is assumed. Based on that, these transforms are \n//  considered adequate for use for dim surround mastering, although, as always,\n//  creative adjustments to contrast and saturation may be desirable and should\n//  be saved as a \"trim pass.\"\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.2020\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.708     0.292\n//              Green:        0.17      0.797\n//              Blue:         0.131     0.046\n//              White:        0.3127    0.329     1000 cd/m^2\n//              18% Gray:     0.3127    0.329     15 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in SMPTE ST \n//  2084-2014. This transform makes no attempt to address the Annex functions \n//  which address integer quantization.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.OutputTransforms\";\n\n\n\nconst float Y_MIN = 0.0001;                     // black luminance (cd/m^2)\nconst float Y_MID = 15.0;                       // mid-point luminance (cd/m^2)\nconst float Y_MAX = 1000.0;                     // peak white luminance (cd/m^2)\n\nconst Chromaticities DISPLAY_PRI = REC2020_PRI; // encoding primaries (device setup)\nconst Chromaticities LIMITING_PRI = REC2020_PRI;// limiting primaries\n\nconst int EOTF = 0;                             // 0: ST-2084 (PQ)\n                                                // 1: BT.1886 (Rec.709/2020 settings) \n                                                // 2: sRGB (mon_curve w/ presets)\n                                                // 3: gamma 2.6\n                                                // 4: linear (no EOTF)\n                                                // 5: HLG\n\nconst int SURROUND = 0;                         // 0: dark ( NOTE: this is the only active setting! )\n                                                // 1: dim ( *inactive* - selecting this will have no effect )\n                                                // 2: normal ( *inactive* - selecting this will have no effect )\n\nconst bool STRETCH_BLACK = true;                // stretch black luminance to a PQ code value of 0\nconst bool D60_SIM = false;                       \nconst bool LEGAL_RANGE = false;\n\n\nvoid main\n(\n\tinput varying float rIn,\n\tinput varying float gIn,\n\tinput varying float bIn,\n\tinput varying float aIn,\n\toutput varying float rOut,\n\toutput varying float gOut,\n\toutput varying float bOut,\n\toutput varying float aOut\n)\n{\n    float aces[3] = {rIn, gIn, bIn};\n\n    float cv[3] = outputTransform( aces, Y_MIN,\n                                         Y_MID,\n                                         Y_MAX,\n                                         DISPLAY_PRI,\n                                         LIMITING_PRI,\n                                         EOTF,\n                                         SURROUND,\n                                         STRETCH_BLACK,\n                                         D60_SIM,\n                                         LEGAL_RANGE );\n\n    rOut = cv[0];\n    gOut = cv[1];\n    bOut = cv[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "RRTODT",
+              "_namespace": "Academy",
+              "_name": "Rec2020_1000nits_15nits_ST2084",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "ACES2065-1",
+              "_target": "Rec2020_1000nits_15nits_ST2084"
+            },
+            "_user_name": "ACES 1.0 Output - Rec.2020 ST2084 (1000 nits)",
+            "_description": "Output Transform - Rec.2020 (1000 cd/m^2)\n\n\nSummary :\nThis transform maps ACES onto a Rec.2020 ST.2084 HDR display calibrated\nto a D65 white point at 1000 cd/m^2. The assumed observer adapted white is\nD65, and the viewing environment is that of a dark surround. Mid-gray\nluminance is targeted at 15 cd/m^2.\n\nNOTE :\nThe parameterized \"Output Transform\" function used as basis for this\ntransform includes a parameter labeled \"SURROUND\". However, as noted in\n\"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\nand as such currently only supports a rendering intended for dark surround\nenvironments. While it is planned for future releases to fully activate the\nthis module and provide adjustment for dark/dim/normal surrounds, setting\nSURROUND equal to either dim or normal will have no effect at this time.\n\nThat being said, these Output Transforms have been used successfully on\nmajor feature and television projects when mastering for home HDR where a\ndim surround environment is assumed. Based on that, these transforms are\nconsidered adequate for use for dim surround mastering, although, as always,\ncreative adjustments to contrast and saturation may be desirable and should\nbe saved as a \"trim pass.\"\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.2020\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.708     0.292\nGreen:        0.17      0.797\nBlue:         0.131     0.046\nWhite:        0.3127    0.329     1000 cd/m^2\n18% Gray:     0.3127    0.329     15 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in SMPTE ST\n2084-2014. This transform makes no attempt to address the Annex functions\nwhich address integer quantization.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "outputTransform",
+            "_genus": "rec2020"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Display - ST2084-P3-D65",
+      "family": "Display",
+      "description": "Convert CIE XYZ (D65 white) to ST-2084 (PQ), P3-D65 primaries",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "DISPLAY - CIE-XYZ-D65_to_ST2084-P3-D65"
+      },
+      "reference_space": "REFERENCE_SPACE_DISPLAY",
+      "encoding": "hdr-video",
+      "categories": "file-io",
+      "transforms_data": [
+        {
+          "ordering": "450",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-P3lim_1.1",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_ST2084-P3-D65",
+          "interface": "ViewTransform",
+          "encoding": "hdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/outputTransform/p3/RRTODT.Academy.P3D65_1000nits_15nits_ST2084.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - P3-D65 ST2084 (1000 nits)</ACESuserName>\n\n// \n// Output Transform - P3D65 (1000 cd/m^2)\n//\n\n//\n// Summary :\n//  This transform maps ACES onto a P3D65 ST.2084 HDR display calibrated \n//  to a D65 white point at 1000 cd/m^2. The assumed observer adapted white is \n//  D65, and the viewing environment is that of a dark surround. Mid-gray\n//  luminance is targeted at 15 cd/m^2.\n//\n// NOTE :\n//  The parameterized \"Output Transform\" function used as basis for this \n//  transform includes a parameter labeled \"SURROUND\". However, as noted in \n//  \"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\n//  and as such currently only supports a rendering intended for dark surround \n//  environments. While it is planned for future releases to fully activate the \n//  this module and provide adjustment for dark/dim/normal surrounds, setting \n//  SURROUND equal to either dim or normal will have no effect at this time.\n//  \n//  That being said, these Output Transforms have been used successfully on\n//  major feature and television projects when mastering for home HDR where a \n//  dim surround environment is assumed. Based on that, these transforms are \n//  considered adequate for use for dim surround mastering, although, as always,\n//  creative adjustments to contrast and saturation may be desirable and should\n//  be saved as a \"trim pass.\"\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.2020\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.68      0.32\n//              Green:        0.265     0.69\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     1000 cd/m^2\n//              18% Gray:     0.3127    0.329     15 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in SMPTE ST \n//  2084-2014. This transform makes no attempt to address the Annex functions \n//  which address integer quantization.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.OutputTransforms\";\n\n\n\nconst float Y_MIN = 0.0001;                     // black luminance (cd/m^2)\nconst float Y_MID = 15.0;                       // mid-point luminance (cd/m^2)\nconst float Y_MAX = 1000.0;                     // peak white luminance (cd/m^2)\n\nconst Chromaticities DISPLAY_PRI = P3D65_PRI;   // encoding primaries (device setup)\nconst Chromaticities LIMITING_PRI = P3D65_PRI;  // limiting primaries\n\nconst int EOTF = 0;                             // 0: ST-2084 (PQ)\n                                                // 1: BT.1886 (Rec.709/2020 settings) \n                                                // 2: sRGB (mon_curve w/ presets)\n                                                // 3: gamma 2.6\n                                                // 4: linear (no EOTF)\n                                                // 5: HLG\n\nconst int SURROUND = 0;                         // 0: dark ( NOTE: this is the only active setting! )\n                                                // 1: dim ( *inactive* - selecting this will have no effect )\n                                                // 2: normal ( *inactive* - selecting this will have no effect )\n\nconst bool STRETCH_BLACK = true;                // stretch black luminance to a PQ code value of 0\nconst bool D60_SIM = false;                       \nconst bool LEGAL_RANGE = false;\n\n\nvoid main\n(\n\tinput varying float rIn,\n\tinput varying float gIn,\n\tinput varying float bIn,\n\tinput varying float aIn,\n\toutput varying float rOut,\n\toutput varying float gOut,\n\toutput varying float bOut,\n\toutput varying float aOut\n)\n{\n    float aces[3] = {rIn, gIn, bIn};\n\n    float cv[3] = outputTransform( aces, Y_MIN,\n                                         Y_MID,\n                                         Y_MAX,\n                                         DISPLAY_PRI,\n                                         LIMITING_PRI,\n                                         EOTF,\n                                         SURROUND,\n                                         STRETCH_BLACK,\n                                         D60_SIM,\n                                         LEGAL_RANGE );\n\n    rOut = cv[0];\n    gOut = cv[1];\n    bOut = cv[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "RRTODT",
+              "_namespace": "Academy",
+              "_name": "P3D65_1000nits_15nits_ST2084",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "ACES2065-1",
+              "_target": "P3D65_1000nits_15nits_ST2084"
+            },
+            "_user_name": "ACES 1.0 Output - P3-D65 ST2084 (1000 nits)",
+            "_description": "Output Transform - P3D65 (1000 cd/m^2)\n\n\nSummary :\nThis transform maps ACES onto a P3D65 ST.2084 HDR display calibrated\nto a D65 white point at 1000 cd/m^2. The assumed observer adapted white is\nD65, and the viewing environment is that of a dark surround. Mid-gray\nluminance is targeted at 15 cd/m^2.\n\nNOTE :\nThe parameterized \"Output Transform\" function used as basis for this\ntransform includes a parameter labeled \"SURROUND\". However, as noted in\n\"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\nand as such currently only supports a rendering intended for dark surround\nenvironments. While it is planned for future releases to fully activate the\nthis module and provide adjustment for dark/dim/normal surrounds, setting\nSURROUND equal to either dim or normal will have no effect at this time.\n\nThat being said, these Output Transforms have been used successfully on\nmajor feature and television projects when mastering for home HDR where a\ndim surround environment is assumed. Based on that, these transforms are\nconsidered adequate for use for dim surround mastering, although, as always,\ncreative adjustments to contrast and saturation may be desirable and should\nbe saved as a \"trim pass.\"\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.2020\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.68      0.32\nGreen:        0.265     0.69\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     1000 cd/m^2\n18% Gray:     0.3127    0.329     15 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in SMPTE ST\n2084-2014. This transform makes no attempt to address the Annex functions\nwhich address integer quantization.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "outputTransform",
+            "_genus": "p3"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Display - P3-D65",
+      "family": "Display",
+      "description": "Convert CIE XYZ (D65 white) to Gamma 2.6, P3-D65",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "DISPLAY - CIE-XYZ-D65_to_G2.6-P3-D65"
+      },
+      "reference_space": "REFERENCE_SPACE_DISPLAY",
+      "encoding": "sdr-video",
+      "categories": "file-io",
+      "transforms_data": [
+        {
+          "ordering": "460",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_G2.6-P3-D65",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/p3/ODT.Academy.P3D65_48nits.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - P3D65</ACESuserName>\n\n// \n// Output Device Transform - P3D65\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a projector with P3\n//  primaries that has been set up such that equal neutral RGB code values\n//  sent to the projector produce a chromaticity equal to that of D65\n//  and that the peak neutral luminance is 48 nits. The assumed observer \n//  adapted white is D65, and the viewing environment is a dark surround. \n//\n//  A possible use case for this transform would be mastering for a theatrical\n//  release with a creative white point of D65.\n//\n// Device Primaries : \n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.68      0.32\n//              Green:        0.265     0.69\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     48 cd/m^2\n//\n// Display EOTF :\n//  Gamma: 2.6\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = P3D65_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\nconst float DISPGAMMA = 2.6;\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n  \t// Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n  \n    // Encode linear code values with transfer function\n    float outputCV[3] = pow_f3( linearCV, 1./ DISPGAMMA);\n  \n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}\n",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "P3D65_48nits",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "OCES",
+              "_target": "P3D65_48nits"
+            },
+            "_user_name": "ACES 1.0 Output - P3D65",
+            "_description": "Output Device Transform - P3D65\n\n\nSummary :\nThis transform is intended for mapping OCES onto a projector with P3\nprimaries that has been set up such that equal neutral RGB code values\nsent to the projector produce a chromaticity equal to that of D65\nand that the peak neutral luminance is 48 nits. The assumed observer\nadapted white is D65, and the viewing environment is a dark surround.\n\nA possible use case for this transform would be mastering for a theatrical\nrelease with a creative white point of D65.\n\nDevice Primaries :\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.68      0.32\nGreen:        0.265     0.69\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     48 cd/m^2\n\nDisplay EOTF :\nGamma: 2.6\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "output_transform",
+            "_genus": "p3"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Input - Generic - sRGB - Texture",
+      "family": "Input",
+      "description": "Convert ACES2065-1 to sRGB\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Input:AP0_to_Rec709-sRGB:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/input/OCIO.Input.AP0_to_Rec709-sRGB.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Gamma 1.8 - Rec.709 - Texture",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to 1.8 gamma-corrected Rec.709 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Rec709-Gamma1.8:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_Rec709-Gamma1.8.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Gamma 2.2 - AP1 - Texture",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to 2.2 gamma-corrected AP1 primaries, D60 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_AP1-Gamma2.2:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_AP1-Gamma2.2.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Gamma 2.2 - Rec.709 - Texture",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to 2.2 gamma-corrected Rec.709 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Rec709-Gamma2.2:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_Rec709-Gamma2.2.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Gamma 2.4 - Rec.709 - Texture",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to 2.4 gamma-corrected Rec.709 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Rec709-Gamma2.4:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_Rec709-Gamma2.4.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Linear - P3-D65",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to linear P3 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_P3-D65-Linear:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_P3-D65-Linear.clf"
+      },
+      "encoding": "scene-linear",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Linear - Rec.2020",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to linear Rec.2020 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Rec2020-Linear:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_Rec2020-Linear.clf"
+      },
+      "encoding": "scene-linear",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Linear - Rec.709",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to linear Rec.709 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Rec709-Linear:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_Rec709-Linear.clf"
+      },
+      "encoding": "scene-linear",
+      "categories": "file-io,working-space"
+    },
+    {
+      "name": "Utility - Linear - sRGB",
+      "family": "Utility",
+      "description": "Convert ACES2065-1 to linear Rec.709 primaries, D65 white point\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Rec709-Linear:1.0",
+      "from_reference": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.AP0_to_Rec709-Linear.clf"
+      },
+      "encoding": "scene-linear",
+      "categories": "file-io,working-space"
+    }
+  ],
+  "named_transforms": [
+    {
+      "name": "Utility - Curve - Rec.1886",
+      "family": "Utility",
+      "description": "Convert generic linear RGB to generic gamma-corrected RGB\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:Linear_to_Rec1886:1.0",
+      "forward_transform": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.Linear_to_Rec1886.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    },
+    {
+      "name": "Utility - Curve - sRGB",
+      "family": "Utility",
+      "description": "Convert generic linear RGB to generic gamma-corrected RGB\n\nCLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:Linear_to_sRGB:1.0",
+      "forward_transform": {
+        "transform_type": "FileTransform",
+        "transform_factory": "CLF Transform to Group Transform",
+        "src": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/clf/transforms/ocio/utility/OCIO.Utility.Linear_to_sRGB.clf"
+      },
+      "encoding": "sdr-video",
+      "categories": "file-io"
+    }
+  ],
+  "view_transforms": [
+    {
+      "name": "Output - SDR Video - ACES 1.0",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0"
+      },
+      "description": "Component of ACES Output Transforms for SDR D65 video\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3\nACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3\nACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_100nits_dim.a1.0.3",
+      "transforms_data": [
+        {
+          "ordering": "400",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_sRGB",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/sRGB/ODT.Academy.sRGB_100nits_dim.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - sRGB</ACESuserName>\n\n// \n// Output Device Transform - RGB computer monitor\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a desktop computer monitor \n//  typical of those used in motion picture visual effects production. These \n//  monitors may occasionally be referred to as \"sRGB\" displays, however, the \n//  monitor for which this transform is designed does not exactly match the \n//  specifications in IEC 61966-2-1:1999.\n// \n//  The assumed observer adapted white is D65, and the viewing environment is \n//  that of a dim surround. \n//\n//  The monitor specified is intended to be more typical of those found in \n//  visual effects production.\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.709\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.64      0.33\n//              Green:        0.3       0.6\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     100 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in \n//  IEC 61966-2-1:1999.\n//  Note: This EOTF is *NOT* gamma 2.2\n//\n// Signal Range:\n//    This transform outputs full range code values.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//   This ODT has a compensation for viewing environment variables more typical \n//   of those associated with video mastering.\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = REC709_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\n// NOTE: The EOTF is *NOT* gamma 2.4, it follows IEC 61966-2-1:1999\nconst float DISPGAMMA = 2.4; \nconst float OFFSET = 0.055;\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n    // Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);    \n\n    // Apply gamma adjustment to compensate for dim surround\n    linearCV = darkSurround_to_dimSurround( linearCV);\n\n    // Apply desaturation to compensate for luminance difference\n    linearCV = mult_f3_f33( linearCV, ODT_SAT_MAT);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n\n    // Encode linear code values with transfer function\n    float outputCV[3];\n    // moncurve_r with gamma of 2.4 and offset of 0.055 matches the EOTF found in IEC 61966-2-1:1999 (sRGB)\n    outputCV[0] = moncurve_r( linearCV[0], DISPGAMMA, OFFSET);\n    outputCV[1] = moncurve_r( linearCV[1], DISPGAMMA, OFFSET);\n    outputCV[2] = moncurve_r( linearCV[2], DISPGAMMA, OFFSET);\n\n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "RGBmonitor_100nits_dim",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "OCES",
+              "_target": "RGBmonitor_100nits_dim"
+            },
+            "_user_name": "ACES 1.0 Output - sRGB",
+            "_description": "Output Device Transform - RGB computer monitor\n\n\nSummary :\nThis transform is intended for mapping OCES onto a desktop computer monitor\ntypical of those used in motion picture visual effects production. These\nmonitors may occasionally be referred to as \"sRGB\" displays, however, the\nmonitor for which this transform is designed does not exactly match the\nspecifications in IEC 61966-2-1:1999.\n\nThe assumed observer adapted white is D65, and the viewing environment is\nthat of a dim surround.\n\nThe monitor specified is intended to be more typical of those found in\nvisual effects production.\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.709\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.64      0.33\nGreen:        0.3       0.6\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     100 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in\nIEC 61966-2-1:1999.\nNote: This EOTF is *NOT* gamma 2.2\n\nSignal Range:\nThis transform outputs full range code values.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nThis ODT has a compensation for viewing environment variables more typical\nof those associated with video mastering.",
+            "_family": "output_transform",
+            "_genus": "sRGB"
+          }
+        },
+        {
+          "ordering": "410",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_REC.1886-REC.709",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/rec709/ODT.Academy.Rec709_100nits_dim.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - Rec.709</ACESuserName>\n\n// \n// Output Device Transform - Rec709\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a Rec.709 broadcast monitor\n//  that is calibrated to a D65 white point at 100 cd/m^2. The assumed observer \n//  adapted white is D65, and the viewing environment is a dim surround. \n//\n//  A possible use case for this transform would be HDTV/video mastering.\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.709\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.64      0.33\n//              Green:        0.3       0.6\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     100 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in \n//  Rec. ITU-R BT.1886.\n//\n// Signal Range:\n//    By default, this transform outputs full range code values. If instead a \n//    SMPTE \"legal\" signal is desired, there is a runtime flag to output \n//    SMPTE legal signal. In ctlrender, this can be achieved by appending \n//    '-param1 legalRange 1' after the '-ctl odt.ctl' string.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//   This ODT has a compensation for viewing environment variables more typical \n//   of those associated with video mastering.\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = REC709_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\nconst float DISPGAMMA = 2.4; \nconst float L_W = 1.0;\nconst float L_B = 0.0;\n\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut,\n    input varying int legalRange = 0\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n    // Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);\n\n    // Apply gamma adjustment to compensate for dim surround\n    linearCV = darkSurround_to_dimSurround( linearCV);\n\n    // Apply desaturation to compensate for luminance difference\n    linearCV = mult_f3_f33( linearCV, ODT_SAT_MAT);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n\n    // Encode linear code values with transfer function\n    float outputCV[3];\n    outputCV[0] = bt1886_r( linearCV[0], DISPGAMMA, L_W, L_B);\n    outputCV[1] = bt1886_r( linearCV[1], DISPGAMMA, L_W, L_B);\n    outputCV[2] = bt1886_r( linearCV[2], DISPGAMMA, L_W, L_B);\n\n    // Default output is full range, check if legalRange param was set to true\n    if (legalRange == 1) {\n        outputCV = fullRange_to_smpteRange_f3( outputCV);\n    }\n\n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}\n",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "Rec709_100nits_dim",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "OCES",
+              "_target": "Rec709_100nits_dim"
+            },
+            "_user_name": "ACES 1.0 Output - Rec.709",
+            "_description": "Output Device Transform - Rec709\n\n\nSummary :\nThis transform is intended for mapping OCES onto a Rec.709 broadcast monitor\nthat is calibrated to a D65 white point at 100 cd/m^2. The assumed observer\nadapted white is D65, and the viewing environment is a dim surround.\n\nA possible use case for this transform would be HDTV/video mastering.\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.709\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.64      0.33\nGreen:        0.3       0.6\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     100 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in\nRec. ITU-R BT.1886.\n\nSignal Range:\nBy default, this transform outputs full range code values. If instead a\nSMPTE \"legal\" signal is desired, there is a runtime flag to output\nSMPTE legal signal. In ctlrender, this can be achieved by appending\n'-param1 legalRange 1' after the '-ctl odt.ctl' string.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nThis ODT has a compensation for viewing environment variables more typical\nof those associated with video mastering.",
+            "_family": "output_transform",
+            "_genus": "rec709"
+          }
+        },
+        {
+          "ordering": "420",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_100nits_dim.a1.0.3",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_REC.1886-REC.2020",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/rec2020/ODT.Academy.Rec2020_100nits_dim.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_100nits_dim.a1.0.3</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - Rec.2020</ACESuserName>\n\n// \n// Output Device Transform - Rec2020\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a Rec.2020 broadcast \n//  monitor that is calibrated to a D65 white point at 100 cd/m^2. The assumed \n//  observer adapted white is D65, and the viewing environment is that of a dim \n//  surround. \n//\n//  A possible use case for this transform would be UHDTV/video mastering.\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.2020\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.708     0.292\n//              Green:        0.17      0.797\n//              Blue:         0.131     0.046\n//              White:        0.3127    0.329     100 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in \n//  Rec. ITU-R BT.1886.\n//\n// Signal Range:\n//    By default, this transform outputs full range code values. If instead a \n//    SMPTE \"legal\" signal is desired, there is a runtime flag to output \n//    SMPTE legal signal. In ctlrender, this can be achieved by appending \n//    '-param1 legalRange 1' after the '-ctl odt.ctl' string.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//   This ODT has a compensation for viewing environment variables more typical \n//   of those associated with video mastering.\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = REC2020_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\nconst float DISPGAMMA = 2.4; \nconst float L_W = 1.0;\nconst float L_B = 0.0;\n\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut,\n    input varying int legalRange = 0\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n    // Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);\n\n    // Apply gamma adjustment to compensate for dim surround\n    linearCV = darkSurround_to_dimSurround( linearCV);\n\n    // Apply desaturation to compensate for luminance difference\n    linearCV = mult_f3_f33( linearCV, ODT_SAT_MAT);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n\n    // Encode linear code values with transfer function\n    float outputCV[3];\n    outputCV[0] = bt1886_r( linearCV[0], DISPGAMMA, L_W, L_B);\n    outputCV[1] = bt1886_r( linearCV[1], DISPGAMMA, L_W, L_B);\n    outputCV[2] = bt1886_r( linearCV[2], DISPGAMMA, L_W, L_B);\n\n    // Default output is full range, check if legalRange param was set to true\n    if (legalRange == 1) {\n        outputCV = fullRange_to_smpteRange_f3( outputCV);\n    }\n\n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_100nits_dim.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "Rec2020_100nits_dim",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "OCES",
+              "_target": "Rec2020_100nits_dim"
+            },
+            "_user_name": "ACES 1.0 Output - Rec.2020",
+            "_description": "Output Device Transform - Rec2020\n\n\nSummary :\nThis transform is intended for mapping OCES onto a Rec.2020 broadcast\nmonitor that is calibrated to a D65 white point at 100 cd/m^2. The assumed\nobserver adapted white is D65, and the viewing environment is that of a dim\nsurround.\n\nA possible use case for this transform would be UHDTV/video mastering.\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.2020\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.708     0.292\nGreen:        0.17      0.797\nBlue:         0.131     0.046\nWhite:        0.3127    0.329     100 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in\nRec. ITU-R BT.1886.\n\nSignal Range:\nBy default, this transform outputs full range code values. If instead a\nSMPTE \"legal\" signal is desired, there is a runtime flag to output\nSMPTE legal signal. In ctlrender, this can be achieved by appending\n'-param1 legalRange 1' after the '-ctl odt.ctl' string.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nThis ODT has a compensation for viewing environment variables more typical\nof those associated with video mastering.",
+            "_family": "output_transform",
+            "_genus": "rec2020"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Output - HDR Video (1000 nits & Rec.2020 lim) - ACES 1.1",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1"
+      },
+      "description": "Component of ACES Output Transforms for 1000 nit HDR D65 video\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0\nACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0",
+      "transforms_data": [
+        {
+          "ordering": "430",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_REC.2100-HLG-1000nit",
+          "interface": "ViewTransform",
+          "encoding": "hdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/outputTransform/rec2020/RRTODT.Academy.Rec2020_1000nits_15nits_HLG.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - Rec.2020 HLG (1000 nits)</ACESuserName>\n\n// \n// Output Transform - Rec.2020 (1000 cd/m^2)\n//\n\n//\n// Summary :\n//  This transform maps ACES onto a Rec.2020 HLG HDR display calibrated \n//  to a D65 white point at 1000 cd/m^2. The assumed observer adapted white is \n//  D65, and the viewing environment is that of a dark surround. Mid-gray\n//  luminance is targeted at 15 cd/m^2.\n// \n// NOTE :\n//  The parameterized \"Output Transform\" function used as basis for this \n//  transform includes a parameter labeled \"SURROUND\". However, as noted in \n//  \"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\n//  and as such currently only supports a rendering intended for dark surround \n//  environments. While it is planned for future releases to fully activate the \n//  this module and provide adjustment for dark/dim/normal surrounds, setting \n//  SURROUND equal to either dim or normal will have no effect at this time.\n//  \n//  That being said, these Output Transforms have been used successfully on\n//  major feature and television projects when mastering for home HDR where a \n//  dim surround environment is assumed. Based on that, these transforms are \n//  considered adequate for use for dim surround mastering, although, as always,\n//  creative adjustments to contrast and saturation may be desirable and should\n//  be saved as a \"trim pass.\"\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.2020\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.708     0.292\n//              Green:        0.17      0.797\n//              Blue:         0.131     0.046\n//              White:        0.3127    0.329     1000 cd/m^2\n//              18% Gray:     0.3127    0.329     15 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in Table 5 of \n//  ITU-R BT.2100 (HLG)\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.OutputTransforms\";\n\n\n// Support for HLG in ACES is tricky, since HLG is \"scene-referred\" and ACES \n// Output transforms produce display-referred output. ACES supports HLG at\n// 1000 nits by converting the ST.2084 output to HLG using the method specified\n// in Section 7 of ITU-R BT.2390-0. \n\n\nconst float Y_MIN = 0.0001;                     // black luminance (cd/m^2)\nconst float Y_MID = 15.0;                       // mid-point luminance (cd/m^2)\nconst float Y_MAX = 1000.0;                     // peak white luminance (cd/m^2)\n\nconst Chromaticities DISPLAY_PRI = REC2020_PRI; // encoding primaries (device setup)\nconst Chromaticities LIMITING_PRI = REC2020_PRI;// limiting primaries\n\nconst int EOTF = 5;                             // 0: ST-2084 (PQ)\n                                                // 1: BT.1886 (Rec.709/2020 settings) \n                                                // 2: sRGB (mon_curve w/ presets)\n                                                // 3: gamma 2.6\n                                                // 4: linear (no EOTF)\n                                                // 5: HLG\n\nconst int SURROUND = 0;                         // 0: dark ( NOTE: this is the only active setting! )\n                                                // 1: dim ( *inactive* - selecting this will have no effect )\n                                                // 2: normal ( *inactive* - selecting this will have no effect )\n\nconst bool STRETCH_BLACK = true;                // stretch black luminance to a PQ code value of 0\nconst bool D60_SIM = false;                       \nconst bool LEGAL_RANGE = false;\n\n\nvoid main\n(\n\tinput varying float rIn,\n\tinput varying float gIn,\n\tinput varying float bIn,\n\tinput varying float aIn,\n\toutput varying float rOut,\n\toutput varying float gOut,\n\toutput varying float bOut,\n\toutput varying float aOut\n)\n{\n    float aces[3] = {rIn, gIn, bIn};\n\n    float cv[3] = outputTransform( aces, Y_MIN,\n                                         Y_MID,\n                                         Y_MAX,\n                                         DISPLAY_PRI,\n                                         LIMITING_PRI,\n                                         EOTF,\n                                         SURROUND,\n                                         STRETCH_BLACK,\n                                         D60_SIM,\n                                         LEGAL_RANGE );\n\n    rOut = cv[0];\n    gOut = cv[1];\n    bOut = cv[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "RRTODT",
+              "_namespace": "Academy",
+              "_name": "Rec2020_1000nits_15nits_HLG",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "ACES2065-1",
+              "_target": "Rec2020_1000nits_15nits_HLG"
+            },
+            "_user_name": "ACES 1.0 Output - Rec.2020 HLG (1000 nits)",
+            "_description": "Output Transform - Rec.2020 (1000 cd/m^2)\n\n\nSummary :\nThis transform maps ACES onto a Rec.2020 HLG HDR display calibrated\nto a D65 white point at 1000 cd/m^2. The assumed observer adapted white is\nD65, and the viewing environment is that of a dark surround. Mid-gray\nluminance is targeted at 15 cd/m^2.\n\nNOTE :\nThe parameterized \"Output Transform\" function used as basis for this\ntransform includes a parameter labeled \"SURROUND\". However, as noted in\n\"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\nand as such currently only supports a rendering intended for dark surround\nenvironments. While it is planned for future releases to fully activate the\nthis module and provide adjustment for dark/dim/normal surrounds, setting\nSURROUND equal to either dim or normal will have no effect at this time.\n\nThat being said, these Output Transforms have been used successfully on\nmajor feature and television projects when mastering for home HDR where a\ndim surround environment is assumed. Based on that, these transforms are\nconsidered adequate for use for dim surround mastering, although, as always,\ncreative adjustments to contrast and saturation may be desirable and should\nbe saved as a \"trim pass.\"\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.2020\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.708     0.292\nGreen:        0.17      0.797\nBlue:         0.131     0.046\nWhite:        0.3127    0.329     1000 cd/m^2\n18% Gray:     0.3127    0.329     15 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in Table 5 of\nITU-R BT.2100 (HLG)\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "outputTransform",
+            "_genus": "rec2020"
+          }
+        },
+        {
+          "ordering": "430",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_REC.2100-PQ",
+          "interface": "ViewTransform",
+          "encoding": "hdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/outputTransform/rec2020/RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - Rec.2020 ST2084 (1000 nits)</ACESuserName>\n\n// \n// Output Transform - Rec.2020 (1000 cd/m^2)\n//\n\n//\n// Summary :\n//  This transform maps ACES onto a Rec.2020 ST.2084 HDR display calibrated \n//  to a D65 white point at 1000 cd/m^2. The assumed observer adapted white is \n//  D65, and the viewing environment is that of a dark surround. Mid-gray\n//  luminance is targeted at 15 cd/m^2.\n//\n// NOTE :\n//  The parameterized \"Output Transform\" function used as basis for this \n//  transform includes a parameter labeled \"SURROUND\". However, as noted in \n//  \"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\n//  and as such currently only supports a rendering intended for dark surround \n//  environments. While it is planned for future releases to fully activate the \n//  this module and provide adjustment for dark/dim/normal surrounds, setting \n//  SURROUND equal to either dim or normal will have no effect at this time.\n//  \n//  That being said, these Output Transforms have been used successfully on\n//  major feature and television projects when mastering for home HDR where a \n//  dim surround environment is assumed. Based on that, these transforms are \n//  considered adequate for use for dim surround mastering, although, as always,\n//  creative adjustments to contrast and saturation may be desirable and should\n//  be saved as a \"trim pass.\"\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.2020\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.708     0.292\n//              Green:        0.17      0.797\n//              Blue:         0.131     0.046\n//              White:        0.3127    0.329     1000 cd/m^2\n//              18% Gray:     0.3127    0.329     15 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in SMPTE ST \n//  2084-2014. This transform makes no attempt to address the Annex functions \n//  which address integer quantization.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.OutputTransforms\";\n\n\n\nconst float Y_MIN = 0.0001;                     // black luminance (cd/m^2)\nconst float Y_MID = 15.0;                       // mid-point luminance (cd/m^2)\nconst float Y_MAX = 1000.0;                     // peak white luminance (cd/m^2)\n\nconst Chromaticities DISPLAY_PRI = REC2020_PRI; // encoding primaries (device setup)\nconst Chromaticities LIMITING_PRI = REC2020_PRI;// limiting primaries\n\nconst int EOTF = 0;                             // 0: ST-2084 (PQ)\n                                                // 1: BT.1886 (Rec.709/2020 settings) \n                                                // 2: sRGB (mon_curve w/ presets)\n                                                // 3: gamma 2.6\n                                                // 4: linear (no EOTF)\n                                                // 5: HLG\n\nconst int SURROUND = 0;                         // 0: dark ( NOTE: this is the only active setting! )\n                                                // 1: dim ( *inactive* - selecting this will have no effect )\n                                                // 2: normal ( *inactive* - selecting this will have no effect )\n\nconst bool STRETCH_BLACK = true;                // stretch black luminance to a PQ code value of 0\nconst bool D60_SIM = false;                       \nconst bool LEGAL_RANGE = false;\n\n\nvoid main\n(\n\tinput varying float rIn,\n\tinput varying float gIn,\n\tinput varying float bIn,\n\tinput varying float aIn,\n\toutput varying float rOut,\n\toutput varying float gOut,\n\toutput varying float bOut,\n\toutput varying float aOut\n)\n{\n    float aces[3] = {rIn, gIn, bIn};\n\n    float cv[3] = outputTransform( aces, Y_MIN,\n                                         Y_MID,\n                                         Y_MAX,\n                                         DISPLAY_PRI,\n                                         LIMITING_PRI,\n                                         EOTF,\n                                         SURROUND,\n                                         STRETCH_BLACK,\n                                         D60_SIM,\n                                         LEGAL_RANGE );\n\n    rOut = cv[0];\n    gOut = cv[1];\n    bOut = cv[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "RRTODT",
+              "_namespace": "Academy",
+              "_name": "Rec2020_1000nits_15nits_ST2084",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "ACES2065-1",
+              "_target": "Rec2020_1000nits_15nits_ST2084"
+            },
+            "_user_name": "ACES 1.0 Output - Rec.2020 ST2084 (1000 nits)",
+            "_description": "Output Transform - Rec.2020 (1000 cd/m^2)\n\n\nSummary :\nThis transform maps ACES onto a Rec.2020 ST.2084 HDR display calibrated\nto a D65 white point at 1000 cd/m^2. The assumed observer adapted white is\nD65, and the viewing environment is that of a dark surround. Mid-gray\nluminance is targeted at 15 cd/m^2.\n\nNOTE :\nThe parameterized \"Output Transform\" function used as basis for this\ntransform includes a parameter labeled \"SURROUND\". However, as noted in\n\"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\nand as such currently only supports a rendering intended for dark surround\nenvironments. While it is planned for future releases to fully activate the\nthis module and provide adjustment for dark/dim/normal surrounds, setting\nSURROUND equal to either dim or normal will have no effect at this time.\n\nThat being said, these Output Transforms have been used successfully on\nmajor feature and television projects when mastering for home HDR where a\ndim surround environment is assumed. Based on that, these transforms are\nconsidered adequate for use for dim surround mastering, although, as always,\ncreative adjustments to contrast and saturation may be desirable and should\nbe saved as a \"trim pass.\"\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.2020\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.708     0.292\nGreen:        0.17      0.797\nBlue:         0.131     0.046\nWhite:        0.3127    0.329     1000 cd/m^2\n18% Gray:     0.3127    0.329     15 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in SMPTE ST\n2084-2014. This transform makes no attempt to address the Annex functions\nwhich address integer quantization.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "outputTransform",
+            "_genus": "rec2020"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Output - HDR Video (1000 nits & P3 lim) - ACES 1.1",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-P3lim_1.1"
+      },
+      "description": "Component of ACES Output Transforms for 1000 nit HDR D65 video\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
+      "transforms_data": [
+        {
+          "ordering": "450",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-P3lim_1.1",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_ST2084-P3-D65",
+          "interface": "ViewTransform",
+          "encoding": "hdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/outputTransform/p3/RRTODT.Academy.P3D65_1000nits_15nits_ST2084.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - P3-D65 ST2084 (1000 nits)</ACESuserName>\n\n// \n// Output Transform - P3D65 (1000 cd/m^2)\n//\n\n//\n// Summary :\n//  This transform maps ACES onto a P3D65 ST.2084 HDR display calibrated \n//  to a D65 white point at 1000 cd/m^2. The assumed observer adapted white is \n//  D65, and the viewing environment is that of a dark surround. Mid-gray\n//  luminance is targeted at 15 cd/m^2.\n//\n// NOTE :\n//  The parameterized \"Output Transform\" function used as basis for this \n//  transform includes a parameter labeled \"SURROUND\". However, as noted in \n//  \"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\n//  and as such currently only supports a rendering intended for dark surround \n//  environments. While it is planned for future releases to fully activate the \n//  this module and provide adjustment for dark/dim/normal surrounds, setting \n//  SURROUND equal to either dim or normal will have no effect at this time.\n//  \n//  That being said, these Output Transforms have been used successfully on\n//  major feature and television projects when mastering for home HDR where a \n//  dim surround environment is assumed. Based on that, these transforms are \n//  considered adequate for use for dim surround mastering, although, as always,\n//  creative adjustments to contrast and saturation may be desirable and should\n//  be saved as a \"trim pass.\"\n//\n// Device Primaries : \n//  Primaries are those specified in Rec. ITU-R BT.2020\n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.68      0.32\n//              Green:        0.265     0.69\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     1000 cd/m^2\n//              18% Gray:     0.3127    0.329     15 cd/m^2\n//\n// Display EOTF :\n//  The reference electro-optical transfer function specified in SMPTE ST \n//  2084-2014. This transform makes no attempt to address the Annex functions \n//  which address integer quantization.\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.OutputTransforms\";\n\n\n\nconst float Y_MIN = 0.0001;                     // black luminance (cd/m^2)\nconst float Y_MID = 15.0;                       // mid-point luminance (cd/m^2)\nconst float Y_MAX = 1000.0;                     // peak white luminance (cd/m^2)\n\nconst Chromaticities DISPLAY_PRI = P3D65_PRI;   // encoding primaries (device setup)\nconst Chromaticities LIMITING_PRI = P3D65_PRI;  // limiting primaries\n\nconst int EOTF = 0;                             // 0: ST-2084 (PQ)\n                                                // 1: BT.1886 (Rec.709/2020 settings) \n                                                // 2: sRGB (mon_curve w/ presets)\n                                                // 3: gamma 2.6\n                                                // 4: linear (no EOTF)\n                                                // 5: HLG\n\nconst int SURROUND = 0;                         // 0: dark ( NOTE: this is the only active setting! )\n                                                // 1: dim ( *inactive* - selecting this will have no effect )\n                                                // 2: normal ( *inactive* - selecting this will have no effect )\n\nconst bool STRETCH_BLACK = true;                // stretch black luminance to a PQ code value of 0\nconst bool D60_SIM = false;                       \nconst bool LEGAL_RANGE = false;\n\n\nvoid main\n(\n\tinput varying float rIn,\n\tinput varying float gIn,\n\tinput varying float bIn,\n\tinput varying float aIn,\n\toutput varying float rOut,\n\toutput varying float gOut,\n\toutput varying float bOut,\n\toutput varying float aOut\n)\n{\n    float aces[3] = {rIn, gIn, bIn};\n\n    float cv[3] = outputTransform( aces, Y_MIN,\n                                         Y_MID,\n                                         Y_MAX,\n                                         DISPLAY_PRI,\n                                         LIMITING_PRI,\n                                         EOTF,\n                                         SURROUND,\n                                         STRETCH_BLACK,\n                                         D60_SIM,\n                                         LEGAL_RANGE );\n\n    rOut = cv[0];\n    gOut = cv[1];\n    bOut = cv[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "RRTODT",
+              "_namespace": "Academy",
+              "_name": "P3D65_1000nits_15nits_ST2084",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "ACES2065-1",
+              "_target": "P3D65_1000nits_15nits_ST2084"
+            },
+            "_user_name": "ACES 1.0 Output - P3-D65 ST2084 (1000 nits)",
+            "_description": "Output Transform - P3D65 (1000 cd/m^2)\n\n\nSummary :\nThis transform maps ACES onto a P3D65 ST.2084 HDR display calibrated\nto a D65 white point at 1000 cd/m^2. The assumed observer adapted white is\nD65, and the viewing environment is that of a dark surround. Mid-gray\nluminance is targeted at 15 cd/m^2.\n\nNOTE :\nThe parameterized \"Output Transform\" function used as basis for this\ntransform includes a parameter labeled \"SURROUND\". However, as noted in\n\"ACESlib.OutputTransforms.ctl\", this sub-module is currently a \"placeholder\"\nand as such currently only supports a rendering intended for dark surround\nenvironments. While it is planned for future releases to fully activate the\nthis module and provide adjustment for dark/dim/normal surrounds, setting\nSURROUND equal to either dim or normal will have no effect at this time.\n\nThat being said, these Output Transforms have been used successfully on\nmajor feature and television projects when mastering for home HDR where a\ndim surround environment is assumed. Based on that, these transforms are\nconsidered adequate for use for dim surround mastering, although, as always,\ncreative adjustments to contrast and saturation may be desirable and should\nbe saved as a \"trim pass.\"\n\nDevice Primaries :\nPrimaries are those specified in Rec. ITU-R BT.2020\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.68      0.32\nGreen:        0.265     0.69\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     1000 cd/m^2\n18% Gray:     0.3127    0.329     15 cd/m^2\n\nDisplay EOTF :\nThe reference electro-optical transfer function specified in SMPTE ST\n2084-2014. This transform makes no attempt to address the Annex functions\nwhich address integer quantization.\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "outputTransform",
+            "_genus": "p3"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Output - SDR Cinema - ACES 1.0",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA_1.0"
+      },
+      "description": "Component of ACES Output Transforms for SDR cinema\n\nACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3\nACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0",
+      "transforms_data": [
+        {
+          "ordering": "460",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_G2.6-P3-D60-BFD",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/p3/ODT.Academy.P3D60_48nits.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - P3-D60</ACESuserName>\n\n// \n// Output Device Transform - P3D60\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a P3 digital cinema \n//  projector that is calibrated to a D60 white point at 48 cd/m^2. The assumed \n//  observer adapted white is D60, and the viewing environment is that of a dark \n//  theater. \n//\n// Device Primaries : \n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.68      0.32\n//              Green:        0.265     0.69\n//              Blue:         0.15      0.06\n//              White:        0.32168   0.33767   48 cd/m^2\n//\n// Display EOTF :\n//  Gamma: 2.6\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.32168      0.33767\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = P3D60_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB( DISPLAY_PRI, 1.0);\n\nconst float DISPGAMMA = 2.6; \n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n    // Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n\n    // Encode linear code values with transfer function\n    float outputCV[3] = pow_f3( linearCV, 1./ DISPGAMMA);\n\n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "P3D60_48nits",
+              "_major_version_number": "a1",
+              "_minor_version_number": "0",
+              "_patch_version_number": "3",
+              "_source": "OCES",
+              "_target": "P3D60_48nits"
+            },
+            "_user_name": "ACES 1.0 Output - P3-D60",
+            "_description": "Output Device Transform - P3D60\n\n\nSummary :\nThis transform is intended for mapping OCES onto a P3 digital cinema\nprojector that is calibrated to a D60 white point at 48 cd/m^2. The assumed\nobserver adapted white is D60, and the viewing environment is that of a dark\ntheater.\n\nDevice Primaries :\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.68      0.32\nGreen:        0.265     0.69\nBlue:         0.15      0.06\nWhite:        0.32168   0.33767   48 cd/m^2\n\nDisplay EOTF :\nGamma: 2.6\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.32168      0.33767\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "output_transform",
+            "_genus": "p3"
+          }
+        },
+        {
+          "ordering": "460",
+          "aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0",
+          "builtin_transform_style": "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA_1.0",
+          "linked_display_colorspace_style": "DISPLAY - CIE-XYZ-D65_to_G2.6-P3-D65",
+          "interface": "ViewTransform",
+          "encoding": "sdr-video",
+          "categories": "file-io",
+          "ctl_transform": {
+            "py/object": "opencolorio_config_aces.config.reference.discover.classify.CTLTransform",
+            "_path": "/home/aswf/OpenColorIO-Config-ACES/opencolorio_config_aces/config/reference/aces-dev/transforms/ctl/odt/p3/ODT.Academy.P3D65_48nits.ctl",
+            "_code": "\n// <ACEStransformID>urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0</ACEStransformID>\n// <ACESuserName>ACES 1.0 Output - P3D65</ACESuserName>\n\n// \n// Output Device Transform - P3D65\n//\n\n//\n// Summary :\n//  This transform is intended for mapping OCES onto a projector with P3\n//  primaries that has been set up such that equal neutral RGB code values\n//  sent to the projector produce a chromaticity equal to that of D65\n//  and that the peak neutral luminance is 48 nits. The assumed observer \n//  adapted white is D65, and the viewing environment is a dark surround. \n//\n//  A possible use case for this transform would be mastering for a theatrical\n//  release with a creative white point of D65.\n//\n// Device Primaries : \n//  CIE 1931 chromaticities:  x         y         Y\n//              Red:          0.68      0.32\n//              Green:        0.265     0.69\n//              Blue:         0.15      0.06\n//              White:        0.3127    0.329     48 cd/m^2\n//\n// Display EOTF :\n//  Gamma: 2.6\n//\n// Assumed observer adapted white point:\n//         CIE 1931 chromaticities:    x            y\n//                                     0.3127       0.329\n//\n// Viewing Environment:\n//  Environment specified in SMPTE RP 431-2-2007\n//\n\n\nimport \"ACESlib.Utilities\";\nimport \"ACESlib.Transform_Common\";\nimport \"ACESlib.ODT_Common\";\nimport \"ACESlib.Tonescales\";\n\n\n\n/* --- ODT Parameters --- */\nconst Chromaticities DISPLAY_PRI = P3D65_PRI;\nconst float XYZ_2_DISPLAY_PRI_MAT[4][4] = XYZtoRGB(DISPLAY_PRI,1.0);\n\nconst float DISPGAMMA = 2.6;\n\n\nvoid main \n(\n    input varying float rIn, \n    input varying float gIn, \n    input varying float bIn, \n    input varying float aIn,\n    output varying float rOut,\n    output varying float gOut,\n    output varying float bOut,\n    output varying float aOut\n)\n{\n    float oces[3] = { rIn, gIn, bIn};\n\n    // OCES to RGB rendering space\n    float rgbPre[3] = mult_f3_f44( oces, AP0_2_AP1_MAT);\n\n    // Apply the tonescale independently in rendering-space RGB\n    float rgbPost[3];\n    rgbPost[0] = segmented_spline_c9_fwd( rgbPre[0]);\n    rgbPost[1] = segmented_spline_c9_fwd( rgbPre[1]);\n    rgbPost[2] = segmented_spline_c9_fwd( rgbPre[2]);\n\n  \t// Scale luminance to linear code value\n    float linearCV[3];\n    linearCV[0] = Y_2_linCV( rgbPost[0], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[1] = Y_2_linCV( rgbPost[1], CINEMA_WHITE, CINEMA_BLACK);\n    linearCV[2] = Y_2_linCV( rgbPost[2], CINEMA_WHITE, CINEMA_BLACK);\n\n    // Convert to display primary encoding\n    // Rendering space RGB to XYZ\n    float XYZ[3] = mult_f3_f44( linearCV, AP1_2_XYZ_MAT);\n\n    // Apply CAT from ACES white point to assumed observer adapted white point\n    XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);\n\n    // CIE XYZ to display primaries\n    linearCV = mult_f3_f44( XYZ, XYZ_2_DISPLAY_PRI_MAT);\n\n    // Handle out-of-gamut values\n    // Clip values < 0 or > 1 (i.e. projecting outside the display primaries)\n    linearCV = clamp_f3( linearCV, 0., 1.);\n  \n    // Encode linear code values with transfer function\n    float outputCV[3] = pow_f3( linearCV, 1./ DISPGAMMA);\n  \n    rOut = outputCV[0];\n    gOut = outputCV[1];\n    bOut = outputCV[2];\n    aOut = aIn;\n}\n",
+            "_aces_transform_id": {
+              "py/object": "opencolorio_config_aces.config.reference.discover.classify.ACESTransformID",
+              "_aces_transform_id": "urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0",
+              "_urn": "urn:ampas:aces:transformId:v1.5",
+              "_type": "ODT",
+              "_namespace": "Academy",
+              "_name": "P3D65_48nits",
+              "_major_version_number": "a1",
+              "_minor_version_number": "1",
+              "_patch_version_number": "0",
+              "_source": "OCES",
+              "_target": "P3D65_48nits"
+            },
+            "_user_name": "ACES 1.0 Output - P3D65",
+            "_description": "Output Device Transform - P3D65\n\n\nSummary :\nThis transform is intended for mapping OCES onto a projector with P3\nprimaries that has been set up such that equal neutral RGB code values\nsent to the projector produce a chromaticity equal to that of D65\nand that the peak neutral luminance is 48 nits. The assumed observer\nadapted white is D65, and the viewing environment is a dark surround.\n\nA possible use case for this transform would be mastering for a theatrical\nrelease with a creative white point of D65.\n\nDevice Primaries :\nCIE 1931 chromaticities:  x         y         Y\nRed:          0.68      0.32\nGreen:        0.265     0.69\nBlue:         0.15      0.06\nWhite:        0.3127    0.329     48 cd/m^2\n\nDisplay EOTF :\nGamma: 2.6\n\nAssumed observer adapted white point:\nCIE 1931 chromaticities:    x            y\n0.3127       0.329\n\nViewing Environment:\nEnvironment specified in SMPTE RP 431-2-2007",
+            "_family": "output_transform",
+            "_genus": "p3"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Un-tone-mapped",
+      "from_reference": {
+        "transform_type": "BuiltinTransform",
+        "style": "UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD"
+      }
+    }
+  ],
+  "looks": [],
+  "shared_views": [
+    {
+      "display": "Display - sRGB",
+      "view": "Output - SDR Video - ACES 1.0",
+      "view_transform": "Output - SDR Video - ACES 1.0"
+    },
+    {
+      "display": "Display - Rec.1886 / Rec.709 Video",
+      "view": "Output - SDR Video - ACES 1.0",
+      "view_transform": "Output - SDR Video - ACES 1.0"
+    },
+    {
+      "display": "Display - Rec.2100-PQ",
+      "view": "Output - HDR Video (1000 nits & Rec.2020 lim) - ACES 1.1",
+      "view_transform": "Output - HDR Video (1000 nits & Rec.2020 lim) - ACES 1.1"
+    },
+    {
+      "display": "Display - ST2084-P3-D65",
+      "view": "Output - HDR Video (1000 nits & P3 lim) - ACES 1.1",
+      "view_transform": "Output - HDR Video (1000 nits & P3 lim) - ACES 1.1"
+    },
+    {
+      "display": "Display - P3-D65",
+      "view": "Output - SDR Cinema - ACES 1.0",
+      "view_transform": "Output - SDR Cinema - ACES 1.0"
+    },
+    {
+      "display": "Display - sRGB",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - Rec.1886 / Rec.709 Video",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - Rec.2100-PQ",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - ST2084-P3-D65",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - P3-D65",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    }
+  ],
+  "views": [
+    {
+      "display": "Display - sRGB",
+      "view": "Output - SDR Video - ACES 1.0",
+      "view_transform": "Output - SDR Video - ACES 1.0"
+    },
+    {
+      "display": "Display - Rec.1886 / Rec.709 Video",
+      "view": "Output - SDR Video - ACES 1.0",
+      "view_transform": "Output - SDR Video - ACES 1.0"
+    },
+    {
+      "display": "Display - Rec.2100-PQ",
+      "view": "Output - HDR Video (1000 nits & Rec.2020 lim) - ACES 1.1",
+      "view_transform": "Output - HDR Video (1000 nits & Rec.2020 lim) - ACES 1.1"
+    },
+    {
+      "display": "Display - ST2084-P3-D65",
+      "view": "Output - HDR Video (1000 nits & P3 lim) - ACES 1.1",
+      "view_transform": "Output - HDR Video (1000 nits & P3 lim) - ACES 1.1"
+    },
+    {
+      "display": "Display - P3-D65",
+      "view": "Output - SDR Cinema - ACES 1.0",
+      "view_transform": "Output - SDR Cinema - ACES 1.0"
+    },
+    {
+      "display": "Display - sRGB",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - Rec.1886 / Rec.709 Video",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - Rec.2100-PQ",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - ST2084-P3-D65",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - P3-D65",
+      "view": "Un-tone-mapped",
+      "view_transform": "Un-tone-mapped"
+    },
+    {
+      "display": "Display - sRGB",
+      "view": "Raw",
+      "colorspace": "Utility - Raw"
+    },
+    {
+      "display": "Display - Rec.1886 / Rec.709 Video",
+      "view": "Raw",
+      "colorspace": "Utility - Raw"
+    },
+    {
+      "display": "Display - Rec.2100-PQ",
+      "view": "Raw",
+      "colorspace": "Utility - Raw"
+    },
+    {
+      "display": "Display - ST2084-P3-D65",
+      "view": "Raw",
+      "colorspace": "Utility - Raw"
+    },
+    {
+      "display": "Display - P3-D65",
+      "view": "Raw",
+      "colorspace": "Utility - Raw"
+    }
+  ],
+  "active_displays": [
+    "Display - sRGB",
+    "Display - Rec.1886 / Rec.709 Video",
+    "Display - Rec.2100-PQ",
+    "Display - ST2084-P3-D65",
+    "Display - P3-D65"
+  ],
+  "active_views": [
+    "Output - SDR Video - ACES 1.0",
+    "Output - HDR Video (1000 nits & Rec.2020 lim) - ACES 1.1",
+    "Output - HDR Video (1000 nits & P3 lim) - ACES 1.1",
+    "Output - SDR Cinema - ACES 1.0",
+    "Raw"
+  ],
+  "file_rules": [
+    {
+      "name": "Default",
+      "colorspace": "ACES - ACES2065-1"
+    }
+  ],
+  "viewing_rules": [],
+  "inactive_colorspaces": [
+    "CIE-XYZ-D65"
+  ],
+  "default_view_transform": "Un-tone-mapped"
+}

@@ -6,7 +6,7 @@ import os
 import copy
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import open_vp_cal
 from open_vp_cal.core import constants
@@ -27,6 +27,8 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
+            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -221,6 +223,42 @@ class ProjectSettings:
             value (int): The resolution height
         """
         self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
+
+    @property
+    def frame_rate(self) -> float:
+        """ The frame rate for the shooting frame rate for the camera, used in certain SPG patterns
+
+        Returns:
+            float: The shooting frame rate of the camera
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE]
+
+    @frame_rate.setter
+    def frame_rate(self, value: float):
+        """ Sets the frame rate for the shooting frame rate
+
+        Args:
+            value (float): The frame rate we want to set
+        """
+        self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE] = value
+
+    @property
+    def export_lut_for_aces_cct(self) -> bool:
+        """ Get whether we want to export out lut for aces cct
+
+        Returns:
+            bool: Whether we want out luts to be exported for aces cct
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT]
+
+    @export_lut_for_aces_cct.setter
+    def export_lut_for_aces_cct(self, value: bool):
+        """ Set whether we want to export out lut for aces cct
+
+        Args:
+            value (bool): Set whether we want to export out lut for aces cct
+        """
+        self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT] = value
 
     @classmethod
     def from_json(cls, json_file: str):
@@ -431,4 +469,17 @@ class ProjectSettings:
             str: The folder to export the calibration results to
         """
         return os.path.join(self.output_folder, constants.ProjectFolders.EXPORT)
+
+    def reset_led_wall(self, name: str) -> None:
+        """ Resets a LED wall to the default settings but preserves the link to the verification wall
+
+        Args:
+            name (str): The name of the LED wall we want to reset
+        """
+        led_wall = self.get_led_wall(name)
+        verification_wall = led_wall.verification_wall
+        led_wall.verification_wall = ""
+        led_wall.reset_defaults()
+        led_wall.verification_wall = verification_wall
+
 

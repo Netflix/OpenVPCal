@@ -1,8 +1,10 @@
 """
 The module defines the main window for the application
 """
+import json
 import os
 import sys
+import tempfile
 from typing import Tuple, Optional, List
 
 from PySide6.QtGui import QIcon, QAction, QPixmap
@@ -38,6 +40,13 @@ from open_vp_cal.widgets.swatch_analysis_widget import SwatchViewer
 from open_vp_cal.widgets.timeline_widget import TimelineWidget, TimelineModel
 from open_vp_cal.widgets.utils import select_folder
 
+from spg.projectSettings import ProjectSettings as SPGProjectSettings
+from spg.main import run_spg_pattern_generator
+from stageassets.ledWall import LEDWall as SPGLedWall
+from stageassets.ledPanel import LEDPanel as SPGLedPanel
+from stageassets.rasterMap import RasterMap as SPGRasterMap
+from stageassets.rasterMap import Mapping as SPGMapping
+
 
 class EventFilter(QObject):
     """ A QObject which allows us to filter events which detect when the left and right arrow keys are pressed
@@ -67,11 +76,12 @@ class MainWindow(QMainWindow):
         self.action_eotf_analysis = None
         self.action_execution_window = None
         self.action_generate_patterns = None
+        self.action_generate_spg_patterns = None
         self.action_image_selection = None
         self.action_led_settings_window = None
         self.action_calibration_settings_window = None
         self.action_load_layout = None
-        self.action_load_default_layout = None
+        self.action_load_project_layout = None
         self.action_load_analysis_layout = None
         self.action_load_project_settings = None
         self.action_calibration_matrix_view_window = None
@@ -210,6 +220,7 @@ class MainWindow(QMainWindow):
         self.stage_controller.led_wall_removed.connect(self.project_settings_model.remove_led_wall)
         self.stage_controller.led_wall_copied.connect(self.project_settings_model.copy_led_wall)
         self.stage_controller.led_wall_verification_added.connect(self.project_settings_model.add_verification_wall)
+        self.stage_controller.led_wall_reset.connect(self.project_settings_model.reset_led_wall)
         self.stage_view.led_wall_load_sequence.connect(self.load_sequence)
 
         self.project_settings_model.led_wall_added.connect(self.stage_controller.add_led_wall)
@@ -369,9 +380,10 @@ class MainWindow(QMainWindow):
         self.action_load_project_settings.triggered.connect(self.load_project_settings)
         self.action_new_project_settings.triggered.connect(self.new_project)
         self.action_generate_patterns.triggered.connect(self.generate_patterns)
+        self.action_generate_spg_patterns.triggered.connect(self.generate_spg_patterns)
         self.action_save_layout.triggered.connect(self.on_save_layout)
         self.action_load_layout.triggered.connect(self.on_load_layout)
-        self.action_load_default_layout.triggered.connect(self.load_default_layout)
+        self.action_load_project_layout.triggered.connect(self.load_project_layout)
         self.action_load_analysis_layout.triggered.connect(self.load_analysis_layout)
         self.action_export_swatches.triggered.connect(self.export_analysis_swatches)
 
@@ -405,6 +417,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.action_export_selection_as)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.action_generate_patterns)
+        self.file_menu.addAction(self.action_generate_spg_patterns)
         self.file_menu.addAction(self.action_export_swatches)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.load_sequence_action)
@@ -412,7 +425,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.action_save_layout)
         self.file_menu.addAction(self.action_load_layout)
         self.file_menu.addSeparator()
-        self.file_menu.addAction(self.action_load_default_layout)
+        self.file_menu.addAction(self.action_load_project_layout)
         self.file_menu.addAction(self.action_load_analysis_layout)
 
     def _add_actions_to_windows_menu(self) -> None:
@@ -442,10 +455,11 @@ class MainWindow(QMainWindow):
         self.action_save_project_settings_as = QAction("Save Project As...", self)
         self.action_export_selection_as = QAction("Export Selection As...", self)
         self.action_load_project_settings = QAction("Load Project", self)
-        self.action_generate_patterns = QAction("Generate New Patterns", self)
+        self.action_generate_patterns = QAction("Generate OpenVPCal Patterns", self)
+        self.action_generate_spg_patterns = QAction("Generate SPG Patterns", self)
         self.action_save_layout = QAction("Save Layout As...", self)
         self.action_load_layout = QAction("Load Layout...", self)
-        self.action_load_default_layout = QAction("Load Default Layout", self)
+        self.action_load_project_layout = QAction("Load Project Layout", self)
         self.action_load_analysis_layout = QAction("Load Analysis Layout", self)
         self.load_sequence_action = QAction("Load Plate Sequence", self)
         self.action_export_swatches = QAction("Export Debug Swatches", self)
@@ -565,7 +579,7 @@ class MainWindow(QMainWindow):
             self.project_settings_model.output_folder = folder
             self.project_settings_model.set_data(constants.ProjectSettingsKeys.OUTPUT_FOLDER, folder)
             self.save_project_settings(inform_completion=False)
-        self.load_default_layout()
+        self.load_project_layout()
 
     def clear_project_settings(self) -> None:
         """ Clears the current project settings from all the widgets, models and controllers
@@ -620,6 +634,128 @@ class MainWindow(QMainWindow):
 
         self.save_project_settings(inform_completion=False)
         self.task_completed()
+
+    def generate_spg_patterns(self):
+        selected_led_walls = self.stage_controller.selected_led_walls()
+        if self.warning_message("Would you like to generate patterns for all walls?"):
+            led_walls = self.project_settings_model.led_walls
+        else:
+            led_walls = []
+            for selected_led_wall in selected_led_walls:
+                for wall in self.project_settings_model.led_walls:
+                    if wall.name == selected_led_wall:
+                        led_walls.append(wall)
+                        break
+
+        self.generate_spg_patterns_for_led_walls(self.project_settings_model, led_walls)
+
+        self.save_project_settings(inform_completion=False)
+        self.task_completed()
+
+    @staticmethod
+    def generate_spg_patterns_for_led_walls(
+            project_settings: ProjectSettingsModel, led_walls: List) -> None:
+        """ For the given project settings and list of led walls, generate the patterns for SPG which is used to
+            evaluate and diagnose issues with the imaging chain
+
+        Args:
+            project_settings: The project settings used for the project
+            led_walls: the led walls we want to generate patterns from
+        """
+
+        spg_project_settings = SPGProjectSettings()
+        spg_project_settings.frame_rate = project_settings.frame_rate
+        spg_project_settings.image_file_format = project_settings.file_format
+        spg_project_settings.image_file_bit_depth = 10
+        spg_project_settings.output_folder = os.path.join(
+            project_settings.output_folder,
+            constants.ProjectFolders.SPG
+        )
+        spg_project_settings.channel_mapping = "RGB"
+        spg_project_settings.ocio_config_path = ResourceLoader.ocio_config_path()
+        spg_project_settings.output_transform = constants.CameraColourSpace.CS_ACES_CG
+        if spg_project_settings.image_file_format == constants.FileFormats.FF_DPX:
+            spg_project_settings.output_transform = constants.CameraColourSpace.CS_ACES_CCT
+
+        spg_led_walls = []
+        spg_led_panels = []
+        spg_raster_maps = []
+
+        for count, led_wall in enumerate(led_walls):
+            idx = count + 1
+
+            # As this is a basic setup we default to a typical panel as we are not doing a deep dive and pixel perfect
+            # match
+            spg_panel = SPGLedPanel()
+            spg_panel.name = f"Panel_{idx}_{led_wall.name}"
+            spg_panel.manufacturer = "Unknown"
+            spg_panel.panel_width = 500
+            spg_panel.panel_height = 500
+            spg_panel.panel_depth = 80
+            spg_panel.pixel_pitch = 2.85
+            spg_panel.brightness = led_wall.target_max_lum_nits
+            spg_panel.refresh_rate = "3840"
+            spg_panel.scan_rate = "1/8"
+            spg_led_panels.append(spg_panel)
+
+            # We create a faux led wall which is the largest which we can fit into a given resolution image
+            # as we are not doing a pixel perfect diagnosis
+            spg_led_wall = SPGLedWall()
+            spg_led_wall.id = idx
+            spg_led_wall.name = led_wall.name
+            spg_led_wall.panel_name = spg_panel.name
+            spg_led_wall.panel = spg_panel
+            spg_led_wall.panel_count_width = int(project_settings.resolution_width / spg_panel.panel_resolution_width)
+            spg_led_wall.panel_count_height = int(
+                project_settings.resolution_height / spg_panel.panel_resolution_height
+            )
+            spg_led_wall.wall_default_color = utils.generate_color(led_wall.name)
+
+            spg_led_walls.append(spg_led_wall)
+
+            spg_mapping = SPGMapping()
+            spg_mapping.wall_name = spg_led_wall.name
+            spg_mapping.raster_u = 0
+            spg_mapping.raster_v = 0
+            spg_mapping.wall_segment_u_start = 0
+            spg_mapping.wall_segment_u_end = spg_led_wall.resolution_width
+            spg_mapping.wall_segment_v_start = 0
+            spg_mapping.wall_segment_v_end = spg_led_wall.resolution_height
+            spg_mapping.wall_segment_orientation = 0
+
+            spg_raster_map = SPGRasterMap()
+            spg_raster_map.name = f"Raster_{led_wall.name}"
+            spg_raster_map.resolution_width = project_settings.resolution_width
+            spg_raster_map.resolution_height = project_settings.resolution_height
+            spg_raster_map.mappings = [spg_mapping]
+
+            spg_raster_maps.append(spg_raster_map)
+
+        spg_led_panel_json = [json.loads(spg_led_panel.to_json()) for spg_led_panel in spg_led_panels]
+        spg_led_wall_json = [json.loads(spg_led_wall.to_json()) for spg_led_wall in spg_led_walls]
+        spg_raster_map_json = [json.loads(spg_raster_map.to_json()) for spg_raster_map in spg_raster_maps]
+
+        tmp_dir = tempfile.TemporaryDirectory()
+        spg_led_panel_json_file = os.path.join(tmp_dir.name, "led_panel_settings.json")
+        spg_led_wall_json_file = os.path.join(tmp_dir.name, "led_wall_settings.json")
+        spg_raster_map_json_file = os.path.join(tmp_dir.name, "raster_map_settings.json")
+        spg_project_settings_json_file = os.path.join(tmp_dir.name, "spg_project_settings.json")
+
+        with open(spg_led_panel_json_file, 'w') as f:
+            json.dump(spg_led_panel_json, f, indent=4)
+        with open(spg_led_wall_json_file, 'w') as f:
+            json.dump(spg_led_wall_json, f, indent=4)
+        with open(spg_raster_map_json_file, 'w') as f:
+            json.dump(spg_raster_map_json, f, indent=4)
+        with open(spg_project_settings_json_file, 'w') as f:
+            json.dump(json.loads(spg_project_settings.to_json()), f, indent=4)
+
+        run_spg_pattern_generator(
+            spg_led_panel_json_file,
+            spg_led_wall_json_file,
+            spg_raster_map_json_file,
+            spg_project_settings_json_file,
+            ResourceLoader.spg_pattern_basic_config())
 
     @staticmethod
     def generate_patterns_for_led_walls(project_settings: ProjectSettingsModel, led_walls: List) -> str:
@@ -1203,7 +1339,7 @@ class MainWindow(QMainWindow):
                         self.run_auto_detect(led_wall)
                     else:
                         self.get_separation_results(led_wall)
-        self.load_default_layout()
+        self.load_project_layout()
 
     def on_save_layout(self):
         """Save the current layout to a file based on a File Dialog selected file name"""
@@ -1233,14 +1369,14 @@ class MainWindow(QMainWindow):
 
         self.load_layout(filename)
 
-    def load_default_layout(self) -> None:
-        """ Loads the default layout from the resources folder
+    def load_project_layout(self) -> None:
+        """ Loads the project layout from the resources folder
         """
-        default_layout = ResourceLoader.default_layout()
-        user_default_layout = str(ResourceLoader.prefs_dir() / constants.UILayouts.DEFAULT_LAYOUT)
-        if os.path.exists(user_default_layout):
-            default_layout = user_default_layout
-        self.load_layout(default_layout)
+        project_layout = ResourceLoader.project_layout()
+        user_project_layout = str(ResourceLoader.prefs_dir() / constants.UILayouts.PROJECT_LAYOUT)
+        if os.path.exists(user_project_layout):
+            project_layout = user_project_layout
+        self.load_layout(project_layout)
 
     def load_analysis_layout(self) -> None:
         """ Loads the analysis layout from the resources folder

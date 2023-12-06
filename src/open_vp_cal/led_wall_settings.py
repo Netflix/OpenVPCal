@@ -51,6 +51,11 @@ class LedWallSettings:
 
         self._led_settings = copy.deepcopy(self._default_led_settings)
 
+    def reset_defaults(self):
+        """Reset the LedWallSettings object to its default values."""
+        for key, value in self._default_led_settings.items():
+            self._set_property(key, value)
+
     def _set_property(self, field_name: str, value: Any) -> None:
         """ Sets the internal property data stores for the given field name, and given value.
             If the led wall is a verification wall, it will not set the verification wall's settings
@@ -359,12 +364,14 @@ class LedWallSettings:
 
     @target_eotf.setter
     def target_eotf(self, value: constants.EOTF):
-        """Set the target colorspace
+        """Set the target eotf, which also forces the target max lum to be 100, if not using PQ.
 
         Args:
             value (constants.EOTF): the eotf for the target
         """
         self._set_property(constants.LedWallSettingsKeys.TARGET_EOTF, value)
+        if value != constants.EOTF.EOTF_ST2084:
+            self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
 
     @property
     def target_max_lum_nits(self) -> int:
@@ -377,11 +384,14 @@ class LedWallSettings:
 
     @target_max_lum_nits.setter
     def target_max_lum_nits(self, value: int):
-        """Set the target max luminance in nits.
+        """ Set the target max luminance in nits, unless you are using an eotf which is not PQ, in which case
+           we force 100 nits, aka 1.0
 
         Args:
             value (int): target max luminance in nits.
         """
+        if self.target_eotf != constants.EOTF.EOTF_ST2084:
+            value = constants.TARGET_MAX_LUM_NITS_NONE_PQ
         self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, value)
 
     @property

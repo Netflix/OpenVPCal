@@ -85,7 +85,11 @@ class DeltaEDataTableModel(QAbstractTableModel):
         if role == Qt.BackgroundRole:
             led_wall = self.led_walls[index.column()]
             value = led_wall["data"][self.key][index.row()]
-            return QColor(*constants.GREEN) if value < constants.DELTA_E_THRESHOLD else QColor(*constants.RED)
+            if value < constants.DELTA_E_THRESHOLD_IMP:
+                return QColor(*constants.GREEN)
+            if constants.DELTA_E_THRESHOLD_IMP < value < constants.DELTA_E_THRESHOLD_JND:
+                return QColor(*constants.YELLOW)
+            return QColor(*constants.RED)
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
         """Returns the header data for the specified section and orientation."""
@@ -212,26 +216,20 @@ class DeltaEController(BaseController):
         data_entries = [{'name': wall, 'data': self.model.data_dict[wall]['pre_cal']} for wall in selected_walls]
 
         for i, table_model in enumerate(self.table_models):
-            green_counts = [
-                sum(1 for value in led_wall["data"][table_model.key]
-                    if value < constants.DELTA_E_THRESHOLD) for led_wall in data_entries
-            ]
-            max_green_count = max(green_counts) if green_counts else 0
-            candidates = [idx for idx, count in enumerate(green_counts) if count == max_green_count]
-
-            if candidates:
-                lowest_avg_value = float('inf')
-                best_candidate = None
-                for candidate in candidates:
-                    avg_value = sum(data_entries[candidate]["data"][table_model.key]) / len(
-                        data_entries[candidate]["data"][table_model.key])
-                    if avg_value < lowest_avg_value:
-                        lowest_avg_value = avg_value
-                        best_candidate = candidate
-
+            lowest_avg_value = float('inf')
+            best_candidate = None
+            for candidate, _ in enumerate(data_entries):
+                avg_value = sum(data_entries[candidate]["data"][table_model.key]) / len(
+                    data_entries[candidate]["data"][table_model.key])
+                if avg_value < lowest_avg_value:
+                    lowest_avg_value = avg_value
+                    best_candidate = candidate
+            if best_candidate is not None:
                 self.view.green_labels[i].setText(f'Best: {data_entries[best_candidate]["name"]}')
             else:
-                self.view.green_labels[i].setText('No data available')
+                self.view.green_labels[i].setText('No Data')
+
+
 
     def clear(self):
         """Clear all data in the models."""

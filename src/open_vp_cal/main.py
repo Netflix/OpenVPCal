@@ -17,7 +17,7 @@ from PySide6 import QtWidgets
 from PySide6.QtGui import QPixmap
 
 import open_vp_cal
-from open_vp_cal.core import utils
+from open_vp_cal.core import utils, constants
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.processing import Processing
 from open_vp_cal.project_settings import ProjectSettings
@@ -78,7 +78,7 @@ def open_ui() -> None:
 
     window = MainWindow(f"{product_name} v{version_info}")
     window.show()
-    window.load_default_layout()
+    window.load_project_layout()
     sys.exit(app.exec())
 
 
@@ -164,7 +164,7 @@ def run_cli(
 
     # Load all the led walls and load the sequences
     for led_wall in project_settings.led_walls:
-        led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder, file_type=project_settings.file_format)
+        led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder, file_type=constants.FileFormats.FF_EXR)
 
         if not led_wall.roi:
             _, auto_roi_results = MainWindow.run_auto_detect(led_wall)

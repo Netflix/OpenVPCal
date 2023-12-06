@@ -320,6 +320,13 @@ def main() -> int:
     paths = get_python_package_folder()
     additional_data = get_additional_data_from_resources()
     entry_script = os.path.join(paths, "main.py")
+    platform_sep = get_additional_data_seperator()
+
+    additional_python_modules = {
+        "spg": os.path.join(get_src_folder(), "spg"),
+        "stageassets": os.path.join(get_src_folder(), "stageassets"),
+        "spg_icvfxpatterns": os.path.join(get_src_folder(), "spg_icvfxpatterns")
+    }
 
     if debug:
         cmds = ["pyinstaller", "--debug", "all"]
@@ -331,11 +338,15 @@ def main() -> int:
         ["--icon", icon_file_path, "--name", app_name, "--noconfirm", "--clean", "-w", "--onedir", "--paths", paths]
     )
 
+    for folder_name, additional_module in additional_python_modules.items():
+        cmds.append("--add-data")
+        cmds.append(f"{additional_module}{platform_sep}{folder_name}")
+
     for add_data in additional_data:
         cmds.append("--add-data")
         cmds.append(add_data)
 
-    platform_sep = get_additional_data_seperator()
+
     manual_paths = get_additional_library_paths(vcpkg_folder)
     for manual_path in manual_paths:
         cmds.append("--add-data")

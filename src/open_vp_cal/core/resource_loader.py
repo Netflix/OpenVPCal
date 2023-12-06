@@ -120,15 +120,15 @@ class ResourceLoader:
         return cls._get_resource("content-copy-custom.png")
 
     @classmethod
-    def default_layout(cls) -> str:
+    def project_layout(cls) -> str:
         """
 
-        Returns: The absolute path to the default layout
+        Returns: The absolute path to the project layout
 
         """
         if platform.system() == 'Windows':
-            return cls._get_resource(constants.UILayouts.DEFAULT_LAYOUT_WINDOWS)
-        return cls._get_resource(constants.UILayouts.DEFAULT_LAYOUT)
+            return cls._get_resource(constants.UILayouts.PROJECT_LAYOUT_WINDOWS)
+        return cls._get_resource(constants.UILayouts.PROJECT_LAYOUT)
 
     @classmethod
     def analysis_layout(cls) -> str:
@@ -194,3 +194,12 @@ class ResourceLoader:
 
         """
         return cls._get_resource("logging.bin")
+
+    @classmethod
+    def spg_pattern_basic_config(cls) -> str:
+        """
+
+        Returns: The spg pattern basic config resource
+
+        """
+        return cls._get_resource("spg_pattern_basic_config.json")

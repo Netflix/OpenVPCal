@@ -131,6 +131,12 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             constants.LedWallSettingsKeys.AVOID_CLIPPING: {
                 constants.DEFAULT: default_led_wall.avoid_clipping
             },
+            constants.ProjectSettingsKeys.FRAME_RATE: {
+                constants.DEFAULT: self.frame_rate, constants.OPTIONS: constants.FrameRates.FPS_ALL
+            },
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: {
+                constants.DEFAULT: self.export_lut_for_aces_cct
+            },
             constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: {constants.DEFAULT: self.custom_logo_path},
         }
 
@@ -155,6 +161,13 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         else:
             setattr(self, key, value)
         self.data_changed.emit(key, value)
+
+        # Because we do not allow the user to set the target nits if working outside of PQ, we add special handling to
+        # reflect these changes in the UI
+        if self.current_wall:
+            if key == constants.LedWallSettingsKeys.TARGET_EOTF or constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS:
+                self.data_changed.emit(
+                    constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, self.current_wall.target_max_lum_nits)
 
     def get_data(self, key: str):
         """
@@ -301,6 +314,10 @@ class ProjectSettingsModel(ProjectSettings, QObject):
 
         for key in self.current_wall.attrs:
             self.data_changed.emit(key, self.get_data(key))
+
+    def reset_led_wall(self, led_wall: str) -> None:
+        super().reset_led_wall(led_wall)
+        self.set_current_wall(led_wall)
 
 
 class CustomGamutDialog(QDialog):
@@ -484,10 +501,16 @@ class ProjectSettingsView(LockableWidget):
         output_folder_layout.addWidget(self.output_folder_button)
         main_layout.addLayout(output_folder_layout)
 
+        self.export_lut_for_aces_cct = QCheckBox()
+        aces_cct_layout = QFormLayout()
+        aces_cct_layout.addRow(QLabel("Export LUT For ACEScct:"), self.export_lut_for_aces_cct)
+        main_layout.addLayout(aces_cct_layout)
+
         self.file_format = QComboBox()
         self.resolution_width = QSpinBox()
         self.resolution_height = QSpinBox()
         self.frames_per_patch = QSpinBox()
+        self.frame_rate = QComboBox()
 
         custom_logo_layout = QHBoxLayout()
         self.custom_logo_path = QLineEdit()
@@ -501,8 +524,8 @@ class ProjectSettingsView(LockableWidget):
         patch_generation_layout.addRow(QLabel("Resolution: Width:"), self.resolution_width)
         patch_generation_layout.addRow(QLabel("Resolution: Height:"), self.resolution_height)
         patch_generation_layout.addRow(QLabel("Frames Per Patch:"), self.frames_per_patch)
+        patch_generation_layout.addRow(QLabel("Frame Rate:"), self.frame_rate)
         patch_generation_layout.addRow(QLabel("Custom Logo:"), custom_logo_layout)
-
         patch_generation_group.setLayout(patch_generation_layout)
 
         main_layout.addWidget(patch_generation_group)
@@ -800,6 +823,15 @@ class ProjectSettingsController(QObject):
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.FRAMES_PER_PATCH, self.project_settings_view.frames_per_patch.value())
         )
+        self.project_settings_view.frame_rate.currentIndexChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.FRAME_RATE, float(self.project_settings_view.frame_rate.currentText()))
+        )
+        self.project_settings_view.export_lut_for_aces_cct.stateChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT,
+                self.project_settings_view.export_lut_for_aces_cct.isChecked())
+        )
         self.project_settings_view.output_folder.textChanged.connect(
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.OUTPUT_FOLDER, self.project_settings_view.output_folder.text()))
@@ -910,8 +942,9 @@ class ProjectSettingsController(QObject):
             options = self.model.default_data[key][constants.OPTIONS]
             if callable(options):
                 options = options()
+            options = [str(option) for option in options]
             widget.addItems(options)
-            widget.setCurrentText(self.model.default_data[key][constants.DEFAULT])
+            widget.setCurrentText(str(self.model.default_data[key][constants.DEFAULT]))
         if isinstance(widget, QCheckBox) and key in self.model.default_data:
             widget.setChecked(self.model.default_data[key][constants.DEFAULT])
         if isinstance(widget, QLineEdit) and key in self.model.default_data:
@@ -1134,7 +1167,7 @@ class ProjectSettingsController(QObject):
                 if isinstance(getattr(view, key), QComboBox):
                     if isinstance(value, LedWallSettings):
                         value = value.name
-                    getattr(view, key).setCurrentText(value)
+                    getattr(view, key).setCurrentText(str(value))
                 elif isinstance(getattr(view, key), QLineEdit):
                     getattr(view, key).setText(value)
                 elif isinstance(getattr(view, key), (QSpinBox, QDoubleSpinBox)):

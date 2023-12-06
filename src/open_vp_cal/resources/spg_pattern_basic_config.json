@@ -1,0 +1,234 @@
+[
+  {
+    "name": "FrameSync",
+    "pattern_type": "Frame_Count_Sync",
+    "sequence_length": 2,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "border_width": 1,
+    "border_color": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "name": "Checkerboard",
+    "pattern_type": "Checkerboard",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "panels_per_patch": 1,
+    "odd_color": [
+      0,
+      0,
+      0
+    ],
+    "even_color": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "name": "Checkerboard_half",
+    "pattern_type": "Checkerboard",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "panels_per_patch": 0.5,
+    "odd_color": [
+      0,
+      0,
+      0
+    ],
+    "even_color": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "name": "Checkerboard_quarters",
+    "pattern_type": "Checkerboard",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "panels_per_patch": 0.25,
+    "odd_color": [
+      0,
+      0,
+      0
+    ],
+    "even_color": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_0_1",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 0,
+    "max_value": 1,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_0_10",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 0,
+    "max_value": 10,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_10_20",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 10,
+    "max_value": 20,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_0_100",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 0,
+    "max_value": 100,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "ExposureStops",
+    "pattern_type": "ExposureStops",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_stops": 7,
+    "font_size": 100,
+    "text_color": [
+      1,
+      0,
+      0
+    ],
+    "fit_to_wall": true
+  },
+  {
+    "name": "DataRange",
+    "pattern_type": "DataRange",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": false,
+    "use_pq_peak_luminance": true
+  },
+  {
+    "name": "BitDepth10",
+    "pattern_type": "BitDepth",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "bit_depth_value": 10
+  },
+  {
+    "name": "LinearSteppedColors",
+    "pattern_type": "LinearSteppedColors",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 50,
+    "font_size": 10,
+    "text_color": [
+      1,
+      1,
+      1
+    ],
+    "color_range_min": 0,
+    "color_range_max": 1
+  },
+  {
+    "name": "RealBlackLevel",
+    "pattern_type": "RealBlackLevel",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "limit": 0.18,
+    "font_size": 10,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "Alignment",
+    "pattern_type": "Alignment",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "width": 10,
+    "line_border_width": 3,
+    "line_color": [
+      1,
+      1,
+      1
+    ],
+    "line_border_color": [
+      1,
+      0,
+      0
+    ],
+    "enable_border": true,
+    "border_width": 1,
+    "border_color": [
+      0,
+      0,
+      1
+    ]
+  }
+]
