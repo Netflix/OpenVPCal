@@ -238,13 +238,11 @@ view_transforms:
 
   - !<ViewTransform>
     name: OpenVPCal PreCalibration
-    family: Display
     description: The OpenVPCal Pre Calibrated native Output
     from_scene_reference: !<BuiltinTransform> {style: UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD}
 
   - !<ViewTransform>
     name: OpenVPCal AOTO_Wall2 - REDWideGamutRGB
-    family: Display
     description: OpenVPCal AOTO_Acheivable REDWideGamutRGB
     from_scene_reference: !<GroupTransform>
       children:
@@ -1174,16 +1172,16 @@ colorspaces:
     from_scene_reference: !<GroupTransform>
       children:
         - !<MatrixTransform> {matrix: [1.56024568381871, -0.320210211803988, -0.240035472153272, 0, -0.123918779982874, 1.22976813664784, -0.105849356612518, 0, 0.00680470805128399, -0.0874487972506229, 1.08064408924726, 0, 0, 0, 0, 1]}
+        - !<MatrixTransform> {matrix: [1.17313939379925, -0.148815488522626, -0.0257324861552156, 0, -0.024622738087998, 0.96398348685334, 0.0590130887751208, 0, 0.0130365972914534, 0.0201880044991274, 0.966775398209419, 0, 0, 0, 0, 1]}
         - !<GroupTransform>
           children:
             - !<BuiltinTransform> {style: CURVE - LINEAR_to_ST-2084}
-            - !<FileTransform> {src: Calibration AOTO_Wall2 - REDWideGamutRGB_CS_EOTF.clf, direction: inverse}
+            - !<FileTransform> {src: Calibration AOTO_Wall2 - REDWideGamutRGB_EOTF_CS.clf, direction: inverse}
             - !<BuiltinTransform> {style: CURVE - ST-2084_to_LINEAR}
-        - !<MatrixTransform> {matrix: [1.17353892388007, -0.147897361050872, -0.0267111240535133, 0, -0.0261455037605238, 0.964308360299006, 0.0597431111425, 0, 0.0138932849895133, 0.0211272124210177, 0.964979502589469, 0, 0, 0, 0, 1]}
         - !<GroupTransform>
           children:
             - !<BuiltinTransform> {style: ACEScg_to_ACES2065-1}
-            - !<FixedFunctionTransform> {style: ACES_GamutComp13, params: [1.15337143919919, 1.02227919605264, 1.001, 0.9, 0.9, 0.9, 4]}
+            - !<FixedFunctionTransform> {style: ACES_GamutComp13, params: [1.15437555783076, 1.02098875736178, 1.001, 0.9, 0.9, 0.9, 4]}
             - !<BuiltinTransform> {style: ACEScg_to_ACES2065-1, direction: inverse}
         - !<MatrixTransform> {matrix: [1.56024568381871, -0.320210211803988, -0.240035472153272, 0, -0.123918779982874, 1.22976813664784, -0.105849356612518, 0, 0.00680470805128399, -0.0874487972506229, 1.08064408924726, 0, 0, 0, 0, 1], direction: inverse}
 

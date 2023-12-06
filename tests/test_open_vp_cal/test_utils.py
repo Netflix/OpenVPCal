@@ -18,6 +18,12 @@ class TestUtils(unittest.TestCase):
         super(TestUtils, self).setUp()
         os.environ[constants.OPEN_VP_CAL_UNIT_TESTING] = "1"
 
+        test_output_folder = self.get_test_output_folder()
+        if os.path.exists(test_output_folder):
+            shutil.rmtree(test_output_folder)
+
+        os.makedirs(test_output_folder)
+
     def tearDown(self):
         super(TestUtils, self).tearDown()
         del os.environ[constants.OPEN_VP_CAL_UNIT_TESTING]

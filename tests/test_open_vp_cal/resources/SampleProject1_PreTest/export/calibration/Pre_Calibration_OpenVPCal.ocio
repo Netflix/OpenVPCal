@@ -237,7 +237,6 @@ view_transforms:
 
   - !<ViewTransform>
     name: OpenVPCal PreCalibration
-    family: Display
     description: The OpenVPCal Pre Calibrated native Output
     from_scene_reference: !<BuiltinTransform> {style: UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD}
 
