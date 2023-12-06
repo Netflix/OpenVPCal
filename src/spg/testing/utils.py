@@ -215,7 +215,7 @@ class TestGenerator(SpgTestBase):
 
             # Enable To Replace/ Update The Reference Images For Comparison When We Need To Re Generate
             # TODO: Think of a nicer way to turn this on and off it should be off 90% of the time
-            # if not os.path.exists(file_resource_path):
+            # if os.path.exists(file_resource_path):
             #     shutil.copy(file_path, file_resource_path)
 
             if not os.path.exists(file_path):
