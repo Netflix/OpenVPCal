@@ -1,22 +1,15 @@
 """
 Utility functions for open_vp_cal
 """
-import base64
-import json
-import os
-from datetime import datetime, timezone
 import re
-import uuid
-from typing import Tuple, Union, List, Dict
+from typing import Tuple, Union, List
 import numpy as np
 
 import colour
-import requests
 from colour import SpectralShape
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import PQ, CAT, CameraColourSpace
-from open_vp_cal.core.resource_loader import ResourceLoader
 
 
 def nits_to_pq(nits: int) -> float:
@@ -467,36 +460,3 @@ def get_cat_for_camera_conversion(camera_colour_space_name: str) -> CAT:
     if camera_colour_space_name == CameraColourSpace.RED_WIDE_GAMUT:
         camera_conversion_cat = CAT.CAT_BRADFORD
     return camera_conversion_cat
-
-
-def log_results(data: Dict) -> Union[requests.Response, None]:
-    """ Logs the usage stats
-
-    Args:
-        data: The data containing the calibration settings, samples, and the results
-
-    """
-    if os.getenv(constants.OPEN_VP_CAL_UNIT_TESTING):
-        return None
-
-    try:
-        import open_vp_cal
-
-        utc_now = datetime.now(timezone.utc)
-        utc_string = utc_now.strftime('%Y-%m-%d %H:%M:%S %Z%z')
-
-        data_dict = {
-            "job_id": str(uuid.uuid4()),
-            "version": open_vp_cal.__version__,
-            "utc": utc_string,
-            "data": json.dumps(data)
-        }
-        logging_bin = ResourceLoader.logging()
-        with open(logging_bin, 'rb') as file:
-            read_encoded = file.read()
-            logging_route = base64.b64decode(read_encoded).decode('utf-8')
-            response = requests.post(logging_route, data=json.dumps(data_dict))
-            return response
-    except Exception:
-        pass
-    return None

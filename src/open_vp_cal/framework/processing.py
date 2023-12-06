@@ -11,6 +11,7 @@ from typing import Union, Tuple, List, Dict
 
 from colour import RGB_Colourspace
 
+import open_vp_cal.framework.utils as framework_utils
 from open_vp_cal.core import calibrate, constants, utils, ocio_utils, ocio_config
 from open_vp_cal.imaging import macbeth, imaging_utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME, Results
@@ -356,7 +357,7 @@ class Processing:
             }
             data_dict[f"{led_wall.name}_processed_data"] = processed_data
 
-        thread = threading.Thread(target=utils.log_results, args=(data_dict,), daemon=True)
+        thread = threading.Thread(target=framework_utils.log_results, args=(data_dict,), daemon=True)
         thread.start()
         thread.join(timeout=5)
         return walls
