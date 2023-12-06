@@ -13,6 +13,8 @@ OIIO_MSG = "OpenImageIO Is Not Installed"
 
 
 class TestBase(unittest.TestCase):
+    image_fail_count = 0
+
     @classmethod
     def get_folder_for_this_file(cls):
         raise NotImplementedError("Needs Implementing In The Inheriting Class: return os.path.dirname(__file__)")
@@ -108,7 +110,7 @@ class TestBase(unittest.TestCase):
         self.assertEqual(expected_bps, actual_bps)
 
         comp_results = oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-5, 1.0e-5)
-        if comp_results.nfail > 0:
+        if comp_results.nfail > self.image_fail_count:
 
             file_name = "_".join([self.__class__.__name__, self._testMethodName])
             diff = oiio.ImageBufAlgo.absdiff(expected_image, image_buffer)
