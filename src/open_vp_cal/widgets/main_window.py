@@ -735,10 +735,11 @@ class MainWindow(QMainWindow):
         spg_led_wall_json = [json.loads(spg_led_wall.to_json()) for spg_led_wall in spg_led_walls]
         spg_raster_map_json = [json.loads(spg_raster_map.to_json()) for spg_raster_map in spg_raster_maps]
 
-        spg_led_panel_json_file = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
-        spg_led_wall_json_file = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
-        spg_raster_map_json_file = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
-        spg_project_settings_json_file = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
+        tmp_dir = tempfile.TemporaryDirectory()
+        spg_led_panel_json_file = os.path.join(tmp_dir.name, "led_panel_settings.json")
+        spg_led_wall_json_file = os.path.join(tmp_dir.name, "led_wall_settings.json")
+        spg_raster_map_json_file = os.path.join(tmp_dir.name, "raster_map_settings.json")
+        spg_project_settings_json_file = os.path.join(tmp_dir.name, "spg_project_settings.json")
 
         with open(spg_led_panel_json_file, 'w') as f:
             json.dump(spg_led_panel_json, f, indent=4)

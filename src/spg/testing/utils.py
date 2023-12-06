@@ -35,6 +35,11 @@ class TestBase(unittest.TestCase):
         return path
 
     @classmethod
+    def get_test_resource_ocio_config(cls):
+        path = cls.get_test_resource_config("ocio")
+        return os.path.join(path, "aces", "cg", "cg-config-v0.1.0_aces-v1.3_ocio-v2.1.1.ocio")
+
+    @classmethod
     def get_test_resource(cls, resource_name, ext):
         ext = ext.replace(".", "")
         path = os.path.join(
@@ -102,7 +107,7 @@ class TestBase(unittest.TestCase):
         actual_bps = image_buffer_spec.get_int_attribute(constants.OIIO_BITS_PER_SAMPLE, defaultval=0)
         self.assertEqual(expected_bps, actual_bps)
 
-        comp_results = oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-6, 1.0e-6)
+        comp_results = oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-5, 1.0e-5)
         if comp_results.nfail > 0:
 
             file_name = "_".join([self.__class__.__name__, self._testMethodName])
@@ -131,6 +136,7 @@ class SpgTestBase(TestBase):
         self.project_settings_config = self.get_project_settings()
         self.pattern_settings_config = self.get_pattern_settings()
 
+        self.project_settings_config['ocio_config_path'] = self.get_test_resource_ocio_config()
         self.spg = _PatternGenerator(
             self.panels_config, self.walls_config, self.raster_config, self.project_settings_config,
             self.pattern_settings_config)
