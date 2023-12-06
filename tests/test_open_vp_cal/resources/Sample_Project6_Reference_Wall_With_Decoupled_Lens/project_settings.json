@@ -1,0 +1,116 @@
+{
+    "openvp_cal_version": "1.0.0-rc.1",
+    "project_settings": {
+        "file_format": "exr",
+        "resolution_width": 3839,
+        "resolution_height": 2160,
+        "output_folder": "/Users/adamdavis/Downloads/OpenVP_UnitTest_Projects/Sample_Project6_Reference_Wall_With_Decoupled_Lens",
+        "ocio_config_path": "",
+        "custom_logo_path": "",
+        "frames_per_patch": 1,
+        "frame_rate": 24.0,
+        "export_lut_for_aces_cct": false,
+        "led_walls": [
+            {
+                "name": "AOTO",
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": false,
+                "auto_wb_source": false,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A104_C005_11086G_001.R3D",
+                "num_grey_patches": 30,
+                "primaries_saturation": 0.7,
+                "calculation_order": "EOTF > CS",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "REDWideGamutRGB",
+                "reference_to_target_cat": "Bradford",
+                "roi": [
+                    677,
+                    1405,
+                    184,
+                    919
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 1028,
+                "target_gamut": "AOTO",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "None",
+                "match_reference_wall": true,
+                "reference_wall": "ROE_DECOWP",
+                "use_external_white_point": false,
+                "external_white_point_file": "",
+                "is_verification_wall": false,
+                "verification_wall": "",
+                "avoid_clipping": false
+            },
+            {
+                "name": "ROE_DECOWP",
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": false,
+                "auto_wb_source": false,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A104_C002_110834_001.R3D",
+                "num_grey_patches": 30,
+                "primaries_saturation": 0.7,
+                "calculation_order": "EOTF > CS",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "REDWideGamutRGB",
+                "reference_to_target_cat": "Bradford",
+                "roi": [
+                    649,
+                    1314,
+                    220,
+                    888
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 1650,
+                "target_gamut": "ROE",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "None",
+                "match_reference_wall": false,
+                "reference_wall": "",
+                "use_external_white_point": true,
+                "external_white_point_file": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A104_C003_11080B_001.R3D/A104_C003_11080B_001.01397369.exr",
+                "is_verification_wall": false,
+                "verification_wall": "",
+                "avoid_clipping": false
+            }
+        ],
+        "project_custom_primaries": {
+            "ROE": [
+                [
+                    0.6919,
+                    0.3074
+                ],
+                [
+                    0.1828,
+                    0.7413
+                ],
+                [
+                    0.1308,
+                    0.0633
+                ],
+                [
+                    0.3127,
+                    0.329
+                ]
+            ],
+            "AOTO": [
+                [
+                    0.6937,
+                    0.3042
+                ],
+                [
+                    0.1845,
+                    0.7347
+                ],
+                [
+                    0.1355,
+                    0.0518
+                ],
+                [
+                    0.3127,
+                    0.329
+                ]
+            ]
+        }
+    }
+}

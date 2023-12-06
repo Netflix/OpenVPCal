@@ -118,9 +118,9 @@ def eotf_correction_calculation(
         max_r = np.max(np.max(lut_r[:, 0]))
         max_g = np.max(np.max(lut_g[:, 0]))
         max_b = np.max(np.max(lut_b[:, 0]))
-        max_value = max(max_r, max_g, max_b)
-        if max_value > peak_lum:
-            scale_factor = peak_lum / max_value
+        min_value = min(max_r, max_g, max_b)
+        if min_value > peak_lum:
+            scale_factor = peak_lum / min_value
 
             lut_r[:, 0] *= scale_factor
             lut_g[:, 0] *= scale_factor
@@ -636,13 +636,16 @@ def run(
         )
 
     # 4) We Calculate The White Balance Matrix By Balancing The Grey Samples Against The Green Channel Or Use The One
-    # Provided By The External Reference Wall
-    # Green Value / Red Value
+    # Provided By The External Reference Wall, If we are auto white balancing we calculate and apply this in camera
+    # native space, if we are not auto white balancing then this needs to be calculated in target space, and applied
+    # only to the eotf_samples during the EOTF>CS branch
     if reference_wall_external_white_balance_matrix is None:
-        grey_measurements_camera_target = colour.RGB_to_RGB(
-            grey_measurements_native_camera_gamut, native_camera_gamut_cs, target_cs, None
-        )
-        white_balance_matrix = utils.create_white_balance_matrix(grey_measurements_camera_target)
+        wb_calc_samples = grey_measurements_native_camera_gamut
+        if not enable_plate_white_balance:
+            wb_calc_samples = colour.RGB_to_RGB(
+                grey_measurements_native_camera_gamut, native_camera_gamut_cs, target_cs, None
+            )
+        white_balance_matrix = utils.create_white_balance_matrix(wb_calc_samples)
     else:
         white_balance_matrix = np.array(reference_wall_external_white_balance_matrix)
 
@@ -673,8 +676,10 @@ def run(
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
     grey_measurements_white_balanced_native_gamut_green = grey_measurements_white_balanced_native_gamut[1]
 
-    target_over_white = 1 / max_white_camera_native_gamut[1]
+    green_value_for_last_eotf_patch = eotf_ramp_camera_native_gamut[-1][1]
+    target_over_white = 1 / green_value_for_last_eotf_patch
     exposure_scaling_factor = 1.0 / (peak_lum * target_over_white)
+
     max_white_delta = max_white_camera_native_gamut[1] / eotf_ramp_camera_native_gamut[-1][1]
 
     rgbw_measurements_camera_native_gamut = rgbw_measurements_camera_native_gamut / exposure_scaling_factor
@@ -804,6 +809,7 @@ def run(
         eotf_ramp_target = colour.RGB_to_RGB(
             eotf_ramp_camera_native_gamut, native_camera_gamut_cs, target_cs, None
         )
+
         if not enable_plate_white_balance:
             eotf_ramp_target = [ca.vector_dot(white_balance_matrix, m) for m in eotf_ramp_target]
 

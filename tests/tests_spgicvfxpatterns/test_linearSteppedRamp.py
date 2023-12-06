@@ -1,4 +1,4 @@
-import utils as utils
+import tests_spgicvfxpatterns.utils as utils
 
 from spg_icvfxpatterns.PatternGenerators.linearSteppedRamp import LinearSteppedRamp as _LinearSteppedRamp
 

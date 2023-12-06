@@ -7,13 +7,15 @@ from PySide6.QtGui import QPixmap, QPainter, QMouseEvent
 from PySide6.QtCore import Qt
 
 import PyOpenColorIO as Ocio
+import numpy as np
 import colour
 import colour.algebra as ca
 
-from open_vp_cal.core import utils, constants
+from open_vp_cal.core import constants
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.imaging import imaging_utils
+from open_vp_cal.widgets import utils
 
 
 class ImageViewerGraphicsView(QGraphicsView):
@@ -226,7 +228,6 @@ class SwatchViewer(QWidget):
                     sample_reference_buffers_stitched = led_wall.processing_results.sample_reference_buffers[count]
 
                     sp_np = imaging_utils.image_buf_to_np_array(sample_buffers_stitched)
-
                     exposure_scaling_factor = None
                     if led_wall.processing_results.calibration_results:
                         exposure_scaling_factor = led_wall.processing_results.calibration_results[
@@ -270,6 +271,8 @@ class SwatchViewer(QWidget):
                             sp_np = colour.RGB_to_RGB(
                                 sp_np, native_camera_gamut_cs, working_cs, camera_conversion_cat
                             )
+
+                    sp_np = sp_np.astype(np.float32)
 
                     # Calibration Is Applied
                     if led_wall.processing_results:

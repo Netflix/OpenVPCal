@@ -228,7 +228,8 @@ class Processing:
     @staticmethod
     def _export_calibration(
             output_folder: str, led_walls: List[LedWallSettings],
-            base_ocio_config: str, export_filter=True) -> List[LedWallSettings]:
+            base_ocio_config: str, export_filter: bool = True,
+            export_lut_for_aces_cct: bool = False) -> List[LedWallSettings]:
         """ Runs the export process to generate the OCIO configuration files, CLF and luts
 
         Args:
@@ -279,7 +280,7 @@ class Processing:
 
         ocio_config_writer.generate_post_calibration_ocio_config(
             led_walls, output_file=ocio_config_output_file, base_ocio_config=base_ocio_config,
-            preview_export_filter=export_filter
+            preview_export_filter=export_filter, export_lut_for_aces_cct=export_lut_for_aces_cct
         )
 
         for led_wall in led_walls:
@@ -294,19 +295,33 @@ class Processing:
             if not led_wall.enable_eotf_correction:
                 calc_order_string = constants.CalculationOrder.CS_ONLY_STRING
 
+            aces_cct_desc = ""
+            if export_lut_for_aces_cct:
+                aces_cct_desc = "_ACES_CCT"
+
             lut_name = (f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}_"
                         f"{led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName()}_"
-                        f"{calc_order_string}.cube")
+                        f"{calc_order_string}{aces_cct_desc}.cube")
+
             lut_output_file = os.path.join(
                 calibration_folder, lut_name
             )
 
-            ocio_utils.bake_3d_lut(
-                led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
-                led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
-                led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
-                ocio_config_output_file, lut_output_file
-            )
+            if not export_lut_for_aces_cct:
+                ocio_utils.bake_3d_lut(
+                    led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
+                    led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
+                    led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
+                    ocio_config_output_file, lut_output_file
+                )
+
+            else:
+                ocio_utils.bake_3d_lut(
+                    constants.CameraColourSpace.CS_ACES_CCT,
+                    led_wall.processing_results.led_wall_colour_spaces.aces_cct_display_colour_space_cs.getName(),
+                    led_wall.processing_results.led_wall_colour_spaces.aces_cct_calibration_view_transform.getName(),
+                    ocio_config_output_file, lut_output_file
+                )
 
             led_wall.processing_results.lut_output_file = lut_output_file
         return led_walls
@@ -325,7 +340,8 @@ class Processing:
         """
         walls = Processing._export_calibration(
             project_settings.export_folder,
-            led_walls, project_settings.ocio_config_path, export_filter=False
+            led_walls, project_settings.ocio_config_path, export_filter=False,
+            export_lut_for_aces_cct=project_settings.export_lut_for_aces_cct
         )
 
         project_settings.to_json(
@@ -494,12 +510,10 @@ class Processing:
         input_gamut = self.led_wall.input_plate_gamut
         working_gamut = constants.ColourSpace.CS_ACES
 
-        calibration_folder = os.path.join(
-            self.led_wall.project_settings.export_folder, constants.ProjectFolders.CALIBRATION)
-        if not os.path.exists(calibration_folder):
-            os.makedirs(calibration_folder)
+        if not os.path.exists(self.led_wall.project_settings.export_folder):
+            os.makedirs(self.led_wall.project_settings.export_folder)
 
-        ocio_config_writer = ocio_config.OcioConfigWriter(calibration_folder)
+        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
         led_wall_for_ocio_generation = self.led_wall
         if self.led_wall.is_verification_wall:
             led_wall_for_ocio_generation = self.led_wall.verification_wall_as_wall

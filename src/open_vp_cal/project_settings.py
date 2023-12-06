@@ -27,7 +27,8 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
-            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT
+            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -224,24 +225,40 @@ class ProjectSettings:
         self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
 
     @property
-    def frame_rate(self) -> str:
+    def frame_rate(self) -> float:
         """ The frame rate for the shooting frame rate for the camera, used in certain SPG patterns
 
         Returns:
-            str: The shooting frame rate of the camera
+            float: The shooting frame rate of the camera
         """
         return self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE]
 
     @frame_rate.setter
-    def frame_rate(self, value: Union[str, int]):
+    def frame_rate(self, value: float):
         """ Sets the frame rate for the shooting frame rate
 
         Args:
-            value (int): The resolution height
+            value (float): The frame rate we want to set
         """
-        if not isinstance(value, str):
-            value = str(int(value))
         self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE] = value
+
+    @property
+    def export_lut_for_aces_cct(self) -> bool:
+        """ Get whether we want to export out lut for aces cct
+
+        Returns:
+            bool: Whether we want out luts to be exported for aces cct
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT]
+
+    @export_lut_for_aces_cct.setter
+    def export_lut_for_aces_cct(self, value: bool):
+        """ Set whether we want to export out lut for aces cct
+
+        Args:
+            value (bool): Set whether we want to export out lut for aces cct
+        """
+        self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT] = value
 
     @classmethod
     def from_json(cls, json_file: str):

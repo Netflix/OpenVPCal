@@ -24,7 +24,6 @@ class ProcessingResults:
         self.led_wall_colour_spaces = None
 
 
-
 class ValidationResult:
     """ Small class to hold the results of the validation check
 
@@ -66,3 +65,6 @@ class LedWallColourSpaces:
     pre_calibration_view_transform = None
     display_colour_space_cs = None
     transfer_function_only_cs = None
+    aces_cct_view_transform = None
+    aces_cct_calibration_view_transform = None
+    aces_cct_display_colour_space_cs = None

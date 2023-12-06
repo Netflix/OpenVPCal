@@ -664,7 +664,7 @@ class MainWindow(QMainWindow):
         """
 
         spg_project_settings = SPGProjectSettings()
-        spg_project_settings.frame_rate = int(project_settings.frame_rate)
+        spg_project_settings.frame_rate = project_settings.frame_rate
         spg_project_settings.image_file_format = project_settings.file_format
         spg_project_settings.image_file_bit_depth = 10
         spg_project_settings.output_folder = os.path.join(

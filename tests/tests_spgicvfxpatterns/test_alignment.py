@@ -1,4 +1,4 @@
-import utils as utils
+import tests_spgicvfxpatterns.utils as utils
 
 from spg_icvfxpatterns.PatternGenerators.alignment import Alignment as _Alignment
 

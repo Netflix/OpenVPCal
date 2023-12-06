@@ -18,6 +18,12 @@ class TestUtils(unittest.TestCase):
         super(TestUtils, self).setUp()
         os.environ[constants.OPEN_VP_CAL_UNIT_TESTING] = "1"
 
+        test_output_folder = self.get_test_output_folder()
+        if os.path.exists(test_output_folder):
+            shutil.rmtree(test_output_folder)
+
+        os.makedirs(test_output_folder)
+
     def tearDown(self):
         super(TestUtils, self).tearDown()
         del os.environ[constants.OPEN_VP_CAL_UNIT_TESTING]
@@ -30,7 +36,7 @@ class TestUtils(unittest.TestCase):
     def get_test_resources_folder(cls):
         return os.path.join(
             cls.get_folder_for_this_file(),
-            "../resources",
+            "resources",
         )
 
     @classmethod
@@ -120,7 +126,6 @@ class TestProject(TestUtils):
     def setUp(self):
         super(TestProject, self).setUp()
         self.project_settings = ProjectSettings.from_json(self.get_sample_project_settings())
-
         self.project_settings.output_folder = self.get_output_folder()
         if os.path.exists(self.project_settings.output_folder):
             shutil.rmtree(self.project_settings.output_folder)

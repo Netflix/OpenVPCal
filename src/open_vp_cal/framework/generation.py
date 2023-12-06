@@ -738,6 +738,7 @@ class PatchGeneration:
         minimum_legal, maximum_legal, minimum_extended, maximum_extended = utils.get_legal_and_extended_values(
             self.led_wall.target_max_lum_nits
         )
+
         Oiio.ImageBufAlgo.fill(
             img_buffers[0],
             [minimum_extended, minimum_extended, minimum_extended]

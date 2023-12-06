@@ -1,8 +1,6 @@
 """
 This file contains constants used throughout the openvpcal calibration process
 """
-import numpy as np
-
 COLOR_WIDGET_GRAPH_SCALE = 1000
 
 OIIO_COMPRESSION_ATTRIBUTE = "compression"
@@ -82,17 +80,18 @@ class ProjectSettingsKeys:
     PROJECT_CUSTOM_PRIMARIES = "project_custom_primaries"
     PROJECT_SETTINGS = "project_settings"
     FRAME_RATE = "frame_rate"
+    EXPORT_LUT_FOR_ACES_CCT = "export_lut_for_aces_cct"
     ALL = [FILE_FORMAT, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, OUTPUT_FOLDER, OCIO_CONFIG_PATH, CUSTOM_LOGO_PATH,
-           FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE]
+           FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT]
 
 
 class FrameRates:
-    FPS_24 = "24"
-    FPS_25 = "25"
-    FPS_30 = "30"
-    FPS_48 = "48"
-    FPS_50 = "50"
-    FPS_60 = "60"
+    FPS_24 = 24
+    FPS_25 = 25
+    FPS_30 = 30
+    FPS_48 = 48
+    FPS_50 = 50
+    FPS_60 = 60
     FPS_ALL = [FPS_24, FPS_25, FPS_30, FPS_48, FPS_50, FPS_60]
     FPS_DEFAULT = FPS_24
 

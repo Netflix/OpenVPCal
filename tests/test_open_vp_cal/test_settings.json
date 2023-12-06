@@ -8,6 +8,8 @@
         "custom_logo_path": "",
         "ocio_config_path": "test",
         "frames_per_patch": 1,
+        "frame_rate": 48,
+        "export_lut_for_aces_cct": true,
         "project_custom_primaries": {
             "TestPrimaries1": [
                 [

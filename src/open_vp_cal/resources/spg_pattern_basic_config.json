@@ -155,22 +155,6 @@
     "fit_to_wall": true
   },
   {
-    "name": "ExposureStopsNotFit",
-    "pattern_type": "ExposureStops",
-    "sequence_length": 0.05,
-    "bit_depth_override": null,
-    "input_transform": null,
-    "enable_color_conversion": true,
-    "number_of_stops": 7,
-    "font_size": 100,
-    "text_color": [
-      1,
-      0,
-      0
-    ],
-    "fit_to_wall": false
-  },
-  {
     "name": "DataRange",
     "pattern_type": "DataRange",
     "sequence_length": 0.05,
