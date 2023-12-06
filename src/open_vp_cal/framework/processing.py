@@ -510,12 +510,10 @@ class Processing:
         input_gamut = self.led_wall.input_plate_gamut
         working_gamut = constants.ColourSpace.CS_ACES
 
-        calibration_folder = os.path.join(
-            self.led_wall.project_settings.export_folder, constants.ProjectFolders.CALIBRATION)
-        if not os.path.exists(calibration_folder):
-            os.makedirs(calibration_folder)
+        if not os.path.exists(self.led_wall.project_settings.export_folder):
+            os.makedirs(self.led_wall.project_settings.export_folder)
 
-        ocio_config_writer = ocio_config.OcioConfigWriter(calibration_folder)
+        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
         led_wall_for_ocio_generation = self.led_wall
         if self.led_wall.is_verification_wall:
             led_wall_for_ocio_generation = self.led_wall.verification_wall_as_wall
