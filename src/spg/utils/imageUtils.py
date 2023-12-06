@@ -4,6 +4,7 @@
 import os
 import subprocess
 import sys
+from spg.utils.resource_loader import ResourceLoader
 
 import PyOpenColorIO as ocio
 
@@ -73,10 +74,7 @@ def add_text_to_image_centre(buffer, text, font_size=None, font_path=None, text_
     :return: ImageBuf
     """
     if not font_path:
-        if sys.platform in ['linux', 'linux2']:
-            font_path = "/usr/share/fonts/opentype/freefont/FreeSansBold.otf"
-        elif sys.platform == 'darwin':
-            font_path = "/System/Library/Fonts/Courier.ttc"
+        font_path = ResourceLoader.regular_font()
 
     if not font_size:
         if buffer.roi.width == buffer.roi.height:

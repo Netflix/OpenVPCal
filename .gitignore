@@ -1,9 +1,9 @@
 **/__pycache__/**
 .idea/*
 **/tests/**/output/**
+**/tests/**/results/**
 dist/**
 **myenv/**
 **venv/**
 openvpcal.egg-info/**
 .pytest_cache/**
-/tests/tests_spgicvfxpatterns/results/
