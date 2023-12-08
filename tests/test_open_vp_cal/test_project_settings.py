@@ -29,6 +29,7 @@ class TestProjectSettings(TestBase):
                     constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
                     constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_48,
                     constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: True,
+                    constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: True,
                     constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {
                         "TestPrimaries1": [
                             [

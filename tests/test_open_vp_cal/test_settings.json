@@ -1,5 +1,5 @@
 {
-    "openvp_cal_version": "0.1.0a",
+    "openvp_cal_version": "1.0.0-rc.5",
     "project_settings": {
         "file_format": "exr",
         "resolution_width": 3840,
@@ -10,6 +10,7 @@
         "frames_per_patch": 1,
         "frame_rate": 48,
         "export_lut_for_aces_cct": true,
+        "export_lut_for_aces_cct_in_target_out": true,
         "project_custom_primaries": {
             "TestPrimaries1": [
                 [

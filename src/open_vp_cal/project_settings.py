@@ -28,7 +28,8 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
             constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
-            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -259,6 +260,24 @@ class ProjectSettings:
             value (bool): Set whether we want to export out lut for aces cct
         """
         self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT] = value
+
+    @property
+    def export_lut_for_aces_cct_in_target_out(self) -> bool:
+        """ Get whether we want to export out lut for aces cct in and target out
+
+        Returns:
+            bool: Whether we want our luts to be exported for aces cct, with cct in and target out
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT]
+
+    @export_lut_for_aces_cct_in_target_out.setter
+    def export_lut_for_aces_cct_in_target_out(self, value: bool):
+        """ Set whether we want to export out lut for aces cct with aces cct in and target out
+
+        Args:
+            value (bool): Set whether we want to export out lut for aces cct, with cct in and target out
+        """
+        self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT] = value
 
     @classmethod
     def from_json(cls, json_file: str):
