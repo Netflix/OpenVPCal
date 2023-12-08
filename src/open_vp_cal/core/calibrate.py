@@ -244,17 +244,6 @@ def extract_screen_cs(
         chromatic_adaptation_transform=cs_cat,
     )
 
-    # macbeth_reference_samples = reference_samples[Measurements.MACBETH]
-    # macbeth_measurements_target = colour.RGB_to_RGB(
-    #     macbeth_measurements_camera_native_gamut, camera_native_cs, target_cs, None
-    # )
-
-    # target_to_screen_matrix = colour.matrix_colour_correction(
-    #     macbeth_measurements_target,
-    #     macbeth_reference_samples,
-    #     method='Cheung 2004'
-    # )
-
     # If we want to avoid clipping, we need to scale the matrix so that the sum of each row is 1
     if avoid_clipping:
         row_sums = target_to_screen_matrix.sum(axis=1, keepdims=True)
