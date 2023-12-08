@@ -137,6 +137,9 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: {
                 constants.DEFAULT: self.export_lut_for_aces_cct
             },
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: {
+                constants.DEFAULT: self.export_lut_for_aces_cct_in_target_out
+            },
             constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: {constants.DEFAULT: self.custom_logo_path},
         }
 
@@ -502,8 +505,11 @@ class ProjectSettingsView(LockableWidget):
         main_layout.addLayout(output_folder_layout)
 
         self.export_lut_for_aces_cct = QCheckBox()
+        self.export_lut_for_aces_cct_in_target_out = QCheckBox()
         aces_cct_layout = QFormLayout()
         aces_cct_layout.addRow(QLabel("Export LUT For ACEScct:"), self.export_lut_for_aces_cct)
+        aces_cct_layout.addRow(QLabel("Export LUT For ACEScct In/Target Out:"),
+                               self.export_lut_for_aces_cct_in_target_out)
         main_layout.addLayout(aces_cct_layout)
 
         self.file_format = QComboBox()
@@ -831,6 +837,11 @@ class ProjectSettingsController(QObject):
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT,
                 self.project_settings_view.export_lut_for_aces_cct.isChecked())
+        )
+        self.project_settings_view.export_lut_for_aces_cct_in_target_out.stateChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT,
+                self.project_settings_view.export_lut_for_aces_cct_in_target_out.isChecked())
         )
         self.project_settings_view.output_folder.textChanged.connect(
             lambda: self.model.set_data(
