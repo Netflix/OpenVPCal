@@ -230,7 +230,8 @@ class Processing:
     def _export_calibration(
             output_folder: str, led_walls: List[LedWallSettings],
             base_ocio_config: str, export_filter: bool = True,
-            export_lut_for_aces_cct: bool = False) -> List[LedWallSettings]:
+            export_lut_for_aces_cct: bool = False,
+            export_lut_for_aces_cct_in_target_out: bool = False) -> List[LedWallSettings]:
         """ Runs the export process to generate the OCIO configuration files, CLF and luts
 
         Args:
@@ -279,9 +280,10 @@ class Processing:
 
             led_wall.processing_results.calibration_results_file = calibration_results_file
 
+        do_aces_cct_ocio_export = export_lut_for_aces_cct or export_lut_for_aces_cct_in_target_out
         ocio_config_writer.generate_post_calibration_ocio_config(
             led_walls, output_file=ocio_config_output_file, base_ocio_config=base_ocio_config,
-            preview_export_filter=export_filter, export_lut_for_aces_cct=export_lut_for_aces_cct
+            preview_export_filter=export_filter, export_lut_for_aces_cct=do_aces_cct_ocio_export
         )
 
         for led_wall in led_walls:
@@ -297,8 +299,11 @@ class Processing:
                 calc_order_string = constants.CalculationOrder.CS_ONLY_STRING
 
             aces_cct_desc = ""
-            if export_lut_for_aces_cct:
-                aces_cct_desc = "_ACES_CCT"
+            if do_aces_cct_ocio_export:
+                aces_cct_desc = "_ACES_CCT_IN_OUT"
+
+            if export_lut_for_aces_cct_in_target_out:
+                aces_cct_desc = "_ACES_CCT_IN_TARGET_OUT"
 
             lut_name = (f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}_"
                         f"{led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName()}_"
@@ -308,7 +313,7 @@ class Processing:
                 calibration_folder, lut_name
             )
 
-            if not export_lut_for_aces_cct:
+            if not do_aces_cct_ocio_export:
                 ocio_utils.bake_3d_lut(
                     led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
@@ -316,7 +321,15 @@ class Processing:
                     ocio_config_output_file, lut_output_file
                 )
 
-            else:
+            if do_aces_cct_ocio_export and export_lut_for_aces_cct_in_target_out:
+                ocio_utils.bake_3d_lut(
+                    constants.CameraColourSpace.CS_ACES_CCT,
+                    led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
+                    led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
+                    ocio_config_output_file, lut_output_file
+                )
+
+            if do_aces_cct_ocio_export and not export_lut_for_aces_cct_in_target_out:
                 ocio_utils.bake_3d_lut(
                     constants.CameraColourSpace.CS_ACES_CCT,
                     led_wall.processing_results.led_wall_colour_spaces.aces_cct_display_colour_space_cs.getName(),
@@ -342,7 +355,8 @@ class Processing:
         walls = Processing._export_calibration(
             project_settings.export_folder,
             led_walls, project_settings.ocio_config_path, export_filter=False,
-            export_lut_for_aces_cct=project_settings.export_lut_for_aces_cct
+            export_lut_for_aces_cct=project_settings.export_lut_for_aces_cct,
+            export_lut_for_aces_cct_in_target_out=project_settings.export_lut_for_aces_cct_in_target_out
         )
 
         project_settings.to_json(

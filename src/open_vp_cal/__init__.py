@@ -1,7 +1,7 @@
 """
 Init Module defines a few module level variables
 """
-__version__ = "1.0.0-rc.4"
+__version__ = "1.0.0-rc.5"
 __authors__ = [
     "Adam Davis", "Adrian Pueyo", "Carol Payne", "Francesco Luigi Giardiello"
 ]

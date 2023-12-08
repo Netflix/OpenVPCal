@@ -10,6 +10,7 @@
         "frames_per_patch": 1,
         "frame_rate": 24.0,
         "export_lut_for_aces_cct": false,
+        "export_lut_for_aces_cct_in_target_out": false,
         "led_walls": [
             {
                 "name": "ROE_CSonly",
