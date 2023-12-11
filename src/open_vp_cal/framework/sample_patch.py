@@ -1,6 +1,7 @@
 """
 Module that contains classes who are responsible for sampling and analysing the patches in the image sequence
 """
+import math
 import threading
 import numpy as np
 from colour_checker_detection.detection.segmentation import detect_colour_checkers_segmentation
@@ -206,9 +207,17 @@ class MacBethSample(BaseSamplePatch):
                     section_np_array, additional_data=True):
                 swatch_colours, _, _ = (
                     colour_checker_swatches_data.values)
+
+
                 samples.append(swatch_colours)
 
-        # Compute the mean for each tuple index across all tuples
+        # Compute the mean for each tuple index across all tuples, if the detection fails and we get nans, then we
+        # replace the nans with black patches as these are not used in the calibration directly
         averaged_tuple = np.mean(np.array(samples), axis=0)
-        sample_results.samples = averaged_tuple.tolist()
+        if not math.isnan(averaged_tuple):
+            sample_results.samples = averaged_tuple.tolist()
+        else:
+            list_of_zeros = [[0.0, 0.0, 0.0] for _ in range(24)]
+            sample_results.samples = list_of_zeros
         self.sample_results = [sample_results]
+
