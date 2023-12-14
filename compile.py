@@ -201,7 +201,7 @@ def check_python_version() -> bool:
     Returns: True if python is 3.10.1, False if not
 
     """
-    return '3.10.1' == platform.python_version()
+    return '3.11.6' == platform.python_version()
 
 
 def is_git_installed() -> bool:
@@ -283,19 +283,23 @@ def run_vcpkg_install(folder_path: str) -> None:
     try:
         # Each part of the command is a separate item in the list
         # The "./vcpkg/vcpkg.exe" path should be adjusted to the correct path of your exe file
+        args = []
         if platform.system() == 'Windows':
             script_name = "vcpkg.exe"
             triplet = 'x64-windows-release'
         elif platform.system() == 'Darwin':
             script_name = "vcpkg"
             triplet = 'x64-osx'
+            if platform.processor() == 'arm':
+                triplet = 'arm64-osx'
         else:
             script_name = "vcpkg"
             triplet = 'x64-linux'
 
         vcpkg = os.path.join(folder_path, script_name)
+        args.extend([vcpkg, 'install', 'openimageio[opencolorio,pybind11, freetype]', '--recurse', '--triplet', triplet])
         subprocess.run(
-            [vcpkg, 'install', 'openimageio[opencolorio,pybind11, freetype]', '--recurse', '--triplet', triplet],
+            args,
             check=True)
     except subprocess.CalledProcessError as exception:
         raise RuntimeError("Vcpkg install failed:" + exception.output)
