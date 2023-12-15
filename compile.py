@@ -462,9 +462,12 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
         version: The version number we are releasing
 
     """
+    arch = "universal"
+    if platform.architecture() == "arm":
+        arch = "arm"
     current_script_directory = get_current_folder()
     app_path = os.path.join(current_script_directory, "dist/OpenVPCal.app")
-    dmg_path = os.path.join(current_script_directory, f"dist/OpenVPCal-{version}.dmg")
+    dmg_path = os.path.join(current_script_directory, f"dist/OpenVPCal-{version}-{arch}.dmg")
 
     remove_ds_store(app_path)
 
@@ -476,6 +479,7 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
     # Resign The App As We Changed The pList
     app_path_executable = os.path.join(app_path, "Contents", "MacOS", app_name)
     print("Re Signing The App")
+
     process = subprocess.Popen(["codesign", "--deep", "--force", "--sign", certificate_name, app_path_executable],
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     print(process.stdout.read())
