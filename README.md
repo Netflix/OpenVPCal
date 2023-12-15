@@ -27,7 +27,7 @@ Ensure the following dependencies are installed on your system:
 
     git
     git lfs
-    Python-64-bit=3.10.1
+    Python-64-bit=3.11.6
     pkg-config
     autoconf
     automake
