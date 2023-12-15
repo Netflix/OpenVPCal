@@ -29,6 +29,9 @@ Ensure the following dependencies are installed on your system:
     git lfs
     Python-64-bit=3.10.1
     pkg-config
+    autoconf
+    automake
+    autoconf-archive
 
 OpenVPCal provides a system for building the following dependencies using vcpkg, however can be picked up from your existing studio
 production or development environment.
