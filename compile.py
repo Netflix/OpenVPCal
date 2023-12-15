@@ -196,9 +196,9 @@ def check_python_is_64_bit() -> bool:
 
 
 def check_python_version() -> bool:
-    """ Checks the version of python we have installed is 3.10.1
+    """ Checks the version of python we have installed is 3.11.6
 
-    Returns: True if python is 3.10.1, False if not
+    Returns: True if python is 3.11.6, False if not
 
     """
     return '3.11.6' == platform.python_version()
@@ -390,13 +390,17 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
         library_root = os.path.join(vcpkg_folder, "installed", "x64-windows-release", "bin")
         python_oiio_lib_folder = os.path.join(
             vcpkg_folder, "installed", "x64-windows-release", "lib",
-            "python3.10", "site-packages", "OpenImageIO"
+            "python3.11", "site-packages", "OpenImageIO"
         )
     elif platform.system() == 'Darwin':
-        library_root = os.path.join(vcpkg_folder, "installed", "x64-osx", "lib")
+        arch = "x64-osx"
+        if platform.processor() == "arm":
+            arch = "arm64-osx"
+
+        library_root = os.path.join(vcpkg_folder, "installed", arch, "lib")
         python_oiio_lib_folder = os.path.join(
             library_root,
-            "python3.10", "site-packages", "OpenImageIO"
+            "python3.11", "site-packages", "OpenImageIO"
         )
     lib_files = os.listdir(library_root)
     for lib_file in lib_files:
@@ -528,7 +532,7 @@ def check_dependencies() -> None:
     if not check_python_is_64_bit():
         raise RuntimeError("Python must be 64 bit")
     if not check_python_version():
-        raise RuntimeError("Python must be 3.10.1")
+        raise RuntimeError("Python must be 3.11.6")
     if not is_git_installed():
         raise RuntimeError("Git must be installed")
     if not is_pkgconfig_installed():
