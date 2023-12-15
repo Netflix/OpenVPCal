@@ -463,7 +463,7 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
 
     """
     arch = "universal"
-    if platform.architecture() == "arm":
+    if platform.processor() == "arm":
         arch = "arm"
     current_script_directory = get_current_folder()
     app_path = os.path.join(current_script_directory, "dist/OpenVPCal.app")
