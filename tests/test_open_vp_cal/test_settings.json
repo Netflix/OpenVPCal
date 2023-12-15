@@ -1,5 +1,5 @@
 {
-    "openvp_cal_version": "1.0.0-rc.5",
+    "openvp_cal_version": "0.1.0a",
     "project_settings": {
         "file_format": "exr",
         "resolution_width": 3840,

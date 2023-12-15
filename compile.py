@@ -196,12 +196,12 @@ def check_python_is_64_bit() -> bool:
 
 
 def check_python_version() -> bool:
-    """ Checks the version of python we have installed is 3.10.1
+    """ Checks the version of python we have installed is 3.11.6
 
-    Returns: True if python is 3.10.1, False if not
+    Returns: True if python is 3.11.6, False if not
 
     """
-    return '3.10.1' == platform.python_version()
+    return '3.11.6' == platform.python_version()
 
 
 def is_git_installed() -> bool:
@@ -283,19 +283,23 @@ def run_vcpkg_install(folder_path: str) -> None:
     try:
         # Each part of the command is a separate item in the list
         # The "./vcpkg/vcpkg.exe" path should be adjusted to the correct path of your exe file
+        args = []
         if platform.system() == 'Windows':
             script_name = "vcpkg.exe"
             triplet = 'x64-windows-release'
         elif platform.system() == 'Darwin':
             script_name = "vcpkg"
             triplet = 'x64-osx'
+            if platform.processor() == 'arm':
+                triplet = 'arm64-osx'
         else:
             script_name = "vcpkg"
             triplet = 'x64-linux'
 
         vcpkg = os.path.join(folder_path, script_name)
+        args.extend([vcpkg, 'install', 'openimageio[opencolorio,pybind11, freetype]', '--recurse', '--triplet', triplet])
         subprocess.run(
-            [vcpkg, 'install', 'openimageio[opencolorio,pybind11, freetype]', '--recurse', '--triplet', triplet],
+            args,
             check=True)
     except subprocess.CalledProcessError as exception:
         raise RuntimeError("Vcpkg install failed:" + exception.output)
@@ -386,13 +390,17 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
         library_root = os.path.join(vcpkg_folder, "installed", "x64-windows-release", "bin")
         python_oiio_lib_folder = os.path.join(
             vcpkg_folder, "installed", "x64-windows-release", "lib",
-            "python3.10", "site-packages", "OpenImageIO"
+            "python3.11", "site-packages", "OpenImageIO"
         )
     elif platform.system() == 'Darwin':
-        library_root = os.path.join(vcpkg_folder, "installed", "x64-osx", "lib")
+        arch = "x64-osx"
+        if platform.processor() == "arm":
+            arch = "arm64-osx"
+
+        library_root = os.path.join(vcpkg_folder, "installed", arch, "lib")
         python_oiio_lib_folder = os.path.join(
             library_root,
-            "python3.10", "site-packages", "OpenImageIO"
+            "python3.11", "site-packages", "OpenImageIO"
         )
     lib_files = os.listdir(library_root)
     for lib_file in lib_files:
@@ -454,9 +462,12 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
         version: The version number we are releasing
 
     """
+    arch = "universal"
+    if platform.processor() == "arm":
+        arch = "arm"
     current_script_directory = get_current_folder()
     app_path = os.path.join(current_script_directory, "dist/OpenVPCal.app")
-    dmg_path = os.path.join(current_script_directory, f"dist/OpenVPCal-{version}.dmg")
+    dmg_path = os.path.join(current_script_directory, f"dist/OpenVPCal-{version}-{arch}.dmg")
 
     remove_ds_store(app_path)
 
@@ -468,6 +479,7 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
     # Resign The App As We Changed The pList
     app_path_executable = os.path.join(app_path, "Contents", "MacOS", app_name)
     print("Re Signing The App")
+
     process = subprocess.Popen(["codesign", "--deep", "--force", "--sign", certificate_name, app_path_executable],
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     print(process.stdout.read())
@@ -524,7 +536,7 @@ def check_dependencies() -> None:
     if not check_python_is_64_bit():
         raise RuntimeError("Python must be 64 bit")
     if not check_python_version():
-        raise RuntimeError("Python must be 3.10.1")
+        raise RuntimeError("Python must be 3.11.6")
     if not is_git_installed():
         raise RuntimeError("Git must be installed")
     if not is_pkgconfig_installed():
