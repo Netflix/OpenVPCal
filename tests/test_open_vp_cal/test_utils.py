@@ -214,6 +214,35 @@ class TestProject(TestUtils):
     def are_close(self, a, b, rel_tol=1e-8):
         return math.isclose(a, b, rel_tol=rel_tol)
 
+    def compare_lut_cubes(self, file1, file2, tolerance=1e-5):
+        """
+        Compares two files to ensure they match. Raises an assertion error if they don't.
+
+        Args:
+        - file1: Path to the first file.
+        - file2: Path to the second file.
+        - tolerance: Float tolerance for comparing float values.
+        """
+        self.assertEqual(os.path.basename(file1), os.path.basename(file2))
+        with open(file1, 'r') as f1, open(file2, 'r') as f2:
+            # Compare the first line (header)
+            self.assertEqual(f1.readline(), f2.readline(), "Header lines do not match.")
+
+            # Compare the remaining lines
+            for line_num, (line1, line2) in enumerate(zip(f1, f2), start=1):
+                values1 = [float(val) for val in line1.split()]
+                values2 = [float(val) for val in line2.split()]
+
+                self.assertEqual(
+                    len(values1), 3, f"Line {line_num} in file1 does not have 3 values.")
+                self.assertEqual(
+                    len(values2), 3, f"Line {line_num} in file2 does not have 3 values.")
+
+                for val1, val2 in zip(values1, values2):
+                    self.assertAlmostEqual(
+                        val1, val2, delta=tolerance,
+                        msg=f"Line {line_num} values do not match within tolerance.")
+
     def compare_data(self, expected, actual):
         for key, expected_value in expected.items():
             if key not in actual:

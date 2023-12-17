@@ -25,6 +25,20 @@ class BaseTestProjectPlateReuse(TestProject):
                 raise Exception("Missing plate folder: {}".format(unit_test_input_folder_path))
             led_wall.input_sequence_folder = unit_test_input_folder_path
 
+    def get_expected_lut_file(self, led_wall):
+        expected_lut_file = ""
+        expected_lut_folder = os.path.join(
+            self.get_sample_project_folder(),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.CALIBRATION)
+
+        luts = [file for file in os.listdir(str(expected_lut_folder)) if file.endswith('.cube')]
+        for lut_name in luts:
+            if led_wall.name in lut_name:
+                expected_lut_file = os.path.join(str(expected_lut_folder), lut_name)
+                break
+        return expected_lut_file
+
 
 class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
     project_name = "Sample_Project7_ROE_WRONGWB"
@@ -40,8 +54,9 @@ class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -59,8 +74,9 @@ class TestProject7_ROE_WrongWB_CS_EOTF(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -79,8 +95,9 @@ class TestProject7_ROE_WrongWB_CS_Only(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -99,8 +116,9 @@ class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -119,8 +137,9 @@ class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -139,8 +158,9 @@ class TestSample_Project3_ROE_Wall1_EOTF_CS(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -159,8 +179,9 @@ class TestSample_Project4_Reference_Wall(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -186,8 +207,9 @@ class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -213,8 +235,9 @@ class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlat
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.compare_data(expected_results, result.calibration_results)
 
@@ -234,11 +257,14 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
                 constants.ProjectFolders.EXPORT,
                 constants.ProjectFolders.CALIBRATION,
                 ocio_config.OcioConfigWriter.post_calibration_config_name)
+
+
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
-            self.assertTrue(os.path.exists(result.lut_output_file))
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
             self.assertTrue(os.path.exists(result.calibration_results_file))
             self.files_are_equal(expected_ocio_file, result.ocio_config_output_file)
             self.compare_data(expected_results, result.calibration_results)
