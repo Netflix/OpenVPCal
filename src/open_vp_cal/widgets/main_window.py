@@ -1323,6 +1323,7 @@ class MainWindow(QMainWindow):
         dialog.setDefaultSuffix('.json')
         dialog.setAcceptMode(QFileDialog.AcceptOpen)
         dialog.setNameFilter('JSON files (*.json)')
+        dialog.setFileMode(QFileDialog.ExistingFile)
 
         if dialog.exec_() == QFileDialog.Accepted:
             file_name = dialog.selectedFiles()[0]
