@@ -34,6 +34,8 @@ VERSION = "openvp_cal_version"
 
 TARGET_MAX_LUM_NITS_NONE_PQ = 100
 
+DEFAULT_OCIO_CONFIG = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1"
+
 
 class UILayouts:
     """
