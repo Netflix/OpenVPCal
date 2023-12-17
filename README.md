@@ -37,7 +37,7 @@ OpenVPCal provides a system for building the following dependencies using vcpkg,
 production or development environment.
     
     OpenImageIO=2.4.11    
-    OpenColourIO=2.2.1
+    OpenColourIO=2.3.1
 
 The following dependencies to OpenImageIO are critical to be included in its compilation:
 
