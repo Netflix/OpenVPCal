@@ -12,15 +12,13 @@ from PySide6.QtWidgets import QMainWindow, QDockWidget, QMenu, QFileDialog, QMes
 from PySide6.QtCore import Qt, QObject, QEvent, Signal, QSettings, QDataStream, QFile, QIODevice, QByteArray, QTimer
 
 from open_vp_cal.application_base import OpenVPCalBase
-from open_vp_cal.framework.configuraton import Configuration
 from open_vp_cal.core import constants, utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.utils import generate_patterns_for_led_walls
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
-from open_vp_cal.framework.processing import Processing, SeparationException
-from open_vp_cal.framework.validation import Validation
+from open_vp_cal.framework.processing import Processing
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.widgets.bar_chart_widget import ChartModel, ChartController, ChartView
 from open_vp_cal.widgets.calibration_matrix_widget import MatrixModel, MatrixView, MatrixController
@@ -636,16 +634,23 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.task_completed()
 
     def generate_spg_patterns(self):
+        """
+        Generates the patterns for the selected led walls, if no led walls are selected, it asks the user
+        """
         selected_led_walls = self.stage_controller.selected_led_walls()
-        if self.warning_message("Would you like to generate patterns for all walls?"):
-            led_walls = self.project_settings_model.led_walls
-        else:
-            led_walls = []
-            for selected_led_wall in selected_led_walls:
-                for wall in self.project_settings_model.led_walls:
-                    if wall.name == selected_led_wall:
-                        led_walls.append(wall)
-                        break
+
+        if not selected_led_walls:
+            if self.warning_message("Would you like to generate patterns for all walls?"):
+                selected_led_walls = [led_wall.name for led_wall in self.project_settings_model.led_walls]
+
+        if not selected_led_walls:
+            return
+
+        led_walls = [
+            wall for selected_led_wall in selected_led_walls
+            for wall in self.project_settings_model.led_walls
+            if wall.name == selected_led_wall
+        ]
 
         self.generate_spg_patterns_for_led_walls(self.project_settings_model, led_walls)
 
