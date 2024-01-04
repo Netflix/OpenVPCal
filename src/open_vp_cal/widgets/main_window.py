@@ -11,6 +11,7 @@ from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6.QtWidgets import QMainWindow, QDockWidget, QMenu, QFileDialog, QMessageBox, QPushButton
 from PySide6.QtCore import Qt, QObject, QEvent, Signal, QSettings, QDataStream, QFile, QIODevice, QByteArray, QTimer
 
+from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.framework.configuraton import Configuration
 from open_vp_cal.core import constants, utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
@@ -63,13 +64,14 @@ class EventFilter(QObject):
         return super().eventFilter(obj, event)
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, OpenVPCalBase):
     """
     The main window for the application
     """
 
     def __init__(self, title):
-        super().__init__()
+        QMainWindow.__init__(self)
+        OpenVPCalBase.__init__(self)
         self.action_color_space_analysis = None
         self.action_eotf_analysis = None
         self.action_execution_window = None
@@ -320,9 +322,9 @@ class MainWindow(QMainWindow):
         """ Sets up the execution widget and connects it to all the other widgets it needs to interact
         """
         self.execution_view = ExecutionView()
-        self.execution_view.analyse_button.pressed.connect(self.analyse)
-        self.execution_view.calibrate_button.pressed.connect(self.calibrate)
-        self.execution_view.export_button.pressed.connect(self.export)
+        self.execution_view.analyse_button.pressed.connect(self.run_analyse)
+        self.execution_view.calibrate_button.pressed.connect(self.run_calibrate)
+        self.execution_view.export_button.pressed.connect(self.run_export)
 
     def _setup_swatch_analysis_widgets(self) -> None:
         """ Sets up the view and the controller for the swatch analysis widgets and connects it to the stage controller
@@ -809,8 +811,7 @@ class MainWindow(QMainWindow):
 
         msg.exec_()
 
-    @staticmethod
-    def info_message(message) -> None:
+    def info_message(self, message) -> None:
         """ Opens a QDialog box which informs the user of useful info
 
         Args:
@@ -824,8 +825,8 @@ class MainWindow(QMainWindow):
         msg.setStandardButtons(QMessageBox.Ok)
 
         msg.exec_()
-    @staticmethod
-    def error_message(message) -> None:
+
+    def error_message(self, message) -> None:
         """ Opens a QDialog box which informs the user an error has occurred
 
         Args:
@@ -840,8 +841,7 @@ class MainWindow(QMainWindow):
 
         msg.exec_()
 
-    @staticmethod
-    def warning_message(message: str, yes_text: str = "Yes", no_text: str = "No") -> bool:
+    def warning_message(self, message: str, yes_text: str = "Yes", no_text: str = "No") -> bool:
         """ Displays a QMessageBox which displays a warning message to the user and asks them to make a yes or no choice
 
         Args:
@@ -924,7 +924,7 @@ class MainWindow(QMainWindow):
                 return []
         return led_walls
 
-    def export(self):
+    def run_export(self):
         """ Runs the export of the LED walls that we have in our selection, providing validation to ensure all the walls
         have been sampled, and analysed
 
@@ -935,15 +935,6 @@ class MainWindow(QMainWindow):
         led_walls = self._get_led_walls_for_processing(mode)
         if not led_walls:
             return
-
-        for led_wall in led_walls:
-            if not led_wall.processing_results:
-                self.error_message(f"No Sampling Results For {led_wall.name}")
-                return
-
-            if not led_wall.processing_results.calibration_results:
-                self.error_message(f"No Analysis Results For {led_wall.name}")
-                return
 
         new_config = self.warning_message(
             f"Would you like to export a new config based on \n{os.path.basename(ResourceLoader.ocio_config_path())}\n"
@@ -967,9 +958,13 @@ class MainWindow(QMainWindow):
                 self.error_message("No Config Selected")
                 return
 
-        Processing.run_export(self.project_settings_model, led_walls)
+        should_continue = self.export(self.project_settings_model, led_walls)
+
         # Reset the ocio config path to None so we don't use it next time
         self.project_settings_model.ocio_config_path = None
+
+        if not should_continue:
+            return
         self.export_plots()
         self.export_analysis_swatches()
         self.task_completed()
@@ -994,57 +989,7 @@ class MainWindow(QMainWindow):
             os.path.join(plots_folder, "max_distances_view.png")
         )
 
-    def single_camera_across_all_wall(self, led_walls: List[LedWallSettings]) -> bool:
-        """ Checks to see if all the LED walls have the same camera gamut, if they do, we return True, otherwise we
-            return False
-
-        Args:
-            led_walls: The LED walls we want to check
-
-        Returns:
-
-        """
-        camera_gamuts = {led_wall.native_camera_gamut for led_wall in led_walls}
-        if len(camera_gamuts) > 1:
-            message = "Multiple Camera Gamuts Detected, Would You Like To Continue?"
-            if not self.warning_message(message):
-                return False
-        return True
-
-    def post_analysis_validations(self, led_walls: List[LedWallSettings]) -> bool:
-        """ Run the validation checks on the results of the analysis, we report any warnings or failures to the user.
-
-        Args:
-            led_walls: A list of led walls we want to validate the calibration results for
-
-        Returns:
-            Whether we should continue with the analysis or not
-
-        """
-        validation = Validation()
-        validation_results = []
-        validation_status = constants.ValidationStatus.PASS
-        for led_wall in led_walls:
-            results = validation.run_validations(led_wall.processing_results.pre_calibration_results)
-            for result in results:
-                if result.status != constants.ValidationStatus.PASS:
-                    validation_status = utils.calculate_validation_status(validation_status, result.status)
-                    validation_results.append(f"{led_wall.name} - {result.name}\n{result.message}\n")
-
-        if validation_status == constants.ValidationStatus.FAIL:
-            validation_results_message = "\n".join(validation_results)
-            self.error_message(f"Validation Failed:\n{validation_results_message}\n"
-                                 f"We Strongly Suggest To Address These Issues Before Continuing")
-            return False
-
-        if validation_status == constants.ValidationStatus.WARNING:
-            validation_results_message = "\n".join(validation_results)
-            if not self.warning_message(f"Validation Warning:\n{validation_results_message}",
-                                        yes_text="Continue", no_text="Abort"):
-                return False
-        return True
-
-    def analyse(self) -> None:
+    def run_analyse(self) -> None:
         """ Runs the sampling of the LED walls that we have in our selection, providing validation to ensure all that
         we do not override existing sampling unless the user desires.
 
@@ -1052,64 +997,11 @@ class MainWindow(QMainWindow):
         """
         mode = "analyse"
         led_walls = self._get_led_walls_for_processing(mode)
-        if not led_walls:
-            return
-
-        for led_wall in led_walls:
-            if led_wall.native_camera_gamut == constants.CameraColourSpace.CS_ACES:
-                message = f"Native Camera Gamut Should Not Be {constants.CameraColourSpace.CS_ACES} For {led_wall.name}"
-                self.error_message(message)
-                return
-
-            if led_wall.processing_results:
-                if led_wall.processing_results.samples:
-                    message = f"Sampling Results Already Exist For {led_wall.name}, Would You Like To Overwrite?"
-                    if not self.warning_message(message):
-                        return
-                    break
-
-            if not led_wall.has_valid_white_balance_options():
-                message = f"Only Select 1 option from AutoWB, or Reference Wall or External White {led_wall.name}"
-                self.error_message(message)
-                return
-
-        led_wall_names = [led_wall.name for led_wall in led_walls]
-        for led_wall in led_walls:
-            if led_wall.use_external_white_point:
-                if not led_wall.external_white_point_file:
-                    self.error_message(f"External White Point Enabled But File Not Set {led_wall.name}")
-                    return
-
-                if not os.path.exists(led_wall.external_white_point_file):
-                    self.error_message(f"External White Point File Set Does Not Exist {led_wall.name}")
-                    return
-
-            if led_wall.match_reference_wall:
-                if not led_wall.reference_wall:
-                    self.error_message(f"Match Reference Wall Enabled But Not Set {led_wall.name} Not In Selection")
-                    return
-
-                if led_wall.reference_wall not in led_wall_names:
-                    self.error_message(f"Reference Wall {led_wall.reference_wall} Not In Selection")
-                    return
-
-        if not self.single_camera_across_all_wall(led_walls):
-            return
-
-        led_walls = utils.led_wall_reference_wall_sort(led_walls)
-
         self.timeline_view.set_to_start()
 
-        # We have to do these sequentially encase we are using a reference wall
-        # if the separation fails inform the user to try again or that they have an issue
-        for led_wall in led_walls:
-            try:
-                processing = Processing(led_wall)
-                processing.run_sampling()
-                processing.analyse()
-            except SeparationException as e:
-                self.error_message(f"{led_wall.name}\n{e}")
-                return
+        should_continue = self.analyse(led_walls)
+        if not should_continue:
+            return
 
         self.timeline_view.set_to_end()
         self.timeline_view.set_to_start()
@@ -1145,67 +1037,27 @@ class MainWindow(QMainWindow):
         Args:
             led_walls: A list of led walls we want to run the configuration checks on
         """
-        configuration = Configuration()
-        configuration_messages = ["Based On The Analysis We Have Recommended The Following Settings:"]
+        configuration_results = OpenVPCalBase.apply_post_analysis_configuration(self, led_walls)
         for led_wall in led_walls:
             self.stage_controller.select_led_walls(
                 [led_wall.name]
             )
-            results = configuration.run_configuration_checks(led_wall.processing_results.pre_calibration_results)
-            configuration_messages.append(f"\n{led_wall.name}")
-            for result in results:
-                configuration_messages.append(f"{result.param}: {result.value}")
-                self.project_settings_model.set_data(result.param, result.value)
-        self.info_message("\n".join(configuration_messages))
+            for param, value in configuration_results[led_wall.name]:
+                self.project_settings_model.set_data(param, value)
 
-    def calibrate(self):
+    def run_calibrate(self):
         """ Runs the analysis for each of the LED walls in the selection, adding validation to ensure that the LED walls
         have previously been sampled
         """
         mode = "calibrate"
         led_walls = self._get_led_walls_for_processing(mode)
-        if not led_walls:
-            return
-
-        for led_wall in led_walls:
-            if not led_wall.processing_results:
-                self.error_message(f"No Sampling Results For {led_wall.name}")
-                return
-
-            if not led_wall.has_valid_white_balance_options():
-                message = f"Only Select 1 option from AutoWB, or Reference Wall or External White {led_wall.name}"
-                self.error_message(message)
-                return
-
-        led_wall_names = [led_wall.name for led_wall in led_walls]
-        for led_wall in led_walls:
-            if led_wall.use_external_white_point:
-                if not led_wall.external_white_point_file:
-                    self.error_message(f"External White Point Enabled But File Not Set {led_wall.name}")
-                    return
-                if not os.path.exists(led_wall.external_white_point_file):
-                    self.error_message(f"External White Point File Set Does Not Exist {led_wall.name}")
-                    return
-            if led_wall.match_reference_wall:
-                if not led_wall.reference_wall:
-                    self.error_message(f"Match Reference Wall Enabled But Not Set {led_wall.name} Not In Selection")
-                    return
-
-                if led_wall.reference_wall not in led_wall_names:
-                    self.error_message(f"Reference Wall {led_wall.reference_wall} Not In Selection")
-                    return
-
-        if not self.single_camera_across_all_wall(led_walls):
-            return
-
-        led_walls = utils.led_wall_reference_wall_sort(led_walls)
-
-        # We have to do these sequentially encase we are using a reference wall
         self.timeline_view.set_to_start()
-        for led_wall in led_walls:
-            processing = Processing(led_wall)
-            processing.calibrate()
 
+        should_continue = self.calibrate(led_walls)
+        if not should_continue:
+            return
+
+        for led_wall in led_walls:
             self.colour_space_controller.update_model_with_results(led_wall)
             self.eotf_analysis_controller.update_model_with_results(led_wall)
             self.white_point_controller.update_model_with_results(led_wall)
