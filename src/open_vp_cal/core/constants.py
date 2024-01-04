@@ -90,6 +90,9 @@ class ProjectSettingsKeys:
 
 
 class FrameRates:
+    """
+    Constants for the different frame rates we can use
+    """
     FPS_24 = 24
     FPS_25 = 25
     FPS_30 = 30

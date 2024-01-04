@@ -479,6 +479,15 @@ def calculate_eotf_linearity(eotf_signal_values: List, eotf_ramp_camera_native_g
 
 def create_decoupling_white_balance_matrix(
         grey_measurements_native_camera_gamut, decoupled_lens_white_samples_camera_native_gamut):
+    """
+    Creates a white balance matrix using the decoupled lens
+
+    Args:
+        grey_measurements_native_camera_gamut: The grey measurements in the camera native gamut
+        decoupled_lens_white_samples_camera_native_gamut: The decoupled lens white samples in the camera native gamut
+
+    Returns: The white balance matrix
+    """
     green_scaling_factor = grey_measurements_native_camera_gamut[1] / decoupled_lens_white_samples_camera_native_gamut[
         1]
     scaled_decoupled_samples = np.array(decoupled_lens_white_samples_camera_native_gamut) * green_scaling_factor
@@ -965,6 +974,15 @@ def apply_matrix_to_samples(
 
 
 def find_closest_below(sorted_numbers, target):
+    """
+    Finds the closest number in a sorted list below the target
+
+    Args:
+        sorted_numbers: The sorted list of numbers
+        target: The target number
+
+    Returns: The index of the closest number below the target
+    """
     closest_index = None
 
     for index, value in enumerate(sorted_numbers):

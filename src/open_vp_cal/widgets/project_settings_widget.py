@@ -318,9 +318,9 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         for key in self.current_wall.attrs:
             self.data_changed.emit(key, self.get_data(key))
 
-    def reset_led_wall(self, led_wall: str) -> None:
-        super().reset_led_wall(led_wall)
-        self.set_current_wall(led_wall)
+    def reset_led_wall(self, name: str) -> None:
+        super().reset_led_wall(name)
+        self.set_current_wall(name)
 
 
 class CustomGamutDialog(QDialog):
@@ -469,6 +469,10 @@ class ProjectSettingsView(LockableWidget):
         self.file_format = None
         self.frames_per_patch = None
         self.output_folder = None
+
+        self.frame_rate = None
+        self.export_lut_for_aces_cct_in_target_out = None
+        self.export_lut_for_aces_cct = None
         self.init_ui()
 
     def init_ui(self):

@@ -1,14 +1,23 @@
+"""
+This module contains utility functions for the framework
+"""
 import base64
 import json
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Union
+from typing import Dict, Union, TYPE_CHECKING, List
 
 import requests
 
-from open_vp_cal.core import constants
+from open_vp_cal.core import constants, ocio_config
 from open_vp_cal.core.resource_loader import ResourceLoader
+from open_vp_cal.framework.generation import PatchGeneration
+
+
+if TYPE_CHECKING:
+    from open_vp_cal.led_wall_settings import LedWallSettings
+    from open_vp_cal.project_settings import ProjectSettings
 
 
 def log_results(data: Dict) -> Union[requests.Response, None]:
@@ -37,8 +46,31 @@ def log_results(data: Dict) -> Union[requests.Response, None]:
         with open(logging_bin, 'rb') as file:
             read_encoded = file.read()
             logging_route = base64.b64decode(read_encoded).decode('utf-8')
-            response = requests.post(logging_route, data=json.dumps(data_dict))
+            response = requests.post(logging_route, data=json.dumps(data_dict), timeout=60)
             return response
     except Exception:
         pass
     return None
+
+
+def generate_patterns_for_led_walls(project_settings: 'ProjectSettings', led_walls: List['LedWallSettings']) -> str:
+    """ For the given list of led walls filter out any walls which are verification walls, then generate the
+        calibration patterns for the remaining walls.
+
+    Args:
+        project_settings: The project settings with the settings for the pattern generation
+        led_walls: A list of led walls we want to generate patters for
+
+    Returns: The ocio config file path which was generated
+
+    """
+    led_walls = [led_wall for led_wall in led_walls if not led_wall.is_verification_wall]
+    if not led_walls:
+        return ""
+
+    for led_wall in led_walls:
+        patch_generator = PatchGeneration(led_wall)
+        patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
+
+    config_writer = ocio_config.OcioConfigWriter(project_settings.export_folder)
+    return config_writer.generate_pre_calibration_ocio_config(led_walls)
