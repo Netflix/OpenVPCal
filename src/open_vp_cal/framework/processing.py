@@ -25,6 +25,11 @@ from open_vp_cal.framework.sample_patch import SamplePatch, SampleRampPatches, M
 from open_vp_cal.framework.auto_roi import AutoROI, AutoROIResults
 
 
+class SeparationException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class Processing:
     """
     Class responsible for taking project settings and a sequence loader, processing the image analysis, and
@@ -95,6 +100,13 @@ class Processing:
         """
 
         self.identify_separation()
+        if not self.led_wall.separation_results or not self.led_wall.separation_results.is_valid:
+            raise SeparationException(
+                "Frame Separation was not successful, please ensure the selected region of interest contains a sizable "
+                "selection of the central calibration patch, especially if the auto detection has failed."
+                "\nIf the region of interest is correct there is likely a sync or multiplexing issue within "
+                "the recording")
+
         self.auto_detect_roi(self.led_wall.separation_results)
 
         self.get_grey_samples(self.led_wall.separation_results)
@@ -396,7 +408,7 @@ class Processing:
 
         :return: Separation results
         """
-        if not self.led_wall.separation_results:
+        if not self.led_wall.separation_results or not self.led_wall.separation_results.is_valid:
             identify_sep = IdentifySeparation(self.led_wall)
             separation_results = identify_sep.run()
             return separation_results

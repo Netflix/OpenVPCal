@@ -20,7 +20,7 @@ from open_vp_cal.framework.generation import PatchGeneration
 from open_vp_cal.framework.identify_separation import SeparationResults
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
-from open_vp_cal.framework.processing import Processing
+from open_vp_cal.framework.processing import Processing, SeparationException
 from open_vp_cal.framework.validation import Validation
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.widgets.bar_chart_widget import ChartModel, ChartController, ChartView
@@ -1126,10 +1126,15 @@ class MainWindow(QMainWindow):
         self.timeline_view.set_to_start()
 
         # We have to do these sequentially encase we are using a reference wall
+        # if the separation fails inform the user to try again or that they have an issue
         for led_wall in led_walls:
-            processing = Processing(led_wall)
-            processing.run_sampling()
-            processing.analyse()
+            try:
+                processing = Processing(led_wall)
+                processing.run_sampling()
+                processing.analyse()
+            except SeparationException as e:
+                self.error_message(f"{led_wall.name}\n{e}")
+                return
 
         self.timeline_view.set_to_end()
         self.timeline_view.set_to_start()
