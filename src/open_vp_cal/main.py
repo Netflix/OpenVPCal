@@ -14,7 +14,7 @@ from typing import Dict
 
 import open_vp_cal
 from open_vp_cal.application_base import OpenVPCalBase
-from open_vp_cal.core import utils, constants
+from open_vp_cal.core import constants
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.processing import Processing
 from open_vp_cal.framework.utils import generate_patterns_for_led_walls
@@ -225,10 +225,10 @@ def str2bool(v: str) -> bool:
         return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
-    elif v.lower() in ('no', 'false', 'f', '0'):
+    if v.lower() in ('no', 'false', 'f', '0'):
         return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+    raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def parse_args() -> argparse.Namespace:

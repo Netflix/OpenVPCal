@@ -219,4 +219,3 @@ class MacBethSample(BaseSamplePatch):
             list_of_zeros = [[0.0, 0.0, 0.0] for _ in range(24)]
             sample_results.samples = list_of_zeros
         self.sample_results = [sample_results]
-

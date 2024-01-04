@@ -6,7 +6,7 @@ import os
 import copy
 import json
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import open_vp_cal
 from open_vp_cal.core import constants
@@ -479,7 +479,7 @@ class ProjectSettings:
             if wall.name == name:
                 return wall
         raise ValueError(f'Led wall {name} not found')
-    
+
     @property
     def export_folder(self) -> str:
         """ Returns the folder to export the calibration results to
@@ -500,5 +500,3 @@ class ProjectSettings:
         led_wall.verification_wall = ""
         led_wall.reset_defaults()
         led_wall.verification_wall = verification_wall
-
-

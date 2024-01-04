@@ -1,3 +1,8 @@
+"""
+This file contains the base class for the application, this class contains all the methods which are used by the
+application to perform the analysis, calibration and export of the LED walls. This class is inherited by the UI and
+CLI classes which implement the methods to display the results to the user.
+"""
 import os
 from typing import List, Dict, Tuple
 
@@ -10,6 +15,11 @@ from open_vp_cal.project_settings import ProjectSettings
 
 
 class OpenVPCalBase:
+    """
+    This class contains all the methods which are used by the application to perform the analysis, calibration and
+    export of the LED walls. This class is inherited by the UI and used by the CLI or directly via custom python
+    scripts
+    """
     def __init__(self):
         self._errors = []
         self._warnings = []
@@ -117,7 +127,7 @@ class OpenVPCalBase:
             Whether the analysis was successful or not
         """
         if not led_walls:
-            message = f"No Led Walls Provided"
+            message = "No Led Walls Provided"
             self.error_message(message)
             return False
 
@@ -147,6 +157,15 @@ class OpenVPCalBase:
         return True
 
     def calibrate(self, led_walls: List[LedWallSettings]) -> bool:
+        """
+        Runs the calibration for each of the LED walls in the selection, and performs some pre validation checks
+
+        Args:
+            led_walls: The LED walls we want to calibrate
+
+        Returns:
+            Whether the calibration was successful or not
+        """
         if not led_walls:
             message = "No Led Walls To Calibrate"
             self.error_message(message)
@@ -253,4 +272,3 @@ class OpenVPCalBase:
 
         walls = Processing.run_export(project_settings_model, led_walls)
         return True, walls
-

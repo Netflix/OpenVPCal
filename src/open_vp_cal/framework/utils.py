@@ -1,3 +1,6 @@
+"""
+This module contains utility functions for the framework
+"""
 import base64
 import json
 import os
@@ -43,7 +46,7 @@ def log_results(data: Dict) -> Union[requests.Response, None]:
         with open(logging_bin, 'rb') as file:
             read_encoded = file.read()
             logging_route = base64.b64decode(read_encoded).decode('utf-8')
-            response = requests.post(logging_route, data=json.dumps(data_dict))
+            response = requests.post(logging_route, data=json.dumps(data_dict), timeout=60)
             return response
     except Exception:
         pass

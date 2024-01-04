@@ -25,6 +25,9 @@ from open_vp_cal.framework.auto_roi import AutoROI, AutoROIResults
 
 
 class SeparationException(Exception):
+    """
+    A Simple exception to raise when the separation detection fails
+    """
     def __init__(self, message):
         super().__init__(message)
 
