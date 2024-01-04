@@ -28,10 +28,7 @@ class ResourceLoader:
         Returns: The absolute path to the file within the resources folder
 
         """
-        with importlib.resources.path(
-                "open_vp_cal.resources", filename
-        ) as config_path:
-            return str(config_path)
+        return str(importlib.resources.files("open_vp_cal.resources") / filename)
 
     @classmethod
     def ocio_config_path(cls) -> str:
