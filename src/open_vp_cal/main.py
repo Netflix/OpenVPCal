@@ -12,50 +12,52 @@ import time
 import traceback
 from typing import Dict
 
-from PySide6.QtWidgets import QMessageBox
-from PySide6 import QtWidgets
-from PySide6.QtGui import QPixmap
-
 import open_vp_cal
 from open_vp_cal.core import utils, constants
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.processing import Processing
+from open_vp_cal.framework.utils import generate_patterns_for_led_walls
 from open_vp_cal.project_settings import ProjectSettings
-from open_vp_cal.widgets.splash_screen import SplashScreen
-from open_vp_cal.widgets.main_window import MainWindow
-
-
-def handle_exception(exc_type: type, exc_value: Exception, exc_traceback: traceback) -> None:
-    """ Handles any unhandled exceptions by logging them to a file in the user's home directory and displaying a
-        QMessageBox to the user.
-
-    Args:
-        exc_type: The type of exception
-        exc_value: The value of the exception
-        exc_traceback: The traceback of the exception
-    """
-    # Format current date and time as a string
-    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # Get the home directory and form the full filename
-    log_dir = ResourceLoader.log_dir()
-    filename = log_dir / f"OpenVPCal_{current_time}.log"
-
-    # Open the file in appended mode and write the stack trace
-    with filename.open("a") as handle:
-        traceback.print_exception(exc_type, exc_value, exc_traceback, file=handle)
-
-    # Display the error message in a QMessageBox
-    QMessageBox.critical(None, "An unhandled Exception Occurred", "An unhandled Exception Occurred\n" + str(exc_value),
-                         QMessageBox.Ok)
-
-    # Then call the default handler if you want
-    sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
 
 def open_ui() -> None:
     """ Opens the MainWindow as QApplication after the splash screen loads
     """
+    from PySide6.QtWidgets import QMessageBox
+    from PySide6 import QtWidgets
+    from PySide6.QtGui import QPixmap
+
+    from open_vp_cal.widgets.splash_screen import SplashScreen
+    from open_vp_cal.widgets.main_window import MainWindow
+
+    def handle_exception(exc_type: type, exc_value: Exception, exc_traceback: traceback) -> None:
+        """ Handles any unhandled exceptions by logging them to a file in the user's home directory and displaying a
+            QMessageBox to the user.
+
+        Args:
+            exc_type: The type of exception
+            exc_value: The value of the exception
+            exc_traceback: The traceback of the exception
+        """
+        # Format current date and time as a string
+        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # Get the home directory and form the full filename
+        log_dir = ResourceLoader.log_dir()
+        filename = log_dir / f"OpenVPCal_{current_time}.log"
+
+        # Open the file in appended mode and write the stack trace
+        with filename.open("a") as handle:
+            traceback.print_exception(exc_type, exc_value, exc_traceback, file=handle)
+
+        # Display the error message in a QMessageBox
+        QMessageBox.critical(None, "An unhandled Exception Occurred",
+                             "An unhandled Exception Occurred\n" + str(exc_value),
+                             QMessageBox.Ok)
+
+        # Then call the default handler if you want
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
     sys.excepthook = handle_exception
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
@@ -139,7 +141,7 @@ def generate_patterns(project_settings_file_path: str, output_folder: str) -> st
     """
     project_settings = ProjectSettings.from_json(project_settings_file_path)
     project_settings.output_folder = output_folder
-    return MainWindow.generate_patterns_for_led_walls(project_settings, project_settings.led_walls)
+    return generate_patterns_for_led_walls(project_settings, project_settings.led_walls)
 
 
 def run_cli(
@@ -167,7 +169,7 @@ def run_cli(
         led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder, file_type=constants.FileFormats.FF_EXR)
 
         if not led_wall.roi:
-            _, auto_roi_results = MainWindow.run_auto_detect(led_wall)
+            _, auto_roi_results = Processing.run_auto_detect(led_wall)
             if not auto_roi_results or not auto_roi_results.is_valid:
                 raise ValueError("Auto ROI detection failed.")
 
@@ -182,7 +184,6 @@ def run_cli(
 
     led_walls = Processing.run_export(project_settings, project_settings.led_walls)
     return {led_wall.name: led_wall.processing_results for led_wall in led_walls}
-
 
 
 def main() -> None:
