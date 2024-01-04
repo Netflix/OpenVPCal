@@ -6,6 +6,10 @@ import os
 import platform
 from pathlib import Path
 
+
+import PyOpenColorIO as ocio
+
+
 from open_vp_cal.core import constants
 
 
@@ -24,10 +28,7 @@ class ResourceLoader:
         Returns: The absolute path to the file within the resources folder
 
         """
-        with importlib.resources.path(
-                "open_vp_cal.resources", filename
-        ) as config_path:
-            return str(config_path)
+        return str(importlib.resources.files("open_vp_cal.resources") / filename)
 
     @classmethod
     def ocio_config_path(cls) -> str:
@@ -36,7 +37,11 @@ class ResourceLoader:
         Returns: The absolute path to the ocio config file
 
         """
-        return cls._get_resource("studio-config-v1.0.0_aces-v1.3_ocio-v2.1.ocio")
+        ocio_config_path = os.path.join(
+            cls.prefs_dir(), f"{constants.DEFAULT_OCIO_CONFIG}{ocio.OCIO_CONFIG_DEFAULT_FILE_EXT}")
+        if not os.path.exists(ocio_config_path):
+            ocio.Config().CreateFromBuiltinConfig(constants.DEFAULT_OCIO_CONFIG).serialize(ocio_config_path)
+        return ocio_config_path
 
     @classmethod
     def open_vp_cal_logo(cls) -> str:

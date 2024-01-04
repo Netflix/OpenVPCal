@@ -6,8 +6,7 @@ import json
 import os
 import tempfile
 import threading
-from typing import Union, Tuple, List, Dict
-
+from typing import Union, Tuple, List, Dict, Optional
 
 from colour import RGB_Colourspace
 
@@ -19,10 +18,18 @@ from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.core.structures import ProcessingResults
 from open_vp_cal.framework.generation import PatchGeneration
 from open_vp_cal.led_wall_settings import LedWallSettings
-from open_vp_cal.framework.identify_separation import IdentifySeparation
+from open_vp_cal.framework.identify_separation import IdentifySeparation, SeparationResults
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.framework.sample_patch import SamplePatch, SampleRampPatches, MacBethSample
 from open_vp_cal.framework.auto_roi import AutoROI, AutoROIResults
+
+
+class SeparationException(Exception):
+    """
+    A Simple exception to raise when the separation detection fails
+    """
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class Processing:
@@ -95,6 +102,13 @@ class Processing:
         """
 
         self.identify_separation()
+        if not self.led_wall.separation_results or not self.led_wall.separation_results.is_valid:
+            raise SeparationException(
+                "Frame Separation was not successful, please ensure the selected region of interest contains a sizable "
+                "selection of the central calibration patch, especially if the auto detection has failed."
+                "\nIf the region of interest is correct there is likely a sync or multiplexing issue within "
+                "the recording")
+
         self.auto_detect_roi(self.led_wall.separation_results)
 
         self.get_grey_samples(self.led_wall.separation_results)
@@ -396,7 +410,7 @@ class Processing:
 
         :return: Separation results
         """
-        if not self.led_wall.separation_results:
+        if not self.led_wall.separation_results or not self.led_wall.separation_results.is_valid:
             identify_sep = IdentifySeparation(self.led_wall)
             separation_results = identify_sep.run()
             return separation_results
@@ -558,3 +572,55 @@ class Processing:
         self.led_wall.processing_results.sample_reference_buffers = converted_reference_buffers
 
         return converted_sample_buffers, converted_reference_buffers
+
+    @staticmethod
+    def get_separation_results(led_wall_settings: 'LedWallSettings') -> Tuple['Processing', 'SeparationResults']:
+        """ Gets the processing object and the separation results for the given LED wall
+
+        Args:
+            led_wall_settings: The LED wall we want to get the separation results for
+
+        Returns: The processing object and the separation results
+
+        """
+        processing = Processing(led_wall_settings)
+        sep_results = processing.identify_separation()
+        return processing, sep_results
+
+    @staticmethod
+    def run_auto_detect(
+            led_wall_settings: 'LedWallSettings') -> Tuple[Optional[SeparationResults], Optional[AutoROIResults]]:
+        """ For the given led wall, we run the auto-detection algorithm which aims to detect and store the roi from
+            within the image sequence which is loaded
+
+        Args:
+            led_wall_settings: the LED wall, which contains the sequence we want to detect the roi for
+
+        Returns:
+
+        """
+        # We get the current frame and calculate an ROI which would select the whole image
+        current_frame = led_wall_settings.sequence_loader.current_frame
+        frame = led_wall_settings.sequence_loader.get_frame(current_frame)
+        roi = [0, frame.image_buf.spec().width, 0, frame.image_buf.spec().height]
+
+        # We store the ROI into the project settings
+        led_wall_settings.roi = roi
+
+        # Now we have the whole image selected we run the image separation algorithm
+        processing, sep_results = Processing.get_separation_results(led_wall_settings)
+        if not sep_results or not sep_results.is_valid:
+            led_wall_settings.roi = roi
+            return sep_results, None
+
+        # We now remove the ROI so that we can run the autodetect ROI algorithm
+        led_wall_settings.roi = None
+        try:
+            auto_roi_results = processing.auto_detect_roi(sep_results)
+            # If we can not detect the roi automatically, we resort back to the whole image ROI
+            if not auto_roi_results or not auto_roi_results.is_valid:
+                led_wall_settings.roi = roi
+        except ValueError:
+            led_wall_settings.roi = roi
+            auto_roi_results = None
+        return sep_results, auto_roi_results

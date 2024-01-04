@@ -34,6 +34,8 @@ VERSION = "openvp_cal_version"
 
 TARGET_MAX_LUM_NITS_NONE_PQ = 100
 
+DEFAULT_OCIO_CONFIG = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1"
+
 
 class UILayouts:
     """
@@ -88,6 +90,9 @@ class ProjectSettingsKeys:
 
 
 class FrameRates:
+    """
+    Constants for the different frame rates we can use
+    """
     FPS_24 = 24
     FPS_25 = 25
     FPS_30 = 30

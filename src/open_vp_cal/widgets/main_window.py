@@ -5,23 +5,20 @@ import json
 import os
 import sys
 import tempfile
-from typing import Tuple, Optional, List
+from typing import List
 
 from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6.QtWidgets import QMainWindow, QDockWidget, QMenu, QFileDialog, QMessageBox, QPushButton
 from PySide6.QtCore import Qt, QObject, QEvent, Signal, QSettings, QDataStream, QFile, QIODevice, QByteArray, QTimer
 
-from open_vp_cal.framework.auto_roi import AutoROIResults
-from open_vp_cal.framework.configuraton import Configuration
-from open_vp_cal.core import constants, utils, ocio_config
+from open_vp_cal.application_base import OpenVPCalBase
+from open_vp_cal.core import constants, utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.framework.generation import PatchGeneration
-from open_vp_cal.framework.identify_separation import SeparationResults
+from open_vp_cal.framework.utils import generate_patterns_for_led_walls
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.processing import Processing
-from open_vp_cal.framework.validation import Validation
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.widgets.bar_chart_widget import ChartModel, ChartController, ChartView
 from open_vp_cal.widgets.calibration_matrix_widget import MatrixModel, MatrixView, MatrixController
@@ -65,13 +62,14 @@ class EventFilter(QObject):
         return super().eventFilter(obj, event)
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, OpenVPCalBase):
     """
     The main window for the application
     """
 
     def __init__(self, title):
-        super().__init__()
+        QMainWindow.__init__(self)
+        OpenVPCalBase.__init__(self)
         self.action_color_space_analysis = None
         self.action_eotf_analysis = None
         self.action_execution_window = None
@@ -322,9 +320,9 @@ class MainWindow(QMainWindow):
         """ Sets up the execution widget and connects it to all the other widgets it needs to interact
         """
         self.execution_view = ExecutionView()
-        self.execution_view.analyse_button.pressed.connect(self.analyse)
-        self.execution_view.calibrate_button.pressed.connect(self.calibrate)
-        self.execution_view.export_button.pressed.connect(self.export)
+        self.execution_view.analyse_button.pressed.connect(self.run_analyse)
+        self.execution_view.calibrate_button.pressed.connect(self.run_calibrate)
+        self.execution_view.export_button.pressed.connect(self.run_export)
 
     def _setup_swatch_analysis_widgets(self) -> None:
         """ Sets up the view and the controller for the swatch analysis widgets and connects it to the stage controller
@@ -630,22 +628,29 @@ class MainWindow(QMainWindow):
                         led_walls.append(wall)
                         break
 
-        self.generate_patterns_for_led_walls(self.project_settings_model, led_walls)
+        generate_patterns_for_led_walls(self.project_settings_model, led_walls)
 
         self.save_project_settings(inform_completion=False)
         self.task_completed()
 
     def generate_spg_patterns(self):
+        """
+        Generates the patterns for the selected led walls, if no led walls are selected, it asks the user
+        """
         selected_led_walls = self.stage_controller.selected_led_walls()
-        if self.warning_message("Would you like to generate patterns for all walls?"):
-            led_walls = self.project_settings_model.led_walls
-        else:
-            led_walls = []
-            for selected_led_wall in selected_led_walls:
-                for wall in self.project_settings_model.led_walls:
-                    if wall.name == selected_led_wall:
-                        led_walls.append(wall)
-                        break
+
+        if not selected_led_walls:
+            if self.warning_message("Would you like to generate patterns for all walls?"):
+                selected_led_walls = [led_wall.name for led_wall in self.project_settings_model.led_walls]
+
+        if not selected_led_walls:
+            return
+
+        led_walls = [
+            wall for selected_led_wall in selected_led_walls
+            for wall in self.project_settings_model.led_walls
+            if wall.name == selected_led_wall
+        ]
 
         self.generate_spg_patterns_for_led_walls(self.project_settings_model, led_walls)
 
@@ -757,29 +762,6 @@ class MainWindow(QMainWindow):
             spg_project_settings_json_file,
             ResourceLoader.spg_pattern_basic_config())
 
-    @staticmethod
-    def generate_patterns_for_led_walls(project_settings: ProjectSettingsModel, led_walls: List) -> str:
-        """ For the given list of led walls filter out any walls which are verification walls, then generate the
-            calibration patterns for the remaining walls.
-
-        Args:
-            project_settings: The project settings with the settings for the pattern generation
-            led_walls: A list of led walls we want to generate patters for
-
-        Returns: The ocio config file path which was generated
-
-        """
-        led_walls = [led_wall for led_wall in led_walls if not led_wall.is_verification_wall]
-        if not led_walls:
-            return ""
-
-        for led_wall in led_walls:
-            patch_generator = PatchGeneration(led_wall)
-            patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
-
-        config_writer = ocio_config.OcioConfigWriter(project_settings.export_folder)
-        return config_writer.generate_pre_calibration_ocio_config(led_walls)
-
     def load_sequence(self) -> None:
         """ Loads the sequence from the selected folder, if no LED wall is selected, it asks the user to select one.
         """
@@ -798,7 +780,7 @@ class MainWindow(QMainWindow):
         """
         self.timeline_view.set_to_start()
 
-        sep_results, auto_roi_results = self.run_auto_detect(
+        sep_results, auto_roi_results = Processing.run_auto_detect(
             led_wall
         )
         if not sep_results or not sep_results.is_valid:
@@ -834,8 +816,7 @@ class MainWindow(QMainWindow):
 
         msg.exec_()
 
-    @staticmethod
-    def info_message(message) -> None:
+    def info_message(self, message) -> None:
         """ Opens a QDialog box which informs the user of useful info
 
         Args:
@@ -849,8 +830,8 @@ class MainWindow(QMainWindow):
         msg.setStandardButtons(QMessageBox.Ok)
 
         msg.exec_()
-    @staticmethod
-    def error_message(message) -> None:
+
+    def error_message(self, message) -> None:
         """ Opens a QDialog box which informs the user an error has occurred
 
         Args:
@@ -865,8 +846,7 @@ class MainWindow(QMainWindow):
 
         msg.exec_()
 
-    @staticmethod
-    def warning_message(message: str, yes_text: str = "Yes", no_text: str = "No") -> bool:
+    def warning_message(self, message: str, yes_text: str = "Yes", no_text: str = "No") -> bool:
         """ Displays a QMessageBox which displays a warning message to the user and asks them to make a yes or no choice
 
         Args:
@@ -949,7 +929,7 @@ class MainWindow(QMainWindow):
                 return []
         return led_walls
 
-    def export(self):
+    def run_export(self):
         """ Runs the export of the LED walls that we have in our selection, providing validation to ensure all the walls
         have been sampled, and analysed
 
@@ -960,15 +940,6 @@ class MainWindow(QMainWindow):
         led_walls = self._get_led_walls_for_processing(mode)
         if not led_walls:
             return
-
-        for led_wall in led_walls:
-            if not led_wall.processing_results:
-                self.error_message(f"No Sampling Results For {led_wall.name}")
-                return
-
-            if not led_wall.processing_results.calibration_results:
-                self.error_message(f"No Analysis Results For {led_wall.name}")
-                return
 
         new_config = self.warning_message(
             f"Would you like to export a new config based on \n{os.path.basename(ResourceLoader.ocio_config_path())}\n"
@@ -992,9 +963,13 @@ class MainWindow(QMainWindow):
                 self.error_message("No Config Selected")
                 return
 
-        Processing.run_export(self.project_settings_model, led_walls)
+        should_continue = self.export(self.project_settings_model, led_walls)
+
         # Reset the ocio config path to None so we don't use it next time
         self.project_settings_model.ocio_config_path = None
+
+        if not should_continue:
+            return
         self.export_plots()
         self.export_analysis_swatches()
         self.task_completed()
@@ -1019,57 +994,7 @@ class MainWindow(QMainWindow):
             os.path.join(plots_folder, "max_distances_view.png")
         )
 
-    def single_camera_across_all_wall(self, led_walls: List[LedWallSettings]) -> bool:
-        """ Checks to see if all the LED walls have the same camera gamut, if they do, we return True, otherwise we
-            return False
-
-        Args:
-            led_walls: The LED walls we want to check
-
-        Returns:
-
-        """
-        camera_gamuts = {led_wall.native_camera_gamut for led_wall in led_walls}
-        if len(camera_gamuts) > 1:
-            message = "Multiple Camera Gamuts Detected, Would You Like To Continue?"
-            if not self.warning_message(message):
-                return False
-        return True
-
-    def post_analysis_validations(self, led_walls: List[LedWallSettings]) -> bool:
-        """ Run the validation checks on the results of the analysis, we report any warnings or failures to the user.
-
-        Args:
-            led_walls: A list of led walls we want to validate the calibration results for
-
-        Returns:
-            Whether we should continue with the analysis or not
-
-        """
-        validation = Validation()
-        validation_results = []
-        validation_status = constants.ValidationStatus.PASS
-        for led_wall in led_walls:
-            results = validation.run_validations(led_wall.processing_results.pre_calibration_results)
-            for result in results:
-                if result.status != constants.ValidationStatus.PASS:
-                    validation_status = utils.calculate_validation_status(validation_status, result.status)
-                    validation_results.append(f"{led_wall.name} - {result.name}\n{result.message}\n")
-
-        if validation_status == constants.ValidationStatus.FAIL:
-            validation_results_message = "\n".join(validation_results)
-            self.error_message(f"Validation Failed:\n{validation_results_message}\n"
-                                 f"We Strongly Suggest To Address These Issues Before Continuing")
-            return False
-
-        if validation_status == constants.ValidationStatus.WARNING:
-            validation_results_message = "\n".join(validation_results)
-            if not self.warning_message(f"Validation Warning:\n{validation_results_message}",
-                                        yes_text="Continue", no_text="Abort"):
-                return False
-        return True
-
-    def analyse(self) -> None:
+    def run_analyse(self) -> None:
         """ Runs the sampling of the LED walls that we have in our selection, providing validation to ensure all that
         we do not override existing sampling unless the user desires.
 
@@ -1077,59 +1002,11 @@ class MainWindow(QMainWindow):
         """
         mode = "analyse"
         led_walls = self._get_led_walls_for_processing(mode)
-        if not led_walls:
-            return
-
-        for led_wall in led_walls:
-            if led_wall.native_camera_gamut == constants.CameraColourSpace.CS_ACES:
-                message = f"Native Camera Gamut Should Not Be {constants.CameraColourSpace.CS_ACES} For {led_wall.name}"
-                self.error_message(message)
-                return
-
-            if led_wall.processing_results:
-                if led_wall.processing_results.samples:
-                    message = f"Sampling Results Already Exist For {led_wall.name}, Would You Like To Overwrite?"
-                    if not self.warning_message(message):
-                        return
-                    break
-
-            if not led_wall.has_valid_white_balance_options():
-                message = f"Only Select 1 option from AutoWB, or Reference Wall or External White {led_wall.name}"
-                self.error_message(message)
-                return
-
-        led_wall_names = [led_wall.name for led_wall in led_walls]
-        for led_wall in led_walls:
-            if led_wall.use_external_white_point:
-                if not led_wall.external_white_point_file:
-                    self.error_message(f"External White Point Enabled But File Not Set {led_wall.name}")
-                    return
-
-                if not os.path.exists(led_wall.external_white_point_file):
-                    self.error_message(f"External White Point File Set Does Not Exist {led_wall.name}")
-                    return
-
-            if led_wall.match_reference_wall:
-                if not led_wall.reference_wall:
-                    self.error_message(f"Match Reference Wall Enabled But Not Set {led_wall.name} Not In Selection")
-                    return
-
-                if led_wall.reference_wall not in led_wall_names:
-                    self.error_message(f"Reference Wall {led_wall.reference_wall} Not In Selection")
-                    return
-
-        if not self.single_camera_across_all_wall(led_walls):
-            return
-
-        led_walls = utils.led_wall_reference_wall_sort(led_walls)
-
         self.timeline_view.set_to_start()
 
-        # We have to do these sequentially encase we are using a reference wall
-        for led_wall in led_walls:
-            processing = Processing(led_wall)
-            processing.run_sampling()
-            processing.analyse()
+        should_continue = self.analyse(led_walls)
+        if not should_continue:
+            return
 
         self.timeline_view.set_to_end()
         self.timeline_view.set_to_start()
@@ -1165,67 +1042,27 @@ class MainWindow(QMainWindow):
         Args:
             led_walls: A list of led walls we want to run the configuration checks on
         """
-        configuration = Configuration()
-        configuration_messages = ["Based On The Analysis We Have Recommended The Following Settings:"]
+        configuration_results = OpenVPCalBase.apply_post_analysis_configuration(self, led_walls)
         for led_wall in led_walls:
             self.stage_controller.select_led_walls(
                 [led_wall.name]
             )
-            results = configuration.run_configuration_checks(led_wall.processing_results.pre_calibration_results)
-            configuration_messages.append(f"\n{led_wall.name}")
-            for result in results:
-                configuration_messages.append(f"{result.param}: {result.value}")
-                self.project_settings_model.set_data(result.param, result.value)
-        self.info_message("\n".join(configuration_messages))
+            for param, value in configuration_results[led_wall.name]:
+                self.project_settings_model.set_data(param, value)
 
-    def calibrate(self):
+    def run_calibrate(self):
         """ Runs the analysis for each of the LED walls in the selection, adding validation to ensure that the LED walls
         have previously been sampled
         """
         mode = "calibrate"
         led_walls = self._get_led_walls_for_processing(mode)
-        if not led_walls:
-            return
-
-        for led_wall in led_walls:
-            if not led_wall.processing_results:
-                self.error_message(f"No Sampling Results For {led_wall.name}")
-                return
-
-            if not led_wall.has_valid_white_balance_options():
-                message = f"Only Select 1 option from AutoWB, or Reference Wall or External White {led_wall.name}"
-                self.error_message(message)
-                return
-
-        led_wall_names = [led_wall.name for led_wall in led_walls]
-        for led_wall in led_walls:
-            if led_wall.use_external_white_point:
-                if not led_wall.external_white_point_file:
-                    self.error_message(f"External White Point Enabled But File Not Set {led_wall.name}")
-                    return
-                if not os.path.exists(led_wall.external_white_point_file):
-                    self.error_message(f"External White Point File Set Does Not Exist {led_wall.name}")
-                    return
-            if led_wall.match_reference_wall:
-                if not led_wall.reference_wall:
-                    self.error_message(f"Match Reference Wall Enabled But Not Set {led_wall.name} Not In Selection")
-                    return
-
-                if led_wall.reference_wall not in led_wall_names:
-                    self.error_message(f"Reference Wall {led_wall.reference_wall} Not In Selection")
-                    return
-
-        if not self.single_camera_across_all_wall(led_walls):
-            return
-
-        led_walls = utils.led_wall_reference_wall_sort(led_walls)
-
-        # We have to do these sequentially encase we are using a reference wall
         self.timeline_view.set_to_start()
-        for led_wall in led_walls:
-            processing = Processing(led_wall)
-            processing.calibrate()
 
+        should_continue = self.calibrate(led_walls)
+        if not should_continue:
+            return
+
+        for led_wall in led_walls:
             self.colour_space_controller.update_model_with_results(led_wall)
             self.eotf_analysis_controller.update_model_with_results(led_wall)
             self.white_point_controller.update_model_with_results(led_wall)
@@ -1323,6 +1160,7 @@ class MainWindow(QMainWindow):
         dialog.setDefaultSuffix('.json')
         dialog.setAcceptMode(QFileDialog.AcceptOpen)
         dialog.setNameFilter('JSON files (*.json)')
+        dialog.setFileMode(QFileDialog.ExistingFile)
 
         if dialog.exec_() == QFileDialog.Accepted:
             file_name = dialog.selectedFiles()[0]
@@ -1336,9 +1174,9 @@ class MainWindow(QMainWindow):
             for led_wall in self.project_settings_model.led_walls:
                 if led_wall.input_sequence_folder:
                     if not led_wall.roi:
-                        self.run_auto_detect(led_wall)
+                        Processing.run_auto_detect(led_wall)
                     else:
-                        self.get_separation_results(led_wall)
+                        Processing.get_separation_results(led_wall)
         self.load_project_layout()
 
     def on_save_layout(self):
@@ -1417,55 +1255,3 @@ class MainWindow(QMainWindow):
         self.restoreState(state)
         self.sub_main_window.restoreGeometry(sub_geometry)
         self.sub_main_window.restoreState(sub_state)
-
-    @staticmethod
-    def run_auto_detect(
-            led_wall_settings: LedWallSettings) -> Tuple[Optional[SeparationResults], Optional[AutoROIResults]]:
-        """ For the given led wall, we run the auto-detection algorithm which aims to detect and store the roi from
-            within the image sequence which is loaded
-
-        Args:
-            led_wall_settings: the LED wall, which contains the sequence we want to detect the roi for
-
-        Returns:
-
-        """
-        # We get the current frame and calculate an ROI which would select the whole image
-        current_frame = led_wall_settings.sequence_loader.current_frame
-        frame = led_wall_settings.sequence_loader.get_frame(current_frame)
-        roi = [0, frame.image_buf.spec().width, 0, frame.image_buf.spec().height]
-
-        # We store the ROI into the project settings
-        led_wall_settings.roi = roi
-
-        # Now we have the whole image selected we run the image separation algorithm
-        processing, sep_results = MainWindow.get_separation_results(led_wall_settings)
-        if not sep_results or not sep_results.is_valid:
-            led_wall_settings.roi = roi
-            return sep_results, None
-
-        # We now remove the ROI so that we can run the autodetect ROI algorithm
-        led_wall_settings.roi = None
-        try:
-            auto_roi_results = processing.auto_detect_roi(sep_results)
-            # If we can not detect the roi automatically, we resort back to the whole image ROI
-            if not auto_roi_results or not auto_roi_results.is_valid:
-                led_wall_settings.roi = roi
-        except ValueError:
-            led_wall_settings.roi = roi
-            auto_roi_results = None
-        return sep_results, auto_roi_results
-
-    @staticmethod
-    def get_separation_results(led_wall_settings: LedWallSettings) -> Tuple[Processing, SeparationResults]:
-        """ Gets the processing object and the separation results for the given LED wall
-
-        Args:
-            led_wall_settings: The LED wall we want to get the separation results for
-
-        Returns: The processing object and the separation results
-
-        """
-        processing = Processing(led_wall_settings)
-        sep_results = processing.identify_separation()
-        return processing, sep_results

@@ -122,6 +122,108 @@
     ]
   },
   {
+    "name": "LinearSteppedRamp_15_20",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 15,
+    "max_value": 20,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_20_30",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 20,
+    "max_value": 30,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_30_40",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 30,
+    "max_value": 40,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_40_50",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 40,
+    "max_value": 50,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_50_60",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 50,
+    "max_value": 60,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "LinearSteppedRamp_60_70",
+    "pattern_type": "LinearSteppedRamp",
+    "sequence_length": 0.05,
+    "bit_depth_override": null,
+    "input_transform": null,
+    "enable_color_conversion": true,
+    "number_of_steps": 10,
+    "min_value": 60,
+    "max_value": 70,
+    "font_size": 50,
+    "text_color": [
+      1,
+      0,
+      0
+    ]
+  },
+  {
     "name": "LinearSteppedRamp_0_100",
     "pattern_type": "LinearSteppedRamp",
     "sequence_length": 0.05,

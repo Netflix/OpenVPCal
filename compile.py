@@ -338,8 +338,11 @@ def main() -> int:
     else:
         cmds = ["pyinstaller"]
 
+    if platform.system() != 'Windows':
+        cmds.append("-w")
+
     cmds.extend(
-        ["--icon", icon_file_path, "--name", app_name, "--noconfirm", "--clean", "-w", "--onedir", "--paths", paths]
+        ["--icon", icon_file_path, "--name", app_name, "--noconfirm", "--clean", "--onedir", "--paths", paths]
     )
 
     for folder_name, additional_module in additional_python_modules.items():

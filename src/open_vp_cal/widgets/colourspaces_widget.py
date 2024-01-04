@@ -25,9 +25,6 @@ class CustomAxis(pg.AxisItem):
     but the actual scale needs to be correct for the actual values
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def tickStrings(self, values, scale, spacing) -> List[str]:
         # Transform values to be in the range [0, 1]
         values = [value / constants.COLOR_WIDGET_GRAPH_SCALE for value in values]
