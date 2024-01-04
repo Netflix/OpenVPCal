@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from open_vp_cal.core import constants, utils
 from open_vp_cal.framework.configuraton import Configuration
@@ -231,7 +231,7 @@ class OpenVPCalBase:
         self.info_message("\n".join(configuration_messages))
         return configuration_results
 
-    def export(self, project_settings_model: ProjectSettings, led_walls: List[LedWallSettings]) -> bool:
+    def export(self, project_settings_model: ProjectSettings, led_walls: List[LedWallSettings]) -> Tuple[bool, List]:
         """ Runs the export for the given led walls, we report any warnings or failures to the user.
 
         Args:
@@ -245,12 +245,12 @@ class OpenVPCalBase:
         for led_wall in led_walls:
             if not led_wall.processing_results:
                 self.error_message(f"No Sampling Results For {led_wall.name}")
-                return False
+                return False, []
 
             if not led_wall.processing_results.calibration_results:
                 self.error_message(f"No Analysis Results For {led_wall.name}")
-                return False
+                return False, []
 
-        Processing.run_export(project_settings_model, led_walls)
-        return True
+        walls = Processing.run_export(project_settings_model, led_walls)
+        return True, walls
 

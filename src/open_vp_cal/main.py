@@ -13,6 +13,7 @@ import traceback
 from typing import Dict
 
 import open_vp_cal
+from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import utils, constants
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.processing import Processing
@@ -176,13 +177,11 @@ def run_cli(
         led_wall.sequence_loader.set_current_frame(led_wall.sequence_loader.start_frame)
 
     # Now we have everything lets sort the led walls so they are in the correct order
-    led_walls = list(project_settings.led_walls)
-    led_walls_sorted = utils.led_wall_reference_wall_sort(led_walls)
-    for led_wall in led_walls_sorted:
-        processing = Processing(led_wall)
-        processing.calibrate()
-
-    led_walls = Processing.run_export(project_settings, project_settings.led_walls)
+    open_vp_cal_base = OpenVPCalBase()
+    open_vp_cal_base.analyse(project_settings.led_walls)
+    open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
+    open_vp_cal_base.calibrate(project_settings.led_walls)
+    _, led_walls = open_vp_cal_base.export(project_settings, project_settings.led_walls)
     return {led_wall.name: led_wall.processing_results for led_wall in led_walls}
 
 
