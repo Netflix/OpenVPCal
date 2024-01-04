@@ -5,19 +5,17 @@ import json
 import os
 import sys
 import tempfile
-from typing import Tuple, Optional, List
+from typing import List
 
 from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6.QtWidgets import QMainWindow, QDockWidget, QMenu, QFileDialog, QMessageBox, QPushButton
 from PySide6.QtCore import Qt, QObject, QEvent, Signal, QSettings, QDataStream, QFile, QIODevice, QByteArray, QTimer
 
-from open_vp_cal.framework.auto_roi import AutoROIResults
 from open_vp_cal.framework.configuraton import Configuration
-from open_vp_cal.core import constants, utils, ocio_config
+from open_vp_cal.core import constants, utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.framework.generation import PatchGeneration
-from open_vp_cal.framework.identify_separation import SeparationResults
+from open_vp_cal.framework.utils import generate_patterns_for_led_walls
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.processing import Processing, SeparationException
@@ -630,7 +628,7 @@ class MainWindow(QMainWindow):
                         led_walls.append(wall)
                         break
 
-        self.generate_patterns_for_led_walls(self.project_settings_model, led_walls)
+        generate_patterns_for_led_walls(self.project_settings_model, led_walls)
 
         self.save_project_settings(inform_completion=False)
         self.task_completed()
@@ -757,29 +755,6 @@ class MainWindow(QMainWindow):
             spg_project_settings_json_file,
             ResourceLoader.spg_pattern_basic_config())
 
-    @staticmethod
-    def generate_patterns_for_led_walls(project_settings: ProjectSettingsModel, led_walls: List) -> str:
-        """ For the given list of led walls filter out any walls which are verification walls, then generate the
-            calibration patterns for the remaining walls.
-
-        Args:
-            project_settings: The project settings with the settings for the pattern generation
-            led_walls: A list of led walls we want to generate patters for
-
-        Returns: The ocio config file path which was generated
-
-        """
-        led_walls = [led_wall for led_wall in led_walls if not led_wall.is_verification_wall]
-        if not led_walls:
-            return ""
-
-        for led_wall in led_walls:
-            patch_generator = PatchGeneration(led_wall)
-            patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
-
-        config_writer = ocio_config.OcioConfigWriter(project_settings.export_folder)
-        return config_writer.generate_pre_calibration_ocio_config(led_walls)
-
     def load_sequence(self) -> None:
         """ Loads the sequence from the selected folder, if no LED wall is selected, it asks the user to select one.
         """
@@ -798,7 +773,7 @@ class MainWindow(QMainWindow):
         """
         self.timeline_view.set_to_start()
 
-        sep_results, auto_roi_results = self.run_auto_detect(
+        sep_results, auto_roi_results = Processing.run_auto_detect(
             led_wall
         )
         if not sep_results or not sep_results.is_valid:
@@ -1342,9 +1317,9 @@ class MainWindow(QMainWindow):
             for led_wall in self.project_settings_model.led_walls:
                 if led_wall.input_sequence_folder:
                     if not led_wall.roi:
-                        self.run_auto_detect(led_wall)
+                        Processing.run_auto_detect(led_wall)
                     else:
-                        self.get_separation_results(led_wall)
+                        Processing.get_separation_results(led_wall)
         self.load_project_layout()
 
     def on_save_layout(self):
@@ -1423,55 +1398,3 @@ class MainWindow(QMainWindow):
         self.restoreState(state)
         self.sub_main_window.restoreGeometry(sub_geometry)
         self.sub_main_window.restoreState(sub_state)
-
-    @staticmethod
-    def run_auto_detect(
-            led_wall_settings: LedWallSettings) -> Tuple[Optional[SeparationResults], Optional[AutoROIResults]]:
-        """ For the given led wall, we run the auto-detection algorithm which aims to detect and store the roi from
-            within the image sequence which is loaded
-
-        Args:
-            led_wall_settings: the LED wall, which contains the sequence we want to detect the roi for
-
-        Returns:
-
-        """
-        # We get the current frame and calculate an ROI which would select the whole image
-        current_frame = led_wall_settings.sequence_loader.current_frame
-        frame = led_wall_settings.sequence_loader.get_frame(current_frame)
-        roi = [0, frame.image_buf.spec().width, 0, frame.image_buf.spec().height]
-
-        # We store the ROI into the project settings
-        led_wall_settings.roi = roi
-
-        # Now we have the whole image selected we run the image separation algorithm
-        processing, sep_results = MainWindow.get_separation_results(led_wall_settings)
-        if not sep_results or not sep_results.is_valid:
-            led_wall_settings.roi = roi
-            return sep_results, None
-
-        # We now remove the ROI so that we can run the autodetect ROI algorithm
-        led_wall_settings.roi = None
-        try:
-            auto_roi_results = processing.auto_detect_roi(sep_results)
-            # If we can not detect the roi automatically, we resort back to the whole image ROI
-            if not auto_roi_results or not auto_roi_results.is_valid:
-                led_wall_settings.roi = roi
-        except ValueError:
-            led_wall_settings.roi = roi
-            auto_roi_results = None
-        return sep_results, auto_roi_results
-
-    @staticmethod
-    def get_separation_results(led_wall_settings: LedWallSettings) -> Tuple[Processing, SeparationResults]:
-        """ Gets the processing object and the separation results for the given LED wall
-
-        Args:
-            led_wall_settings: The LED wall we want to get the separation results for
-
-        Returns: The processing object and the separation results
-
-        """
-        processing = Processing(led_wall_settings)
-        sep_results = processing.identify_separation()
-        return processing, sep_results
