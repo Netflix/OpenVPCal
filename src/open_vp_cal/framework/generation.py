@@ -716,7 +716,7 @@ class PatchGeneration:
             img_buffers[0],
             [self.peak_lum * 0.9, self.peak_lum * 0.9, self.peak_lum * 0.9]
         )
-        patch = self.insert_image_buffers(patch, img_buffers, x_pos=2700, y_pos=1880)
+        patch = self.insert_image_buffers(patch, img_buffers, x_pos=2700, y_pos=1910)
         return patch
 
     def _add_slate_legal_and_extended_patches(self, patch) -> Oiio.ImageBuf:
