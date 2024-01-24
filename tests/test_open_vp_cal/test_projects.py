@@ -298,4 +298,13 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
+class TestSample_Project9_Seperation_Green_Detection_BlueWall(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project9_Seperation_Green_Detection_BlueWall"
 
+    def test_project9(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, led_wall in results.items():
+            if led_wall.is_verification_wall:
+                continue
+
+            self.check_separation_frame(led_wall, 11, 21)
