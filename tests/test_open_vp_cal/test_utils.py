@@ -141,12 +141,12 @@ class TestProject(TestUtils):
 
         temp_project_settings = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
         project_settings.to_json(temp_project_settings)
-        results = run_cli(
+        processed_led_walls = run_cli(
             temp_project_settings,
             project_settings.output_folder, ocio_config_path=None
         )
         os.remove(temp_project_settings)
-        return results
+        return processed_led_walls
 
     def get_results_file(self, led_wall):
         file_name = f"{led_wall.name}_calibration_results.json"
