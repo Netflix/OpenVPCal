@@ -20,7 +20,7 @@ from open_vp_cal.framework.generation import PatchGeneration
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.identify_separation import IdentifySeparation, SeparationResults
 from open_vp_cal.project_settings import ProjectSettings
-from open_vp_cal.framework.sample_patch import SamplePatch, SampleRampPatches, MacBethSample
+from open_vp_cal.framework.sample_patch import SamplePatch, SampleRampPatches, MacBethSample, BaseSamplePatch
 from open_vp_cal.framework.auto_roi import AutoROI, AutoROIResults
 
 
@@ -108,6 +108,18 @@ class Processing:
                 "selection of the central calibration patch, especially if the auto detection has failed."
                 "\nIf the region of interest is correct there is likely a sync or multiplexing issue within "
                 "the recording")
+
+        end_slate_sampler = BaseSamplePatch(
+            self.led_wall, self.led_wall.separation_results, constants.PATCHES.END_SLATE)
+        _, last_frame = end_slate_sampler.calculate_first_and_last_patch_frame()
+        if last_frame > self.led_wall.sequence_loader.end_frame:
+            raise ValueError(f"Separation Calculation was not successful\n"
+                             f"Separation Frames: {self.led_wall.separation_results.separation}\n"
+                             f"First Red Frame: {self.led_wall.separation_results.first_red_frame.frame_num}\n"
+                             f"First Green Frame: {self.led_wall.separation_results.first_green_frame.frame_num}\n"
+                             f"Last Frame Of Sequence: {self.led_wall.sequence_loader.end_frame}\n"
+                             f"Calculated End Slate Last Frame: {last_frame}\n"
+                             f"Separation result will lead to out of frame range result")
 
         self.auto_detect_roi(self.led_wall.separation_results)
 
