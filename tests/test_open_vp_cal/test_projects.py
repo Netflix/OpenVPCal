@@ -308,3 +308,31 @@ class TestSample_Project9_Seperation_Green_Detection_BlueWall(BaseTestProjectPla
                 continue
 
             self.check_separation_frame(led_wall, 11, 21)
+
+
+class Test_Sample_Project10_SRGB_EOTF(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project10_SRGB_EOTF"
+
+    def test_project10(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, led_wall in results.items():
+            if led_wall.is_verification_wall:
+                continue
+
+            expected_ocio_file = os.path.join(
+                self.get_sample_project_folder(),
+                constants.ProjectFolders.EXPORT,
+                constants.ProjectFolders.CALIBRATION,
+                ocio_config.OcioConfigWriter.post_calibration_config_name)
+
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
+            self.check_separation_frame(led_wall, 11, 21)
+
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
