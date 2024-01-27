@@ -10,7 +10,6 @@ import os
 import sys
 import time
 import traceback
-from typing import Dict
 
 import open_vp_cal
 from open_vp_cal.application_base import OpenVPCalBase
@@ -18,6 +17,7 @@ from open_vp_cal.core import constants
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.processing import Processing
 from open_vp_cal.framework.utils import generate_patterns_for_led_walls
+from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 
 
@@ -148,7 +148,7 @@ def generate_patterns(project_settings_file_path: str, output_folder: str) -> st
 def run_cli(
         project_settings_file_path: str,
         output_folder: str,
-        ocio_config_path: str = None) -> Dict:
+        ocio_config_path: str = None) -> dict[str, LedWallSettings]:
     """ Runs the application in CLI mode to process the given project settings file.
 
     Args:
@@ -178,11 +178,31 @@ def run_cli(
 
     # Now we have everything lets sort the led walls so they are in the correct order
     open_vp_cal_base = OpenVPCalBase()
-    open_vp_cal_base.analyse(project_settings.led_walls)
-    open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
-    open_vp_cal_base.calibrate(project_settings.led_walls)
-    _, led_walls = open_vp_cal_base.export(project_settings, project_settings.led_walls)
-    return {led_wall.name: led_wall.processing_results for led_wall in led_walls}
+    status = open_vp_cal_base.analyse(project_settings.led_walls)
+    if not status:
+        error_messages = "\n".join(open_vp_cal_base.error_messages())
+        warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+        raise ValueError(f"Analysis Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+
+    status = open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
+    if not status:
+        error_messages = "\n".join(open_vp_cal_base.error_messages())
+        warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+        raise ValueError(f"Analysis Validation Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+
+    status = open_vp_cal_base.calibrate(project_settings.led_walls)
+    if not status:
+        error_messages = "\n".join(open_vp_cal_base.error_messages())
+        warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+        raise ValueError(f"Calibrate Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+
+    status, led_walls = open_vp_cal_base.export(project_settings, project_settings.led_walls)
+    if not status:
+        error_messages = "\n".join(open_vp_cal_base.error_messages())
+        warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+        raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+
+    return {led_wall.name: led_wall for led_wall in led_walls}
 
 
 def main() -> None:

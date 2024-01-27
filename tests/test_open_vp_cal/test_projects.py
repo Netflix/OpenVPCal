@@ -25,6 +25,10 @@ class BaseTestProjectPlateReuse(TestProject):
                 raise Exception("Missing plate folder: {}".format(unit_test_input_folder_path))
             led_wall.input_sequence_folder = unit_test_input_folder_path
 
+    def check_separation_frame(self, processed_led_wall, expected_red_frame, expected_green_frame):
+        self.assertEqual(processed_led_wall.separation_results.first_red_frame.frame_num, expected_red_frame)
+        self.assertEqual(processed_led_wall.separation_results.first_green_frame.frame_num, expected_green_frame)
+
     def get_expected_lut_file(self, led_wall):
         expected_lut_file = ""
         expected_lut_folder = os.path.join(
@@ -45,8 +49,7 @@ class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
 
     def test_project7_roe_wrong_wb(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -54,19 +57,20 @@ class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1395634, 1395644)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
+
 
 class TestProject7_ROE_WrongWB_CS_EOTF(BaseTestProjectPlateReuse):
     project_name = "Sample_Project7_ROE_WRONGWB_CS_EOTF"
 
     def test_project7_roe_wrong_wb(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -74,11 +78,12 @@ class TestProject7_ROE_WrongWB_CS_EOTF(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1395634, 1395644)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestProject7_ROE_WrongWB_CS_Only(BaseTestProjectPlateReuse):
@@ -86,8 +91,7 @@ class TestProject7_ROE_WrongWB_CS_Only(BaseTestProjectPlateReuse):
 
     def test_project7_roe_wrong_wb(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -95,11 +99,12 @@ class TestProject7_ROE_WrongWB_CS_Only(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1395634, 1395644)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
@@ -107,8 +112,7 @@ class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
 
     def test_project1(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -116,11 +120,12 @@ class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1393588, 1393598)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
@@ -128,8 +133,7 @@ class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
 
     def test_project2(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -137,11 +141,12 @@ class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1393588, 1393598)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project3_ROE_Wall1_EOTF_CS(BaseTestProjectPlateReuse):
@@ -149,8 +154,7 @@ class TestSample_Project3_ROE_Wall1_EOTF_CS(BaseTestProjectPlateReuse):
 
     def test_project3(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -158,20 +162,29 @@ class TestSample_Project3_ROE_Wall1_EOTF_CS(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1393588, 1393598)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project4_Reference_Wall(BaseTestProjectPlateReuse):
     project_name = "Sample_Project4_Reference_Wall"
 
     def test_project4(self):
+        expected_first_red = {
+            "AOTO": 1403922,
+            "ROE_AWB": 1395634
+
+        }
+        expected_first_green = {
+            "AOTO": 1403932,
+            "ROE_AWB": 1395644
+        }
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -179,11 +192,15 @@ class TestSample_Project4_Reference_Wall(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(
+                led_wall, expected_first_red.get(led_wall_name),
+                expected_first_green.get(led_wall_name))
+
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
@@ -198,8 +215,7 @@ class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
 
     def test_project5(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -207,11 +223,12 @@ class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(led_wall, 1395634, 1395644)
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlateReuse):
@@ -225,9 +242,17 @@ class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlat
                     self.get_sample_plates(), "A104_C003_11080B_001.R3D", "A104_C003_11080B_001.01397369.exr")
 
     def test_project6(self):
+        expected_first_red = {
+            "AOTO": 1403922,
+            "ROE_DECOWP": 1395634
+
+        }
+        expected_first_green = {
+            "AOTO": 1403932,
+            "ROE_DECOWP": 1395644
+        }
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -235,11 +260,14 @@ class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlat
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
+            self.check_separation_frame(
+                led_wall, expected_first_red.get(led_wall_name),
+                expected_first_green.get(led_wall_name))
             expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
@@ -247,8 +275,7 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
 
     def test_project8(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -258,14 +285,54 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
                 constants.ProjectFolders.CALIBRATION,
                 ocio_config.OcioConfigWriter.post_calibration_config_name)
 
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
+            self.check_separation_frame(led_wall, 2251, 2261)
+
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
+
+
+class TestSample_Project9_Seperation_Green_Detection_BlueWall(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project9_Seperation_Green_Detection_BlueWall"
+
+    def test_project9(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, led_wall in results.items():
+            if led_wall.is_verification_wall:
+                continue
+
+            self.check_separation_frame(led_wall, 11, 21)
+
+
+class Test_Sample_Project10_SRGB_EOTF(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project10_SRGB_EOTF"
+
+    def test_project10(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, led_wall in results.items():
+            if led_wall.is_verification_wall:
+                continue
+
+            expected_ocio_file = os.path.join(
+                self.get_sample_project_folder(),
+                constants.ProjectFolders.EXPORT,
+                constants.ProjectFolders.CALIBRATION,
+                ocio_config.OcioConfigWriter.post_calibration_config_name)
 
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
-            expected_lut_file = self.get_expected_lut_file(led_wall)
-            self.compare_lut_cubes(expected_lut_file, result.lut_output_file)
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.files_are_equal(expected_ocio_file, result.ocio_config_output_file)
-            self.compare_data(expected_results, result.calibration_results)
+            self.check_separation_frame(led_wall, 11, 21)
 
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
