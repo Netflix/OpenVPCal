@@ -127,8 +127,7 @@ class TestCalibrate(TestProject):
         ps.led_walls[0].input_sequence_folder = self.get_sample_project_plates()
         results = self.run_cli(ps)
 
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
-            self.files_are_equal(expected_file, result.ocio_config_output_file)
+            self.files_are_equal(expected_file, led_wall.processing_results.ocio_config_output_file)

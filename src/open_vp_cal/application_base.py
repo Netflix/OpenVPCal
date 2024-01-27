@@ -4,7 +4,7 @@ application to perform the analysis, calibration and export of the LED walls. Th
 CLI classes which implement the methods to display the results to the user.
 """
 import os
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 from open_vp_cal.core import constants, utils
 from open_vp_cal.framework.configuraton import Configuration
@@ -20,10 +20,16 @@ class OpenVPCalBase:
     export of the LED walls. This class is inherited by the UI and used by the CLI or directly via custom python
     scripts
     """
+
     def __init__(self):
         self._errors = []
         self._warnings = []
         self._infos = []
+
+    def error_messages(self) -> list[Any]:
+        """ Returns the list of error messages which have been logged
+        """
+        return self._errors
 
     def error_message(self, message) -> None:
         """ Logs an error message and stores it within the class
@@ -32,6 +38,11 @@ class OpenVPCalBase:
             message: The message to log
         """
         self._errors.append(message)
+
+    def warning_messages(self) -> list[Any]:
+        """ Returns the list of warning messages which have been logged
+        """
+        return self._warnings
 
     def warning_message(self, message: str, yes_text: str = "Yes", no_text: str = "No") -> bool:
         """ Logs a warning message and stores it within the class
@@ -46,6 +57,11 @@ class OpenVPCalBase:
         """
         self._warnings.append(message)
         return True
+
+    def info_messages(self) -> list[Any]:
+        """ Returns the list of warning messages which have been logged
+        """
+        return self._infos
 
     def info_message(self, message) -> None:
         """ Logs an info message and stores it within the class

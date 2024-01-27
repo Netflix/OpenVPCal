@@ -274,7 +274,7 @@ class OcioConfigWriter:
             elif tgt_eotf == EOTF.EOTF_SRGB:
                 inverse_eotf_group_transform.appendTransform(
                     ocio.ExponentWithLinearTransform(
-                        gamma=2.4, offset=0.055,
+                        gamma=[2.4, 2.4, 2.4, 2.4], offset=[0.055, 0.055, 0.055, 0.055],
                         direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
                     )
                 )
@@ -324,7 +324,9 @@ class OcioConfigWriter:
         Returns: The transfer function only colour space name and description
 
         """
-        transfer_function_only_cs_name = f"{led_wall_settings.target_eotf} - Curve"
+        eotf_name = "OpenVPCal_sRGB" \
+            if led_wall_settings.target_eotf == EOTF.EOTF_SRGB else led_wall_settings.target_eotf
+        transfer_function_only_cs_name = f"{eotf_name} - Curve"
         transfer_function_only_cs_description = "OpenVPCal EOTF Only"
         return transfer_function_only_cs_name, transfer_function_only_cs_description
 

@@ -82,15 +82,14 @@ class TestProjectCli(TestProject):
         with open(expected_file, "r", encoding="utf-8") as handle:
             expected_results = json.load(handle)
 
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.lut_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
     def test_run_cli_multi_wall(self):
         # Add A Second Wall
@@ -110,8 +109,7 @@ class TestProjectCli(TestProject):
         self.project_settings.led_walls[1].auto_wb_source = False
 
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -119,10 +117,10 @@ class TestProjectCli(TestProject):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.lut_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
 class TestProjectExternalWhite(TestProject):
@@ -130,8 +128,7 @@ class TestProjectExternalWhite(TestProject):
 
     def test_external_white_no_lens(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, result in results.items():
-            led_wall = self.project_settings.get_led_wall(led_wall_name)
+        for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
@@ -139,10 +136,10 @@ class TestProjectExternalWhite(TestProject):
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
 
-            self.assertTrue(os.path.exists(result.ocio_config_output_file))
-            self.assertTrue(os.path.exists(result.lut_output_file))
-            self.assertTrue(os.path.exists(result.calibration_results_file))
-            self.compare_data(expected_results, result.calibration_results)
+            self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.lut_output_file))
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
     def get_sample_project_plates(self):
         result = super().get_sample_project_plates()
