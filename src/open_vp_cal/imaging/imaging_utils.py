@@ -806,7 +806,7 @@ def detect_green(values: np.array, colour_space: str = "ACES2065-1") -> bool:
     """
     numpy_array_xyY = _get_xyY_values(values, colour_space=colour_space)
     green_threshold = 0.45
-    red_threshold = 0.3
+    red_threshold = 0.35
 
     if numpy_array_xyY[0] < red_threshold and numpy_array_xyY[1] > green_threshold:
         return True
