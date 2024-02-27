@@ -1,7 +1,7 @@
 ![OpenVpCal_Full_Logo.png](src%2Fopen_vp_cal%2Fresources%2FOpenVpCal_Full_Logo.png)
 
 # OpenVPCal
-Insert Brief intro to the project here
+The full user guide for OpenVPCal can be found here [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
 
 # Table of Contents
 1. [OpenVPCal](#openvpcal)
