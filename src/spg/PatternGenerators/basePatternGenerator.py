@@ -601,10 +601,25 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
         :param results: a dict to store the results cross thread
         """
         if cls.enable_color_conversion:
-            image = _imageUtils.apply_color_conversion(
-                image, cls.input_transform, cls.spg.project_settings.output_transform,
-                cls.spg.project_settings.ocio_config_path
-            )
+            gamut_only_cs_name = None
+            gamut_and_transfer_function_cs_name = None
+            if led_wall_name in cls.spg.walls:
+                gamut_only_cs_name = cls.spg.walls[led_wall_name].gamut_only_cs_name
+                gamut_and_transfer_function_cs_name = cls.spg.walls[led_wall_name].gamut_and_transfer_function_cs_name
+
+            if gamut_only_cs_name and gamut_only_cs_name:
+                # If we have a pattern generator that has an input transform we use it else we use the gamut only
+                # Reference images for instance may come in a different color space etc
+                input_transform = cls.input_transform if cls.input_transform else gamut_only_cs_name
+                image = _imageUtils.apply_color_conversion(
+                    image, input_transform, gamut_and_transfer_function_cs_name,
+                    cls.spg.project_settings.ocio_config_path
+                )
+            else:
+                image = _imageUtils.apply_color_conversion(
+                    image, cls.input_transform, cls.spg.project_settings.output_transform,
+                    cls.spg.project_settings.ocio_config_path
+                )
 
         _imageUtils.write_image(
             image, full_file_path, cls.bit_depth_for_pattern(), channel_mapping=cls.spg.project_settings.channel_mapping)
