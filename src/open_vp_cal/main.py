@@ -148,13 +148,15 @@ def generate_patterns(project_settings_file_path: str, output_folder: str) -> st
 def run_cli(
         project_settings_file_path: str,
         output_folder: str,
-        ocio_config_path: str = None) -> dict[str, LedWallSettings]:
+        ocio_config_path: str = None, force=False) -> dict[str, LedWallSettings]:
     """ Runs the application in CLI mode to process the given project settings file.
 
     Args:
         project_settings_file_path: The project settings file path
         output_folder: The output folder path
         ocio_config_path: The OCIO config path
+        force: Whether to force the processing to continue even if there are warnings and errors, highly discouraged and
+            primarily for testing purposes
 
     Returns: The list of ProcessingResults
 
@@ -179,25 +181,25 @@ def run_cli(
     # Now we have everything lets sort the led walls so they are in the correct order
     open_vp_cal_base = OpenVPCalBase()
     status = open_vp_cal_base.analyse(project_settings.led_walls)
-    if not status:
+    if not status and not force:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
         raise ValueError(f"Analysis Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
 
     status = open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
-    if not status:
+    if not status and not force:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
         raise ValueError(f"Analysis Validation Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
 
     status = open_vp_cal_base.calibrate(project_settings.led_walls)
-    if not status:
+    if not status and not force:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
         raise ValueError(f"Calibrate Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
 
     status, led_walls = open_vp_cal_base.export(project_settings, project_settings.led_walls)
-    if not status:
+    if not status and not force:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
         raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
