@@ -207,7 +207,7 @@ def get_custom_colour_space_from_primaries_and_wp(custom_name: str, values: List
 
     """
     if len(values) != 4:
-        raise ValueError("Must provide 4 tuples for 3 primaries and  1white point")
+        raise ValueError("Must provide 4 tuples for 3 primaries and 1 white point")
 
     white_point = values[-1]
     primaries = values[:3]
