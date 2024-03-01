@@ -44,6 +44,16 @@ class LEDWall(object):
             [1, 0, 0], UICategory.UI_CAT_COLOR, "The default color for the wall to help id it"
         )
 
+        self._gamut_only_cs_name = CategorizedAttribute(
+            "", UICategory.UI_CAT_STRING, "The name of the colour space which describes the walls colour "
+                                          "gamut only"
+        )
+
+        self._gamut_and_transfer_function_cs_name = CategorizedAttribute(
+            "", UICategory.UI_CAT_STRING, "The name of the colour space which describes the walls colour "
+                                          "gamut and its eotf "
+        )
+
         self._panel = None
 
     @property
@@ -195,6 +205,22 @@ class LEDWall(object):
 
         self._panel = panel
 
+    @property
+    def gamut_only_cs_name(self):
+        return self._gamut_only_cs_name.value
+
+    @gamut_only_cs_name.setter
+    def gamut_only_cs_name(self, value):
+        self._gamut_only_cs_name.value = value
+
+    @property
+    def gamut_and_transfer_function_cs_name(self):
+        return self._gamut_and_transfer_function_cs_name.value
+
+    @gamut_and_transfer_function_cs_name.setter
+    def gamut_and_transfer_function_cs_name(self, value):
+        self._gamut_and_transfer_function_cs_name.value = value
+
     def __iter__(self):
         yield from {
             "id": self.id,
@@ -202,7 +228,9 @@ class LEDWall(object):
             "panel_name": self.panel_name,
             "panel_count_width": self.panel_count_width,
             "panel_count_height": self.panel_count_height,
-            "wall_default_color": self.wall_default_color
+            "wall_default_color": self.wall_default_color,
+            "gamut_only_cs_name": self.gamut_only_cs_name,
+            "gamut_and_transfer_function_cs_name": self.gamut_and_transfer_function_cs_name
         }.items()
 
     def __str__(self):
@@ -229,7 +257,9 @@ class LEDWall(object):
             "panel_name": self._panel_name,
             "panel_count_width": self._panel_count_width,
             "panel_count_height": self._panel_count_height,
-            "wall_default_color": self._wall_default_color
+            "wall_default_color": self._wall_default_color,
+            "gamut_only_cs_name": self._gamut_only_cs_name,
+            "gamut_and_transfer_function_cs_name": self._gamut_and_transfer_function_cs_name
         }
 
     @staticmethod
