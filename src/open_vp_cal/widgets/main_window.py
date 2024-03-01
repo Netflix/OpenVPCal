@@ -88,6 +88,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.action_new_project_settings = None
         self.action_export_swatches = None
         self.action_add_custom_gamut = None
+        self.action_add_custom_gamut_from_matrix = None
         self.action_plate_settings_window = None
         self.action_project_settings_window = None
         self.action_save_layout = None
@@ -386,6 +387,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.action_load_analysis_layout.triggered.connect(self.load_analysis_layout)
         self.action_export_swatches.triggered.connect(self.export_analysis_swatches)
         self.action_add_custom_gamut.triggered.connect(self.add_custom_gamut)
+        self.action_add_custom_gamut_from_matrix.triggered.connect(self.add_custom_gamut_from_matrix)
 
     def _connect_window_menu_actions_to_dock_widget_vis(self) -> None:
         """ Connects the actions in the window menu to the dock widgets, so they can be shown and hidden
@@ -421,6 +423,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.file_menu.addAction(self.action_export_swatches)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.action_add_custom_gamut)
+        self.file_menu.addAction(self.action_add_custom_gamut_from_matrix)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.load_sequence_action)
         self.file_menu.addSeparator()
@@ -465,7 +468,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.action_load_analysis_layout = QAction("Load Analysis Layout", self)
         self.load_sequence_action = QAction("Load Plate Sequence", self)
         self.action_export_swatches = QAction("Export Debug Swatches", self)
-        self.action_add_custom_gamut = QAction("Add Custom Gamut", self)
+        self.action_add_custom_gamut = QAction("Add Custom Gamut for xy Primaries", self)
+        self.action_add_custom_gamut_from_matrix = QAction("Add Custom Gamut from NPM Matrix", self)
 
     def _create_actions_for_window_menu(self) -> None:
         """ Creates the actions for the window menu
@@ -600,6 +604,11 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         """ Add a custom gamut to the project settings
         """
         self.project_settings_controller.open_custom_gamut_dialog()
+
+    def add_custom_gamut_from_matrix(self) -> None:
+        """ Add a custom gamut to the project settings
+        """
+        self.project_settings_controller.open_custom_gamut_from_matrix_dialog()
 
     def export_analysis_swatches(self) -> None:
         """ Export the Analysis Swatches in their raw format that was sampled from the camera

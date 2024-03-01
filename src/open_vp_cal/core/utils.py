@@ -214,6 +214,12 @@ def get_custom_colour_space_from_primaries_and_wp(custom_name: str, values: List
     return colour.RGB_Colourspace(custom_name, primaries, white_point)
 
 
+def get_primaries_and_wp_for_XYZ_matrix(XYZ_matrix) -> Tuple[np.array, np.array]:
+    """ Get the primaries and white point for the given XYZ matrix """
+    primaries, wp = colour.primaries_whitepoint(XYZ_matrix)
+    return primaries, wp
+
+
 def replace_non_alphanumeric(input_string, replace_char):
     """
     Replace any non-alphanumeric characters in a string with a given character.

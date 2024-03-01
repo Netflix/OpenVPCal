@@ -1,19 +1,23 @@
 """
 Module which is responsible for the models, view and controllers which make up the project settings ui components
 """
+import json
 import os
-from typing import Union, List
+from typing import Union, List, Tuple
 
 import colour
 import numpy as np
 from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QFormLayout, QComboBox, QSpinBox, QLineEdit, QLabel,
                                QCheckBox, QDoubleSpinBox, QPushButton, QDialog, QHBoxLayout, QDialogButtonBox,
                                QGridLayout, QMessageBox,
-                               QFileDialog, QScrollArea
+                               QFileDialog, QScrollArea, QApplication
                                )
 
 from open_vp_cal.core import constants
+from open_vp_cal.core import utils as core_utils
+from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.widgets import utils
@@ -323,6 +327,127 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         self.set_current_wall(name)
 
 
+class CustomGamutMatrixDialog(QDialog):
+    """ A class which allows the user to enter a RGB_To_XYZ matrix for a custom gamut"""
+
+    def __init__(self, title: str = "Custom Gamut from NPM Matrix", parent=None):
+        """
+        Args:
+            title (str, optional): Window title. Defaults to "Matrix".
+            parent (QWidget, optional): Parent widget. Defaults to None.
+        """
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.main_layout = QVBoxLayout()
+
+        self.paste_icon = QPixmap(ResourceLoader.copy_icon())
+        self.copy_button = QPushButton()
+        self.copy_button.setIcon(QIcon(self.paste_icon))
+        self.copy_button.clicked.connect(self.paste_matrix_from_clipboard)
+
+        self.copy_format_combo = QComboBox()
+        self.copy_format_combo.addItem(constants.CopyFormats.PYTHON)
+        self.copy_format_combo.addItem(constants.CopyFormats.CSV)
+
+        self.main_layout.addWidget(QLabel("Specify a NMP Matrix from RGB to CIE XYZ. eg. Camera RGB to XYZ."))
+        self.custom_name_edit = QLineEdit()
+        self.custom_name_edit.setText("")
+        self.main_layout.addWidget(QLabel("Custom Name:"))
+        self.main_layout.addWidget(self.custom_name_edit)
+
+        self.grid_layout = QGridLayout()
+        self.main_layout.addLayout(self.grid_layout)
+
+        self.setLayout(self.main_layout)
+
+        self.matrix_widgets = [[QDoubleSpinBox() for _ in range(3)] for _ in range(3)]
+
+        for i in range(3):
+            for j in range(3):
+                spin_box = self.matrix_widgets[i][j]
+                spin_box.setMinimum(-100)
+                spin_box.setDecimals(6)
+                spin_box.setMaximum(100)
+                spin_box.setSingleStep(0.01)
+                self.grid_layout.addWidget(spin_box, i, j)
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+
+        self.main_layout.addWidget(self.copy_format_combo)
+        self.main_layout.addWidget(self.copy_button)
+        self.main_layout.addWidget(button_box)
+
+    def paste_matrix_from_clipboard(self):
+        """ Pastes the matrix from the clipboard into the spin boxes
+
+        """
+        value = QApplication.clipboard().text()
+        if not value:
+            QMessageBox.warning(self, "Empty Clipboard", "The clipboard is empty")
+            return
+        mode = self.copy_format_combo.currentText()
+        if mode == constants.CopyFormats.PYTHON:
+            try:
+                python_values = json.loads(value)
+                if len(python_values) != 3 and len(python_values) != 9:
+                    QMessageBox.warning(self,
+                                        "Invalid Format",
+                                        "Copied Text should be a nested 3x3 list or a single list of 9 values")
+                    return
+                if len(python_values) == 3:
+                    for i in range(3):
+                        for j in range(3):
+                            self.matrix_widgets[i][j].setValue(python_values[i][j])
+                else:
+                    for i in range(3):
+                        for j in range(3):
+                            self.matrix_widgets[i][j].setValue(python_values[i * 3 + j])
+            except json.JSONDecodeError:
+                QMessageBox.warning(self, "Invalid Format", "The copied text is not in a valid format")
+                return
+
+        elif mode == constants.CopyFormats.CSV:
+            csv_values = value.split(",")
+            if len(csv_values) != 9:
+                QMessageBox.warning(self, "Invalid Format", "The copied text is not in a valid format")
+                return
+            for i in range(3):
+                for j in range(3):
+                    self.matrix_widgets[i][j].setValue(float(csv_values[i * 3 + j]))
+
+    def get_values(self) -> Tuple[List[List[float]], str]:
+        """
+        Returns the values of the spin boxes in a nested list.
+        """
+        matrix = [[spin_box.value() for spin_box in value] for value in self.matrix_widgets]
+        return matrix, self.custom_name_edit.text()
+
+    def validate(self) -> str:
+        """ Validates the input values for the custom primaries
+
+        Returns: error message if validation fails, empty string otherwise
+
+        """
+        values, name = self.get_values()
+        grand_total = sum(sum(sublist) for sublist in values)
+        if grand_total == 0:
+            return "All values cannot be zero"
+        if not name:
+            return "Name cannot be empty"
+        return ""
+
+    def accept(self) -> None:
+        """ Accepts the dialogue if the validation passes, otherwise shows a warning message
+        """
+        invalid = self.validate()
+        if not invalid:
+            super().accept()
+        else:
+            QMessageBox.warning(self, "Validation Error", invalid)
+
+
 class CustomGamutDialog(QDialog):
     """
     A class used to represent the CustomGamutDialog.
@@ -347,7 +472,7 @@ class CustomGamutDialog(QDialog):
         super().__init__(parent)
         self.custom_name_edit = None
         self.grid_layout = None
-        self.setWindowTitle('Add Custom Gamut')
+        self.setWindowTitle('Custom Gamut for xy Primaries')
         self.model = model
         self.spin_boxes = {}
         self.init_ui()
@@ -1029,6 +1154,22 @@ class ProjectSettingsController(QObject):
             values = dialog.get_values()
 
             primaries, gamut_name = values
+            self.model.add_custom_primary(gamut_name, primaries)
+            self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
+            self.add_custom_gamut_to_ui(gamut_name)
+
+    def open_custom_gamut_from_matrix_dialog(self) -> None:
+        """
+        Opens a dialogue to select custom gamut values, and sets the values in the model
+        """
+        dialog = CustomGamutMatrixDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            values = dialog.get_values()
+
+            matrix, gamut_name = values
+            primaries, wp = core_utils.get_primaries_and_wp_for_XYZ_matrix(matrix)
+            primaries = primaries.tolist()
+            primaries.append(wp.tolist())
             self.model.add_custom_primary(gamut_name, primaries)
             self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
             self.add_custom_gamut_to_ui(gamut_name)
