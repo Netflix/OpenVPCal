@@ -177,6 +177,25 @@ def get_target_colourspace_for_led_wall(led_wall: "LedWallSettings") -> colour.R
     return color_space
 
 
+def get_native_camera_colourspace_for_led_wall(led_wall: "LedWallSettings") -> colour.RGB_Colourspace:
+    """ Gets the native camera colour space for the given led wall based on the native camera gamut
+        If its standard gamut we return this directly from colour
+        If its custom gamut we create a custom colour space from the primaries and white point
+
+    Args:
+        led_wall: The led wall to get the target colour space for
+
+    Returns: The target colour space
+
+    """
+    try:
+        color_space = colour.RGB_COLOURSPACES[led_wall.native_camera_gamut]
+    except KeyError:
+        custom_primaries = led_wall.project_settings.project_custom_primaries[led_wall.native_camera_gamut]
+        color_space = get_custom_colour_space_from_primaries_and_wp(led_wall.native_camera_gamut, custom_primaries)
+    return color_space
+
+
 def get_custom_colour_space_from_primaries_and_wp(custom_name: str, values: List[List]) -> colour.RGB_Colourspace:
     """ Creates a custom colour space from the given primaries and white point
 
