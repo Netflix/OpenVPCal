@@ -15,7 +15,7 @@ from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import constants, utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.framework.utils import generate_patterns_for_led_walls
+from open_vp_cal.framework.utils import generate_patterns_for_led_walls, export_pre_calibration_ocio_config
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.processing import Processing
@@ -687,6 +687,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
             led_walls: the led walls we want to generate patterns from
         """
 
+        config_writer, ocio_config_path = export_pre_calibration_ocio_config(project_settings, led_walls)
         spg_project_settings = SPGProjectSettings()
         spg_project_settings.frame_rate = project_settings.frame_rate
         spg_project_settings.image_file_format = project_settings.file_format
@@ -696,10 +697,10 @@ class MainWindow(QMainWindow, OpenVPCalBase):
             constants.ProjectFolders.SPG
         )
         spg_project_settings.channel_mapping = "RGB"
-        spg_project_settings.ocio_config_path = ResourceLoader.ocio_config_path()
-        spg_project_settings.output_transform = constants.CameraColourSpace.CS_ACES_CG
-        if spg_project_settings.image_file_format == constants.FileFormats.FF_DPX:
-            spg_project_settings.output_transform = constants.CameraColourSpace.CS_ACES_CCT
+        spg_project_settings.ocio_config_path = ocio_config_path
+        apply_eotf_colour_transform = False
+        if spg_project_settings.image_file_format != constants.FileFormats.FF_EXR:
+            apply_eotf_colour_transform = True
 
         spg_led_walls = []
         spg_led_panels = []
@@ -724,7 +725,16 @@ class MainWindow(QMainWindow, OpenVPCalBase):
 
             # We create a faux led wall which is the largest which we can fit into a given resolution image
             # as we are not doing a pixel perfect diagnosis
+            target_gamut_only_cs = config_writer.get_target_gamut_only_cs(led_wall)
+            target_gamut_and_tf_cs = config_writer.get_target_gamut_and_transfer_function_cs(led_wall)
+
+            # If we are not using an EXR file format, we apply the EOTF colour transform
+            if not apply_eotf_colour_transform:
+                target_gamut_and_tf_cs = target_gamut_only_cs
+
             spg_led_wall = SPGLedWall()
+            spg_led_wall.gamut_only_cs_name = target_gamut_only_cs.getName()
+            spg_led_wall.gamut_and_transfer_function_cs_name = target_gamut_and_tf_cs.getName()
             spg_led_wall.id = idx
             spg_led_wall.name = led_wall.name
             spg_led_wall.panel_name = spg_panel.name
