@@ -19,6 +19,7 @@ except ModuleNotFoundError as e:
     print(e.msg)
 
 from spg.utils import constants
+from open_vp_cal.imaging import imaging_utils
 
 
 def create_solid_color_image(width, height, num_channels=3, color=(0, 0, 0)):
@@ -209,7 +210,7 @@ def apply_color_conversion(image, input_transform, output_transform, ocio_config
     if ocs is None:
         raise ValueError("Output Transform Not Found In Config: " + output_transform)
 
-    image = oiio.ImageBufAlgo.colorconvert(image, input_transform, output_transform, colorconfig=ocio_config_path)
+    image = imaging_utils.apply_color_conversion(image, input_transform, output_transform, ocio_config_path)
     if image.has_error:
         raise ValueError("Error Converting Color: " + image.geterror())
 
