@@ -99,6 +99,11 @@ class OpenVPCalBase:
         """
         led_wall_names = [led_wall.name for led_wall in led_walls]
         for led_wall in led_walls:
+            if led_wall.native_camera_gamut == led_wall.target_gamut:
+                message = f"Target Gamut & Native Camera Gamut Can Not Be The Same For {led_wall.name}"
+                self.error_message(message)
+                return False
+
             if not led_wall.has_valid_white_balance_options():
                 message = f"Only Select 1 option from AutoWB, or Reference Wall or External White {led_wall.name}"
                 self.error_message(message)
