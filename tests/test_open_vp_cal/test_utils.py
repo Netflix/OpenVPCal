@@ -136,14 +136,15 @@ class TestProject(TestUtils):
         self.led_wall = self.project_settings.led_walls[0]
         self.led_wall.input_sequence_folder = self.get_sample_project_plates()
 
-    def run_cli(self, project_settings):
+    def run_cli(self, project_settings, force=False):
         self.maxDiff = None
 
         temp_project_settings = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
         project_settings.to_json(temp_project_settings)
         processed_led_walls = run_cli(
             temp_project_settings,
-            project_settings.output_folder, ocio_config_path=None
+            project_settings.output_folder, ocio_config_path=None,
+            force=force
         )
         os.remove(temp_project_settings)
         return processed_led_walls

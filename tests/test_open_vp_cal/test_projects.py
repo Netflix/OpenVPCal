@@ -364,3 +364,31 @@ class Test_Sample_Project11_SRGB_EOTF(BaseTestProjectPlateReuse):
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
             self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
+
+
+class Test_Sample_Project13_Custom_Camera_Gamut(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project13_Custom_Camera_Gamut"
+
+    def test_project13(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, led_wall in results.items():
+            if led_wall.is_verification_wall:
+                continue
+
+            expected_ocio_file = os.path.join(
+                self.get_sample_project_folder(),
+                constants.ProjectFolders.EXPORT,
+                constants.ProjectFolders.CALIBRATION,
+                ocio_config.OcioConfigWriter.post_calibration_config_name)
+
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
+
+            self.check_separation_frame(led_wall, 1393588, 1393598)
+
+            expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
+            self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
+            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)

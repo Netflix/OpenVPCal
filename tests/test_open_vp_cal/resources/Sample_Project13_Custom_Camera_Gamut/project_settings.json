@@ -1,0 +1,86 @@
+{
+    "openvp_cal_version": "1.0.0-rc.1",
+    "project_settings": {
+        "file_format": "exr",
+        "resolution_width": 3839,
+        "resolution_height": 2160,
+        "output_folder": "/Users/adamdavis/Downloads/OpenVP_UnitTest_Projects/Sample_Project3_ROE_Wall1_EOTF_CS",
+        "ocio_config_path": "",
+        "custom_logo_path": "",
+        "frames_per_patch": 1,
+        "frame_rate": 24.0,
+        "export_lut_for_aces_cct": false,
+        "export_lut_for_aces_cct_in_target_out": false,
+        "led_walls": [
+            {
+                "name": "ROE_EOTF_CS",
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": false,
+                "auto_wb_source": false,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A104_C001_110849_001.R3D",
+                "num_grey_patches": 30,
+                "primaries_saturation": 0.7,
+                "calculation_order": "EOTF > CS",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "ZCam_Custom",
+                "reference_to_target_cat": "Bradford",
+                "roi": [
+                    647,
+                    1315,
+                    220,
+                    886
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 1650,
+                "target_gamut": "ROE",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "None",
+                "match_reference_wall": false,
+                "reference_wall": "",
+                "use_external_white_point": false,
+                "external_white_point_file": "",
+                "is_verification_wall": false,
+                "verification_wall": "",
+                "avoid_clipping": false
+            }
+        ],
+        "project_custom_primaries": {
+            "ROE": [
+                [
+                    0.6919,
+                    0.3074
+                ],
+                [
+                    0.1828,
+                    0.7413
+                ],
+                [
+                    0.1308,
+                    0.0633
+                ],
+                [
+                    0.3127,
+                    0.329
+                ]
+            ],
+             "ZCam_Custom": [
+                [
+                    0.6859194169285818,
+                    0.2329559554677004
+                ],
+                [
+                    0.30192059061635307,
+                    0.9477511549320734
+                ],
+                [
+                    0.07375664234014784,
+                    -0.1046462109763784
+                ],
+                [
+                    0.31270688538204894,
+                    0.329437744829426
+                ]
+            ]
+        }
+    }
+}
