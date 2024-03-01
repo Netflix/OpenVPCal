@@ -907,7 +907,8 @@ def run(
         Results.EOTF_LUT_B: lut_b.tolist(),
         Results.MAX_DISTANCES: max_distances.tolist(),
         Results.TARGET_EOTF: target_EOTF,
-        Results.NATIVE_CAMERA_GAMUT: native_camera_gamut,
+        Results.NATIVE_CAMERA_GAMUT:  native_camera_gamut if isinstance(native_camera_gamut, str)
+            else native_camera_gamut.name,
         Results.OCIO_REFERENCE_GAMUT: ocio_reference_cs.name,
         Results.POST_CALIBRATION_SCREEN_PRIMARIES: calibrated_screen_cs.primaries.tolist(),
         Results.POST_CALIBRATION_SCREEN_WHITEPOINT: calibrated_screen_cs.whitepoint.tolist(),
