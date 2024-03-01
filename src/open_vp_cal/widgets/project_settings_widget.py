@@ -1040,6 +1040,7 @@ class ProjectSettingsController(QObject):
             gamut_name: The name of the gamut to add
         """
         self.led_settings_view.target_gamut.addItem(gamut_name)
+        self.plate_settings_view.native_camera_gamut.addItem(gamut_name)
 
     # pylint: disable=W0613
     def on_led_wall_removed(self, removed_wall: str) -> None:
