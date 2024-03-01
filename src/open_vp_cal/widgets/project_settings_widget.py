@@ -1155,7 +1155,6 @@ class ProjectSettingsController(QObject):
 
             primaries, gamut_name = values
             self.model.add_custom_primary(gamut_name, primaries)
-            self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
             self.add_custom_gamut_to_ui(gamut_name)
 
     def open_custom_gamut_from_matrix_dialog(self) -> None:
@@ -1171,7 +1170,6 @@ class ProjectSettingsController(QObject):
             primaries = primaries.tolist()
             primaries.append(wp.tolist())
             self.model.add_custom_primary(gamut_name, primaries)
-            self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
             self.add_custom_gamut_to_ui(gamut_name)
 
     def add_custom_gamut_to_ui(self, gamut_name: str) -> None:
