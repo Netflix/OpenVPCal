@@ -119,6 +119,11 @@ def write_image(image, filename, bit_depth, channel_mapping=None):
         default and swap if specified. Ie pattern generators force the swap, the raster stitching keeps what its given
     :return: The filepath to the image we just wrote out
     """
+    # The images have been created within a floating point buffer, but some of the patterns have been designed to
+    # calculate values using a lower bit depth for a given imaging chain. However if we are writing out exr we
+    # always want to keep the float point values
+    if filename.endswith(".exr"):
+        bit_depth = "float"
 
     if channel_mapping:
         mapping_order = [char for char in channel_mapping]
