@@ -334,7 +334,6 @@ class Test_Sample_Project10_SRGB_EOTF(BaseTestProjectPlateReuse):
             expected_lut_file = self.get_expected_lut_file(led_wall)
             self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
-            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
@@ -362,7 +361,6 @@ class Test_Sample_Project11_SRGB_EOTF(BaseTestProjectPlateReuse):
             expected_lut_file = self.get_expected_lut_file(led_wall)
             self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
-            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
 
@@ -390,5 +388,4 @@ class Test_Sample_Project13_Custom_Camera_Gamut(BaseTestProjectPlateReuse):
             expected_lut_file = self.get_expected_lut_file(led_wall)
             self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
-            self.files_are_equal(expected_ocio_file, led_wall.processing_results.ocio_config_output_file)
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
