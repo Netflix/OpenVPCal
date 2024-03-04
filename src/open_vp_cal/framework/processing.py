@@ -119,7 +119,8 @@ class Processing:
                              f"First Green Frame: {self.led_wall.separation_results.first_green_frame.frame_num}\n"
                              f"Last Frame Of Sequence: {self.led_wall.sequence_loader.end_frame}\n"
                              f"Calculated End Slate Last Frame: {last_frame}\n"
-                             f"Separation result will lead to out of frame range result")
+                             f"Separation result will lead to out of frame range result\n\n"
+                             f"Ensure Plate Was Exported Correctly Into Linear EXR {self.led_wall.input_plate_gamut}")
 
         self.auto_detect_roi(self.led_wall.separation_results)
 
