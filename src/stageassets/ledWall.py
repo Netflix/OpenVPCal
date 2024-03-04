@@ -292,7 +292,7 @@ class LEDWall(object):
             "wall_default_color": self._wall_default_color,
             "gamut_only_cs_name": self._gamut_only_cs_name,
             "gamut_and_transfer_function_cs_name": self._gamut_and_transfer_function_cs_name,
-            "transfer_only_cs_name": self._transfer_only_cs_name
+            "transfer_function_only_cs_name": self._transfer_function_only_cs_name
         }
 
     @staticmethod
