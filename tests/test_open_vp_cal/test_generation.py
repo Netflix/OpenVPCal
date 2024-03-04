@@ -6,7 +6,7 @@ from open_vp_cal.framework.generation import PatchGeneration
 from open_vp_cal.core import constants
 
 
-class TestSequenceLoader(TestBase):
+class TestGeneration(TestBase):
     def test_generation(self):
         """Test The Calibration Pattern Generation"""
         # We force the version so that the slate always gets the same version to bake into the image

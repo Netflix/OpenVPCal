@@ -119,7 +119,8 @@ class Processing:
                              f"First Green Frame: {self.led_wall.separation_results.first_green_frame.frame_num}\n"
                              f"Last Frame Of Sequence: {self.led_wall.sequence_loader.end_frame}\n"
                              f"Calculated End Slate Last Frame: {last_frame}\n"
-                             f"Separation result will lead to out of frame range result")
+                             f"Separation result will lead to out of frame range result\n\n"
+                             f"Ensure Plate Was Exported Correctly Into Linear EXR {self.led_wall.input_plate_gamut}")
 
         self.auto_detect_roi(self.led_wall.separation_results)
 
@@ -144,7 +145,7 @@ class Processing:
         """
         Runs an analysis process on the samples to generate the status of the LED wall before calibration
         """
-        target_cs, target_to_screen_cat = self._analysis_prep()
+        target_cs, target_to_screen_cat, native_camera_cs = self._analysis_prep()
 
         reference_wall_external_white_balance_matrix = None
         if self.led_wall.match_reference_wall and self.led_wall.use_external_white_point:
@@ -169,7 +170,7 @@ class Processing:
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
             input_plate_gamut=self.led_wall.input_plate_gamut,
-            native_camera_gamut=self.led_wall.native_camera_gamut,
+            native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=default_wall.reference_to_target_cat,
             target_max_lum_nits=self.led_wall.target_max_lum_nits,
@@ -186,7 +187,7 @@ class Processing:
         self.led_wall.processing_results.pre_calibration_results = calibration_results
         return self.led_wall.processing_results
 
-    def _analysis_prep(self) -> tuple[RGB_Colourspace, constants.CAT]:
+    def _analysis_prep(self) -> tuple[RGB_Colourspace, constants.CAT, RGB_Colourspace]:
         """ Run the steps which are needed for both calibration and the pre-calibration analysis steps
 
         Returns: The target colour space and the target to screen CAT
@@ -199,13 +200,17 @@ class Processing:
         if target_to_screen_cat == constants.CAT.CAT_NONE:
             target_to_screen_cat = None
 
-        return utils.get_target_colourspace_for_led_wall(self.led_wall), target_to_screen_cat
+        return (
+            utils.get_target_colourspace_for_led_wall(self.led_wall),
+            target_to_screen_cat,
+            utils.get_native_camera_colourspace_for_led_wall(self.led_wall)
+        )
 
     def calibrate(self) -> ProcessingResults:
         """
         Runs an analysis process on the samples to generate the calibration results
         """
-        target_cs, target_to_screen_cat = self._analysis_prep()
+        target_cs, target_to_screen_cat, native_camera_cs = self._analysis_prep()
 
         reference_wall_external_white_balance_matrix = None
         if self.led_wall.match_reference_wall and self.led_wall.use_external_white_point:
@@ -228,7 +233,7 @@ class Processing:
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
             input_plate_gamut=self.led_wall.input_plate_gamut,
-            native_camera_gamut=self.led_wall.native_camera_gamut,
+            native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=self.led_wall.reference_to_target_cat,
             target_max_lum_nits=self.led_wall.target_max_lum_nits,

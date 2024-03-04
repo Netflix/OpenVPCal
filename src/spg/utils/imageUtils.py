@@ -19,6 +19,7 @@ except ModuleNotFoundError as e:
     print(e.msg)
 
 from spg.utils import constants
+from open_vp_cal.imaging import imaging_utils
 
 
 def create_solid_color_image(width, height, num_channels=3, color=(0, 0, 0)):
@@ -118,6 +119,14 @@ def write_image(image, filename, bit_depth, channel_mapping=None):
         default and swap if specified. Ie pattern generators force the swap, the raster stitching keeps what its given
     :return: The filepath to the image we just wrote out
     """
+    # The images have been created within a floating point buffer, but some of the patterns have been designed to
+    # calculate values using a lower bit depth for a given imaging chain. However if we are writing out exr we
+    # always want to keep the float point values
+    if filename.endswith(".exr"):
+        bit_depth = "half"
+
+    if filename.endswith(".tif") or filename.endswith(".tiff"):
+        bit_depth = 16
 
     if channel_mapping:
         mapping_order = [char for char in channel_mapping]
@@ -209,7 +218,7 @@ def apply_color_conversion(image, input_transform, output_transform, ocio_config
     if ocs is None:
         raise ValueError("Output Transform Not Found In Config: " + output_transform)
 
-    image = oiio.ImageBufAlgo.colorconvert(image, input_transform, output_transform, colorconfig=ocio_config_path)
+    image = imaging_utils.apply_color_conversion(image, input_transform, output_transform, ocio_config_path)
     if image.has_error:
         raise ValueError("Error Converting Color: " + image.geterror())
 

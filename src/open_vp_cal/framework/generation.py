@@ -759,6 +759,9 @@ class PatchGeneration:
             [maximum_extended, maximum_extended, maximum_extended]
         )
 
+        target_gamut_only_cs_name, _ = ocio_config.OcioConfigWriter.target_gamut_only_cs_metadata(
+            self.led_wall
+        )
         transfer_function_only_cs_name, _ = ocio_config.OcioConfigWriter.transfer_function_only_cs_metadata(
             self.led_wall
         )
@@ -766,7 +769,7 @@ class PatchGeneration:
         for img_buf in img_buffers:
             output_img_buf = imaging_utils.apply_color_conversion(
                 img_buf, transfer_function_only_cs_name,
-                constants.ColourSpace.CS_ACES,
+                target_gamut_only_cs_name,
                 color_config=self.generation_ocio_config_path
             )
             color_converted_img_buffers.append(output_img_buf)
@@ -1067,7 +1070,7 @@ class PatchGeneration:
 
         bit_depth = 10
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_EXR:
-            bit_depth = "float"
+            bit_depth = "half"
 
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_TIF:
             bit_depth = 16
