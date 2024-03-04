@@ -1070,7 +1070,7 @@ class PatchGeneration:
 
         bit_depth = 10
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_EXR:
-            bit_depth = "float"
+            bit_depth = "half"
 
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_TIF:
             bit_depth = 16

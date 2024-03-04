@@ -123,9 +123,9 @@ def write_image(image, filename, bit_depth, channel_mapping=None):
     # calculate values using a lower bit depth for a given imaging chain. However if we are writing out exr we
     # always want to keep the float point values
     if filename.endswith(".exr"):
-        bit_depth = "float"
+        bit_depth = "half"
 
-    if filename.endswith(".tif"):
+    if filename.endswith(".tif") or filename.endswith(".tiff"):
         bit_depth = 16
 
     if channel_mapping:
