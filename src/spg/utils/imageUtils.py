@@ -125,6 +125,9 @@ def write_image(image, filename, bit_depth, channel_mapping=None):
     if filename.endswith(".exr"):
         bit_depth = "float"
 
+    if filename.endswith(".tif"):
+        bit_depth = 16
+
     if channel_mapping:
         mapping_order = [char for char in channel_mapping]
         image = ImageBufAlgo.channels(
