@@ -158,6 +158,13 @@ class DataRange(BasePatternGenerator, metaclass=DataRangeMeta):
             black_square_inner, roi=oiio.ROI.All
         )
 
+        # We apply the transfer function only so that this gets reversed when the images are created with the colour
+        # space conversion these values return to their original raw values in the file
+        led_wall_image = imageUtils.apply_color_conversion(
+            led_wall_image, led_wall.transfer_function_only_cs_name, led_wall.gamut_only_cs_name,
+            cls.spg.project_settings.ocio_config_path
+        )
+
         # Write the image to disk and store the result
         cls.write_image_and_store_result(
             frame_num, full_file_path, led_wall.name, led_wall_image, results

@@ -356,6 +356,7 @@ class OpenVPCalBase:
             # as we are not doing a pixel perfect diagnosis
             target_gamut_only_cs = config_writer.get_target_gamut_only_cs(led_wall)
             target_gamut_and_tf_cs = config_writer.get_target_gamut_and_transfer_function_cs(led_wall)
+            transfer_function_only_cs = config_writer.get_transfer_function_only_cs(led_wall)
 
             # If we are not using an EXR file format, we apply the EOTF colour transform
             if not apply_eotf_colour_transform:
@@ -364,6 +365,7 @@ class OpenVPCalBase:
             spg_led_wall = SPGLedWall()
             spg_led_wall.gamut_only_cs_name = target_gamut_only_cs.getName()
             spg_led_wall.gamut_and_transfer_function_cs_name = target_gamut_and_tf_cs.getName()
+            spg_led_wall.transfer_function_only_cs_name = transfer_function_only_cs.getName()
             spg_led_wall.id = idx
             spg_led_wall.name = led_wall.name
             spg_led_wall.panel_name = spg_panel.name

@@ -54,6 +54,11 @@ class LEDWall(object):
                                           "gamut and its eotf "
         )
 
+        self._transfer_function_only_cs_name = CategorizedAttribute(
+            "", UICategory.UI_CAT_STRING, "The name of the colour space which describes the walls colour "
+                                          "eotf only"
+        )
+
         self._panel = None
 
     @property
@@ -207,18 +212,44 @@ class LEDWall(object):
 
     @property
     def gamut_only_cs_name(self):
+        """ Getter for the gamut_only_cs_name
+
+        """
         return self._gamut_only_cs_name.value
 
     @gamut_only_cs_name.setter
     def gamut_only_cs_name(self, value):
+        """
+        Setter for the gamut_only_cs_name
+        """
         self._gamut_only_cs_name.value = value
 
     @property
+    def transfer_function_only_cs_name(self):
+        """
+        Getter for the transfer_only_cs_name
+        """
+        return self._transfer_function_only_cs_name.value
+
+    @transfer_function_only_cs_name.setter
+    def transfer_function_only_cs_name(self, value):
+        """
+        Setter for the transfer_only_cs_name
+        """
+        self._transfer_function_only_cs_name.value = value
+
+    @property
     def gamut_and_transfer_function_cs_name(self):
+        """
+        Getter for the gamut_and_transfer_function_cs_name
+        """
         return self._gamut_and_transfer_function_cs_name.value
 
     @gamut_and_transfer_function_cs_name.setter
     def gamut_and_transfer_function_cs_name(self, value):
+        """
+        Setter for the gamut_and_transfer_function_cs_name
+        """
         self._gamut_and_transfer_function_cs_name.value = value
 
     def __iter__(self):
@@ -230,7 +261,8 @@ class LEDWall(object):
             "panel_count_height": self.panel_count_height,
             "wall_default_color": self.wall_default_color,
             "gamut_only_cs_name": self.gamut_only_cs_name,
-            "gamut_and_transfer_function_cs_name": self.gamut_and_transfer_function_cs_name
+            "gamut_and_transfer_function_cs_name": self.gamut_and_transfer_function_cs_name,
+            "transfer_function_only_cs_name": self.transfer_function_only_cs_name
         }.items()
 
     def __str__(self):
@@ -259,7 +291,8 @@ class LEDWall(object):
             "panel_count_height": self._panel_count_height,
             "wall_default_color": self._wall_default_color,
             "gamut_only_cs_name": self._gamut_only_cs_name,
-            "gamut_and_transfer_function_cs_name": self._gamut_and_transfer_function_cs_name
+            "gamut_and_transfer_function_cs_name": self._gamut_and_transfer_function_cs_name,
+            "transfer_only_cs_name": self._transfer_only_cs_name
         }
 
     @staticmethod
