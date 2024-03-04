@@ -47,6 +47,16 @@ class TestLedWall(utils.TestBase):
     def test_wall_width(self):
         self.assertEqual(10500, self.wall.wall_width)
 
+    def test_gamut_only_cs_name(self):
+        self.assertEqual("", self.wall.gamut_only_cs_name)
+        self.wall.gamut_only_cs_name = "Test1"
+        self.assertEqual("Test1", self.wall.gamut_only_cs_name)
+
+    def test_gamut_and_transfer_function_cs_name(self):
+        self.assertEqual("", self.wall.gamut_and_transfer_function_cs_name)
+        self.wall.gamut_and_transfer_function_cs_name = "Test2"
+        self.assertEqual("Test2", self.wall.gamut_and_transfer_function_cs_name)
+
     def test_panel(self):
         panels_config = self.get_panels_config()
         data = panels_config[self.wall.panel_name]

@@ -6,14 +6,14 @@ import json
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Union, TYPE_CHECKING, List
+from typing import Dict, Union, TYPE_CHECKING, List, Tuple
 
 import requests
 
 from open_vp_cal.core import constants, ocio_config
+from open_vp_cal.core.ocio_config import OcioConfigWriter
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.generation import PatchGeneration
-
 
 if TYPE_CHECKING:
     from open_vp_cal.led_wall_settings import LedWallSettings
@@ -72,5 +72,15 @@ def generate_patterns_for_led_walls(project_settings: 'ProjectSettings', led_wal
         patch_generator = PatchGeneration(led_wall)
         patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
 
+    _, ocio_config_path = export_pre_calibration_ocio_config(project_settings, led_walls)
+    return ocio_config_path
+
+
+def export_pre_calibration_ocio_config(
+        project_settings: 'ProjectSettings',
+        led_walls: List['LedWallSettings']) -> tuple[OcioConfigWriter, str]:
+    """ Export the pre calibration ocio config file for the given walls and project settings
+
+    """
     config_writer = ocio_config.OcioConfigWriter(project_settings.export_folder)
-    return config_writer.generate_pre_calibration_ocio_config(led_walls)
+    return config_writer, config_writer.generate_pre_calibration_ocio_config(led_walls)

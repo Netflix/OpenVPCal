@@ -277,7 +277,7 @@ class CameraColourSpace:
     CS_ACES_CCT = "ACEScct"
     ARRI_WIDE_GAMUT_3 = "ARRI Wide Gamut 3"
     ARRI_WIDE_GAMUT_4 = "ARRI Wide Gamut 4"
-    BLACKMAGIC_WIDE_GAMUT = "Blackmagic Design Wide Gamut"
+    BLACKMAGIC_WIDE_GAMUT = "Blackmagic Wide Gamut"
     CANON_CINEMA_GAMUT = "Cinema Gamut"
     DJI_D_GAMUT = "DJI D-Gamut"
     CS_BT2020 = "ITU-R BT.2020"
