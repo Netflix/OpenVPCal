@@ -262,7 +262,7 @@
     "sequence_length": 0.05,
     "bit_depth_override": null,
     "input_transform": null,
-    "enable_color_conversion": false,
+    "enable_color_conversion": true,
     "use_pq_peak_luminance": true
   },
   {
