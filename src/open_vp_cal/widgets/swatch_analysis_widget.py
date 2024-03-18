@@ -12,6 +12,7 @@ import colour
 import colour.algebra as ca
 
 from open_vp_cal.core import constants
+from open_vp_cal.core import utils as core_utils
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.imaging import imaging_utils
@@ -253,7 +254,7 @@ class SwatchViewer(QWidget):
 
                         if white_balance_matrix:
                             working_cs = colour.RGB_COLOURSPACES[constants.ColourSpace.CS_ACES]
-                            native_camera_gamut_cs = colour.RGB_COLOURSPACES[led_wall.native_camera_gamut]
+                            native_camera_gamut_cs = core_utils.get_native_camera_colourspace_for_led_wall(led_wall)
 
                             camera_conversion_cat = constants.CAT.CAT_CAT02
                             if native_camera_gamut_cs.name == constants.CameraColourSpace.RED_WIDE_GAMUT:
