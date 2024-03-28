@@ -12,7 +12,7 @@ from open_vp_cal.core import constants, utils
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.configuraton import Configuration
 from open_vp_cal.framework.processing import Processing, SeparationException
-from open_vp_cal.framework.utils import export_pre_calibration_ocio_config
+from open_vp_cal.framework.utils import export_pre_calibration_ocio_config, generate_patterns_for_led_walls
 from open_vp_cal.framework.validation import Validation
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
@@ -147,6 +147,27 @@ class OpenVPCalBase:
             return False
 
         return True
+
+    def run_auto_detect(self, led_wall: LedWallSettings):
+        """ Runs the auto detect for the given LED wall, we report any warnings or failures to the user.
+
+            Args:
+                led_wall: The LED wall we want to run the auto detect on
+
+            Returns:
+                The results of the separation and auto ROI detection
+
+        """
+        sep_results, auto_roi_results = Processing.run_auto_detect(
+            led_wall
+        )
+        if not sep_results or not sep_results.is_valid:
+            self.error_message("Unable To Identify Separation")
+
+        if not auto_roi_results or not auto_roi_results.is_valid:
+            self.error_message("Unable To Auto Identify ROI")
+
+        return sep_results, auto_roi_results
 
     def analyse(self, led_walls: List[LedWallSettings]) -> bool:
         """ Runs the analysis for each of the LED walls in the selection, and performs some pre validation checks
@@ -304,6 +325,13 @@ class OpenVPCalBase:
 
         walls = Processing.run_export(project_settings_model, led_walls)
         return True, walls
+
+    @staticmethod
+    def generate_patterns_for_led_walls(project_settings: ProjectSettings, led_walls: List):
+        """
+        For the given project settings and list of led walls, generate the calibration patterns for the led walls
+        """
+        generate_patterns_for_led_walls(project_settings, led_walls)
 
     @staticmethod
     def generate_spg_patterns_for_led_walls(

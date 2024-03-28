@@ -13,7 +13,6 @@ from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.framework.utils import generate_patterns_for_led_walls
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.processing import Processing
@@ -638,7 +637,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
                         led_walls.append(wall)
                         break
 
-        generate_patterns_for_led_walls(self.project_settings_model, led_walls)
+        self.generate_patterns_for_led_walls(self.project_settings_model, led_walls)
 
         self.save_project_settings(inform_completion=False)
         self.task_completed()
@@ -685,14 +684,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         """
         self.timeline_view.set_to_start()
 
-        sep_results, auto_roi_results = Processing.run_auto_detect(
-            led_wall
-        )
-        if not sep_results or not sep_results.is_valid:
-            self.error_message("Unable To Identify Separation")
-
-        if not auto_roi_results or not auto_roi_results.is_valid:
-            self.error_message("Unable To Auto Identify ROI")
+        self.run_auto_detect(led_wall)
 
         self.timeline_view.set_to_end()
         self.timeline_view.set_to_start()

@@ -15,7 +15,6 @@ import open_vp_cal
 from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import constants
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.framework.processing import Processing
 from open_vp_cal.framework.utils import generate_patterns_for_led_walls
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
@@ -163,6 +162,7 @@ def run_cli(
     """
     project_settings = ProjectSettings.from_json(project_settings_file_path)
     project_settings.output_folder = output_folder
+    open_vp_cal_base = OpenVPCalBase()
 
     if ocio_config_path:
         project_settings.ocio_config_path = ocio_config_path
@@ -172,14 +172,13 @@ def run_cli(
         led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder, file_type=constants.FileFormats.FF_EXR)
 
         if not led_wall.roi:
-            _, auto_roi_results = Processing.run_auto_detect(led_wall)
+            _, auto_roi_results = open_vp_cal_base.run_auto_detect(led_wall)
             if not auto_roi_results or not auto_roi_results.is_valid:
                 raise ValueError("Auto ROI detection failed.")
 
         led_wall.sequence_loader.set_current_frame(led_wall.sequence_loader.start_frame)
 
     # Now we have everything lets sort the led walls so they are in the correct order
-    open_vp_cal_base = OpenVPCalBase()
     status = open_vp_cal_base.analyse(project_settings.led_walls)
     if not status and not force:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
