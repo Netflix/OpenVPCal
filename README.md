@@ -1491,6 +1491,147 @@ construction or mapping of content to the led wall
 
 
 ## Developer Guide
+Below we outline the core usage of the python module, which is the backbone of the OpenVPCal application.
+
+This is available as a python module and can be used to implement into other tools or pipelines as desired.
+
+## Creating A Project
+
+```python
+import os
+
+from open_vp_cal.project_settings import ProjectSettings
+from open_vp_cal.core.resource_loader import ResourceLoader
+from open_vp_cal.core import constants
+
+from open_vp_cal.application_base import OpenVPCalBase
+
+# Create A New Project
+project_root = "/tmp/API_TEST"
+if not os.path.exists(project_root):
+    os.makedirs(project_root)
+
+project_settings = ProjectSettings()
+project_settings.ocio_config_path = ResourceLoader.ocio_config_path()
+project_settings.output_folder = project_root
+project_settings.resolution_height = 2160
+project_settings.resolution_width = 3840
+project_settings.file_format = constants.FileFormats.FF_EXR
+project_settings.export_lut_for_aces_cct = False
+project_settings.export_lut_for_aces_cct_in_target_output = False
+project_settings.frame_rate = constants.FrameRates.FPS_25
+```
+
+## Add A Custom Color Space
+```python
+custom_primaries = [(0.70800, 0.29200), (0.17000, 0.79700), (0.13100, 0.04600), (0.31270, 0.32900)l]
+custom_gamut_name = "LedWall_Custom_Gamut"
+project_settings.add_custom_primary(custom_gamut_name, custom_primaries)
+
+### Add a new LED Wall With Standard Gamut
+main_wall = project_settings.add_led_wall("Main Wall")
+main_wall.target_gamut = constants.ColourSpace.CS_BT2020
+main_wall.target_eotf = constants.EOTF.EOTF_ST2084
+main_wall.target_max_lum_nits = 1650
+```
+
+## Add a new LED Wall With Custom Gamut
+```python
+custom_wall = project_settings.add_led_wall("Custom Wall")
+custom_wall.target_gamut = custom_gamut_name
+custom_wall.target_eotf = constants.EOTF.EOTF_ST2084
+custom_wall.target_max_lum_nits = 1650
+```
+
+## Save The Project Settings
+```python
+filename = os.path.join(project_settings.output_folder, constants.DEFAULT_PROJECT_SETTINGS_NAME)
+project_settings.to_json(filename)
+```
+## Load The Project Settings
+```python
+project_settings = ProjectSettings.from_json(filename)
+```
+
+## Generate Calibration Patches
+```python
+open_vp_cal_base = OpenVPCalBase()
+open_vp_cal_base.generate_patterns_for_led_walls(project_settings, project_settings.led_walls)
+```
+
+## Generate SPG Patches
+```python
+open_vp_cal_base.generate_spg_patterns_for_led_walls(project_settings, project_settings.led_walls)
+```
+
+# NOW WE LOAD AND SHOOT OUR PLATES & PROCESS THE RECORDINGS INTO ACES2065-1 EXRS, SDI CAPTURE COULD BE IMPLEMENTED HERE etc
+
+## Set The Plate Settings
+```python
+custom_wall.native_camera_gamut = constants.CameraColourSpace.RED_WIDE_GAMUT
+main_wall.native_camera_gamut = constants.CameraColourSpace.RED_WIDE_GAMUT
+```
+
+## Load The Sequences & Run The ROI Detection & Separation Detection
+```python
+for led_wall in project_settings.led_walls:
+    led_wall.sequence_loader.load_sequence("/path/to/recorded/exrs", file_type=constants.FileFormats.FF_EXR)
+
+    if not led_wall.roi:
+        separation_results, auto_roi_results = open_vp_cal_base.run_auto_detect(led_wall)
+        if not auto_roi_results or not auto_roi_results.is_valid:
+            raise ValueError("Auto ROI detection failed.")
+
+        if not separation_results or not separation_results.is_valid:
+            raise ValueError("Separation Detection failed.")
+
+    led_wall.sequence_loader.set_current_frame(led_wall.sequence_loader.start_frame)
+```
+
+```python
+## Run The Analysis Of The Patches
+status = open_vp_cal_base.analyse(project_settings.led_walls)
+if not status:
+    error_messages = "\n".join(open_vp_cal_base.error_messages())
+    warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+    raise ValueError(f"Analysis Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+```
+
+## Run The Post Analysis Validations
+```python
+status = open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
+if not status:
+    error_messages = "\n".join(open_vp_cal_base.error_messages())
+    warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+    raise ValueError(f"Analysis Validation Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+```
+
+## Apply The Post Analysis Configuration Recommendations
+```python
+configuration_results = open_vp_cal_base.apply_post_analysis_configuration(project_settings.led_walls)
+for led_wall in project_settings.led_walls:
+    for param, value in configuration_results[led_wall.name]:
+        setattr(led_wall, param, value)
+```
+
+## Run The Calibration
+```python
+status = open_vp_cal_base.calibrate(project_settings.led_walls)
+if not status:
+    error_messages = "\n".join(open_vp_cal_base.error_messages())
+    warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+    raise ValueError(f"Calibrate Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+```
+
+## Export The Calibration
+```python
+status, led_walls = open_vp_cal_base.export(project_settings, project_settings.led_walls)
+if not status:
+    error_messages = "\n".join(open_vp_cal_base.error_messages())
+    warning_messages = "\n".join(open_vp_cal_base.warning_messages())
+    raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+```
+
 ## License
 
 ### Changelog
