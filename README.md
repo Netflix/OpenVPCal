@@ -9,11 +9,40 @@ It creates a LED wall calibration, based on the observer camera in use. The cali
 The full user guide for OpenVPCal can be found here [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
 
 # Table of Contents
-1. [OpenVPCal](#openvpcal)
-2. [Installation](#installation)
-3. [User Guide](#user-guide)
-4. [Developer Guide](##developer-guide)
-5. [License](#license)
+
+- [OpenVPCal](#openvpcal)
+- [Contact Information](#contact-information)
+- [Installation](#installation)
+  - [Supported Platforms](#supported-platforms)
+  - [Binaries](#binaries)
+  - [From Source](#from-source)
+  - [Developer Setup](#developer-setup)
+  - [Why Not PyPi?](#why-not-pypi)
+  - [Additional Requirements](#additional-requirements)
+  - [Hardware Requirements](#hardware-requirements)
+- [Quick Start Guide](#quick-start-guide)
+- [User Guide](#user-guide)
+  - [Basic Glossary](#basic-glossary)
+  - [Create new project/Load existing project](#create-new-projectload-existing-project)
+  - [Project Layout](#project-layout)
+  - [Add Wall(s)](#add-walls)
+  - [Patch Generation](#patch-generation)
+  - [Camera / Lens Info](#camera--lens-info)
+  - [Shoot](#shoot)
+  - [Load and Set Calibration Plates](#load-and-set-calibration-plates)
+  - [Analyse](#analyse)
+  - [Analysis Validation](#analysis-validation)
+  - [Analyse Layout](#analyse-layout)
+  - [Calibration Settings Widget](#calibration-settings-widget)
+  - [Calibration Matrix widget](#calibration-matrix-widget)
+  - [IPT-DeltaE Analysis Widget](#ipt-deltae-analysis-widget)
+  - [Calibrate](#calibrate)
+  - [Calibration Use Cases](#calibration-use-cases) 
+  - [Validation](#validation)
+  - [SPG Test patterns](#spg-test-patterns)
+- [Developer Guide](#developer-guide)
+- [License](#license)
+- [Changelog](#changelog)
 
 # Contact Information
 
@@ -23,7 +52,7 @@ For any questions or issues with the beta, please submit issues on the github re
 # Installation
 
 
-## Supported Platforms {#supported-platforms}
+## Supported Platforms
 
 Windows - :white_check_mark: \
 OSX - :white_check_mark: \
@@ -815,7 +844,7 @@ There are several DCCs that can be used for this scope. We are providing here a 
 6. Render the plate and load the resulting EXR in OpenVpCal. 
 
 
-#### Load Plate {#load-plate}
+#### Load Plate
 
 From the Stage View>Led Wall Bin you can now load your calibration plate associated with the LED wall it was shot for. 
 
@@ -883,7 +912,7 @@ Once the analysis is completed, the tool will prompt a pop-up window with a desc
 ### Analyse Layout
 
 
-#### Swatch Analysis {#swatch-analysis}
+#### Swatch Analysis
 
 In the Analysis Layout, a Swatch Analysis viewer will appear to facilitate the user's appreciation of the status of the wall and its calibration. The viewer is run by OpenColor IO (OCIO) and therefore can map the swatches to any colour space available from the default OCIO config shipped with the tool, the ACES 1.3 Studio Config.  
 
@@ -974,7 +1003,7 @@ This widget shows the extent of the out-of-gamut colors measured in relation to 
 
 
 
-##### EOTF Analysis {#eotf-analysis}
+##### EOTF Analysis
 
 This widget tracks the linear response of the LED wall.
 
@@ -1022,7 +1051,7 @@ This widget tracks the linear response of the LED wall.
 
 
 
-##### White Point Analysis {#white-point-analysis}
+##### White Point Analysis
 
 This widget shows the observed white point of the LED wall, as seen by the camera. 
 
@@ -1064,7 +1093,7 @@ This widget shows the observed white point of the LED wall, as seen by the camer
 
 
 
-##### Colour Space Analysis {#colour-space-analysis}
+##### Colour Space Analysis
 
 This widget shows the observed extent of the colour space and white point of the LED wall, as seen by the camera.
 
@@ -1102,7 +1131,7 @@ This widget shows the observed extent of the colour space and white point of the
 </table>
 
 
-Calibration Settings Widget
+### Calibration Settings Widget
 
 The calibration settings offer a series of options that allow different calibration paths and functions. The analysis process should have already setup these parameters with the optimal ones required for your LED wall, but the user is free to choose what to enable/disable or what path to use. See the Calibration section for more information. 
 
@@ -1151,7 +1180,7 @@ The calibration settings offer a series of options that allow different calibrat
 </table>
 
 
-Calibration Matrix widget
+## Calibration Matrix widget
 
 Once the calibration is completed, this widget offers the option to copy each 3x3 matrix used in the calibration transforms in several practical formats. 
 
@@ -1196,13 +1225,13 @@ Available formats:
 </table>
 
 
-IPT-DeltaE Analysis Widget
+## IPT-DeltaE Analysis Widget
 
 OpenVpCal tries to determine the status of the LED wall by using DeltaE IPT measurements, among other factors. This widget shows the measured IPT DeltaE between the reference target color and the one observed by the camera. It’s separated into groups of patches and offers the ability to select and compare multiple walls, estimating the “best wall” based on the average of deltaE measurements that fall under the just noticeable difference (JND) threshold. This feature is handy when comparing different calibration approaches or verifying a calibration's success against the wall's original status. 
 
 <img src="docs/source/images/image5.png" alt="image_tooltip" width="50%" height="50%">
 
-### Calibrate
+## Calibrate
 
 The calibration setup has multiple settings that determine how OpenVPCal will attempt to calibrate the LED wall(s). Here’s a more detailed description of what each does:
 
@@ -1220,7 +1249,7 @@ A specific note is required to clarify the Calculations order, which determines 
 Which one is the correct one? It depends: different pipelines might have different issues, however when the analysis process determines that the wall is not linear, the OpenVPCal default wil is the **<span style="text-decoration:underline;">1D>3x3</span>** order.
 
 
-##### CHROMATIC ADAPTATION TRANSFORM (CAT) {#chromatic-adaptation-transform-cat}
+##### CHROMATIC ADAPTATION TRANSFORM (CAT)
 
 Chromatic Adaptation Transforms are designed to maintain the appearance of colors under different lighting conditions or white points. In order to assure the best possible calibration, OpenVPCal goes through a number of different conversions between color spaces and white points, this means a number of CAT transforms are applied forward and inverted within each block of the calibration transforms. Because mixing CAT within a set of transformations is bad practice, we provide the user only two places where to select different CATs, as these transform blocks are essentially independent of each other. Selecting NONE will bypass any Chromatic adaptation and will therefore modify the appearance of colors and white points when changing color space.  Depending on your workflow, different CATs may be appropriate. The OpenVPCal defaults are:
 
@@ -1246,17 +1275,17 @@ Chromatic Adaptation Transforms are designed to maintain the appearance of color
 
 
 
-#### AVOID CLIPPING {#avoid-clipping}
+#### AVOID CLIPPING
 
 The calibration might push one or two RGB channels above the intended peak luminance. When targeting ST2084 EOTF, if any of the channels go above then the display will clamp it, affecting the white point of the LED wall. Avoid clipping will push the channels to go below the peak luminance. It might affect the overall brightness of the wall, but it should be quite subtle, nevertheless.
 
 
-### Calibration use cases {#calibration-use-cases}
+### Calibration Use Cases
 
 OpenVpCal offers a number of different options to calibrate an LED wall, based on different needs. The user can choose different paths within the calibration settings, but also perform things slightly differently according to the use case. Here’s a list of the most common ones:
 
 
-##### SIMPLE CALIBRATION: Targeting A Specific White Point {#simple-calibration-targeting-a-specific-white-point}
+##### SIMPLE CALIBRATION: Targeting A Specific White Point
 
 This is the most common calibration use case, where the camera is set to a specific white balance setting. The calibration shifts the LED wall to ensure that the emitted white of the wall will result in white in camera with that specific camera setting. A good use case for this is to aim at the LED wall’s native white point (eg 6500K), or when the Cinematographer requires to shoot at a specific white balance and wants the wall to appear white with these parameters. 
 
@@ -1406,7 +1435,7 @@ The 3D LUT exported by OpenVPCal is normally a display-to-display LUT. However, 
 
 
 
-### Validation {#validation}
+### Validation
 
 Once the calibration is completed and exported, we suggest validating it by re-shooting the original plate on the wall with the calibration transforms applied. OpenVpCal offers the ability to  “Add Validation Wall”, that allows the user to compare the status of the wall prior and post calibration.
 
