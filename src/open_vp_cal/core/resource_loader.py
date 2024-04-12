@@ -76,6 +76,15 @@ class ResourceLoader:
         return cls._get_resource("OpenVpCal_Full_Logo.png")
 
     @classmethod
+    def open_vp_cal_logo_full_bw(cls) -> str:
+        """
+
+        Returns: The absolute path to the OpenVP Cal logo full bw
+
+        """
+        return cls._get_resource("OpenVpCAL_Full_logo_bw.png")
+
+    @classmethod
     def slate(cls) -> str:
         """
 
@@ -101,24 +110,6 @@ class ResourceLoader:
 
         """
         return cls._get_resource("Roboto-Bold.ttf")
-
-    @classmethod
-    def netflix_logo(cls) -> str:
-        """
-
-        Returns: The absolute path to the Netflix logo
-
-        """
-        return cls._get_resource("Netflix_Logo_RGB.png")
-
-    @classmethod
-    def orca_logo(cls) -> str:
-        """
-
-        Returns: The absolute path to the Orca logo
-
-        """
-        return cls._get_resource("Orca.png")
 
     @classmethod
     def icon(cls) -> str:

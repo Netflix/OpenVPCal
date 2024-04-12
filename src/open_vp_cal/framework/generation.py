@@ -649,9 +649,8 @@ class PatchGeneration:
         Returns: The slate patch with the logos added
 
         """
-        scale_factor = 0.25
-        orca_buf = Oiio.ImageBuf(ResourceLoader.orca_logo())
-        netflix_buf = Oiio.ImageBuf(ResourceLoader.netflix_logo())
+        scale_factor = 0.75
+        open_vp_cal_bw_logo = Oiio.ImageBuf(ResourceLoader.open_vp_cal_logo_full_bw())
         custom_buf = Oiio.ImageBuf()
         if self.led_wall.project_settings.custom_logo_path:
             custom_logo_buf = Oiio.ImageBuf(self.led_wall.project_settings.custom_logo_path)
@@ -660,33 +659,20 @@ class PatchGeneration:
                                      roi=Oiio.ROI(0, 500, 0, 250))
             custom_buf = imaging_utils.convert_to_grayscale(custom_buf)
 
-        new_nf_width = int(netflix_buf.spec().width * scale_factor)
-        new_nf_height = int(netflix_buf.spec().height * scale_factor)
-
-        new_orca_width = int(orca_buf.spec().width * scale_factor)
-        new_orca_height = int(orca_buf.spec().height * scale_factor)
+        new_width = int(open_vp_cal_bw_logo.spec().width * scale_factor)
+        new_height = int(open_vp_cal_bw_logo.spec().height * scale_factor)
 
         # Resize source image
-        resized_orca_buf = Oiio.ImageBuf()
-        resized_netflix_buf = Oiio.ImageBuf()
+        resized_buf = Oiio.ImageBuf()
+        Oiio.ImageBufAlgo.resize(resized_buf, open_vp_cal_bw_logo, roi=Oiio.ROI(0, new_width, 0, new_height))
 
-        Oiio.ImageBufAlgo.resize(resized_netflix_buf, netflix_buf, roi=Oiio.ROI(0, new_nf_width, 0, new_nf_height))
-        Oiio.ImageBufAlgo.resize(resized_orca_buf, orca_buf, roi=Oiio.ROI(0, new_orca_width, 0, new_orca_height))
-
-        cropped_netflix_buf = Oiio.ImageBuf()
-        Oiio.ImageBufAlgo.crop(cropped_netflix_buf, resized_netflix_buf, roi=Oiio.ROI(
-            50, resized_netflix_buf.spec().width - 50, 50, resized_netflix_buf.spec().height - 50)
-                               )
-
-        # Paste the resized netflix and orca into the target buffer at specified position
-        Oiio.ImageBufAlgo.paste(patch, 90, 1900, 0, 0, cropped_netflix_buf)
-        Oiio.ImageBufAlgo.paste(patch, 600, 1900, 0, 0, resized_orca_buf)
+        # Paste the resized logos into position
+        Oiio.ImageBufAlgo.paste(patch, 300, 1900, 0, 0, resized_buf)
 
         if not self.led_wall.project_settings.custom_logo_path:
-            Oiio.ImageBufAlgo.paste(patch, 1360, 150, 0, 0, cropped_netflix_buf)
-            Oiio.ImageBufAlgo.paste(patch, 1960, 150, 0, 0, resized_orca_buf)
+            Oiio.ImageBufAlgo.paste(patch, 1600, 150, 0, 0, resized_buf)
         else:
-            Oiio.ImageBufAlgo.paste(patch, 1660, 150, 0, 0, custom_buf)
+            Oiio.ImageBufAlgo.paste(patch, 1600, 150, 0, 0, custom_buf)
 
         return patch
 
