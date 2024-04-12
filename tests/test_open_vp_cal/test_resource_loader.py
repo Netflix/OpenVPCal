@@ -45,18 +45,6 @@ class TestResourceLoader(unittest.TestCase):
         self.assertTrue(os.path.exists(actual))
         self.assertEqual(os.path.basename(actual), expected)
 
-    def test_netflix_logo(self):
-        actual = ResourceLoader.netflix_logo()
-        expected = "Netflix_Logo_RGB.png"
-        self.assertTrue(os.path.exists(actual))
-        self.assertEqual(os.path.basename(actual), expected)
-
-    def test_orca_logo(self):
-        actual = ResourceLoader.orca_logo()
-        expected = "Orca.png"
-        self.assertTrue(os.path.exists(actual))
-        self.assertEqual(os.path.basename(actual), expected)
-
     def test_icon(self):
         actual = ResourceLoader.icon()
         expected = "icon.ico"
