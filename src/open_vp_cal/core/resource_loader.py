@@ -197,15 +197,6 @@ class ResourceLoader:
         return log_dir
 
     @classmethod
-    def logging(cls) -> str:
-        """
-
-        Returns: The logging resource
-
-        """
-        return cls._get_resource("logging.bin")
-
-    @classmethod
     def spg_pattern_basic_config(cls) -> str:
         """
 

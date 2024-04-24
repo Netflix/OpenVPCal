@@ -22,8 +22,6 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, Union, TYPE_CHECKING, List, Tuple
 
-import requests
-
 from open_vp_cal.core import constants, ocio_config
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 from open_vp_cal.core.resource_loader import ResourceLoader
@@ -32,39 +30,6 @@ from open_vp_cal.framework.generation import PatchGeneration
 if TYPE_CHECKING:
     from open_vp_cal.led_wall_settings import LedWallSettings
     from open_vp_cal.project_settings import ProjectSettings
-
-
-def log_results(data: Dict) -> Union[requests.Response, None]:
-    """ Logs the usage stats
-
-    Args:
-        data: The data containing the calibration settings, samples, and the results
-
-    """
-    if os.getenv(constants.OPEN_VP_CAL_UNIT_TESTING):
-        return None
-
-    try:
-        import open_vp_cal
-
-        utc_now = datetime.now(timezone.utc)
-        utc_string = utc_now.strftime('%Y-%m-%d %H:%M:%S %Z%z')
-
-        data_dict = {
-            "job_id": str(uuid.uuid4()),
-            "version": open_vp_cal.__version__,
-            "utc": utc_string,
-            "data": json.dumps(data)
-        }
-        logging_bin = ResourceLoader.logging()
-        with open(logging_bin, 'rb') as file:
-            read_encoded = file.read()
-            logging_route = base64.b64decode(read_encoded).decode('utf-8')
-            response = requests.post(logging_route, data=json.dumps(data_dict), timeout=60)
-            return response
-    except Exception:
-        pass
-    return None
 
 
 def generate_patterns_for_led_walls(project_settings: 'ProjectSettings', led_walls: List['LedWallSettings']) -> str:

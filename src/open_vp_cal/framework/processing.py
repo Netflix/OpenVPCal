@@ -407,18 +407,6 @@ class Processing:
         project_settings.to_json(
             os.path.join(project_settings.output_folder, DEFAULT_PROJECT_SETTINGS_NAME)
         )
-
-        data_dict = project_settings.to_dict()
-        for led_wall in walls:
-            processed_data = {
-                "samples": led_wall.processing_results.samples,
-                "reference_samples": led_wall.processing_results.reference_samples,
-            }
-            data_dict[f"{led_wall.name}_processed_data"] = processed_data
-
-        thread = threading.Thread(target=framework_utils.log_results, args=(data_dict,), daemon=True)
-        thread.start()
-        thread.join(timeout=5)
         return walls
 
     def auto_detect_roi(self, separation_results) -> Union[AutoROIResults, None]:
