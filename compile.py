@@ -367,7 +367,6 @@ def main() -> int:
         cmds.append("--add-data")
         cmds.append(add_data)
 
-
     manual_paths = get_additional_library_paths(vcpkg_folder)
     for manual_path in manual_paths:
         cmds.append("--add-data")
@@ -380,9 +379,11 @@ def main() -> int:
     # Wait for the process to finish and get the return code.
     return_code = process.wait()
     if platform.system() == 'Darwin':
-        certificate_name = "Developer ID Application: Adam Davis (2UP2ABAGD7)"
-        return_code = osx_sign_app_and_build_dmg(
-            app_name, certificate_name, version)
+        certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "")
+        if not certificate_name:
+            return_code = osx_sign_app_and_build_dmg(
+                app_name, certificate_name, version)
+        print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
         return_code = build_windows_installer(manual_paths, version)
