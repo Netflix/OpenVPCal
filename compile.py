@@ -380,10 +380,11 @@ def main() -> int:
     return_code = process.wait()
     if platform.system() == 'Darwin':
         certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "")
-        if not certificate_name:
+        if certificate_name:
             return_code = osx_sign_app_and_build_dmg(
                 app_name, certificate_name, version)
-        print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
+        else:
+            print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
         return_code = build_windows_installer(manual_paths, version)
