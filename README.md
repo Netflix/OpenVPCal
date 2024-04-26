@@ -1,17 +1,34 @@
 ![OpenVpCal_Full_Logo.png](src%2Fopen_vp_cal%2Fresources%2FOpenVpCal_Full_Logo.png)
 
 # OpenVPCal
-OpenVPCal is an open source calibration tool for In-Camera Visual Effects pipelines. It is written in Python 3, and consists of a number of packages, for different levels of integration. \
-Most users will utilize the precompiled application which consists of a PySide UI and CLI. \
- \
-It creates a LED wall calibration, based on the observer camera in use. The calibration can be exported as an OpenColorIO Config and/or Display-to-Display 3D LUT, that should be applied to the content projected on the LED wall.
+OpenVPCal is an open-source calibration tool for In-Camera Visual Effects pipelines. 
 
-The full user guide for OpenVPCal can be found here [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
+It is written in Python3, and consists of a number of packages for different levels of integration.
+
+Most end-users will utilize the precompiled application which consists of a PySide UI and CLI, however the source code 
+can be used for direct integration into existing software/pipelines, as well as a base to build new applications on top of.
+
+OpenVPCal calibration library creates a series of color space corrections to be applied to the content-to-LED pipeline, 
+which aims to correct the resulting image based on the observer camera in use. 
+
+The calibration can be exported as an OpenColorIO Config and/or "Display-to-Display" 3D LUT.
+
+OpenVpCal was originally introduced at SIGGRAPH 2022, with a [paper](https://history.siggraph.org/learning/open-source-in-camera-visual-effects-calibration-workflow-by-payne-and-giardiello/) and a [presentation](https://dl.acm.org/doi/10.1145/3532836.3536265). 
+
+Please visit the links for more context and background information on this project.
+
+For any questions or issues, please submit issues on the github repository
+
+## Contact Information
+For more enquires please contact
+
+[openvpcal@netflix.com](mailto:openvpcal@netflix.com)
+
+The full user guide for OpenVPCal can be found below or here as a pdf [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
 
 # Table of Contents
 
 - [OpenVPCal](#openvpcal)
-- [Contact Information](#contact-information)
 - [Installation](#installation)
   - [Supported Platforms](#supported-platforms)
   - [Binaries](#binaries)
@@ -43,11 +60,7 @@ The full user guide for OpenVPCal can be found here [UserGuide](https://github.c
 - [Developer Guide](#developer-guide)
 - [License](#license)
 - [Changelog](#changelog)
-
-# Contact Information
-
-For any questions or issues with the beta, please submit issues on the github repository
-
+- [Acknowledgements](#acknowledgements)
 
 # Installation
 
@@ -1632,7 +1645,13 @@ if not status:
     raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
 ```
 
-## License
+## Acknowledgements
+OpenVPCal was originally developed by Netflix in collaboration with ORCA Studios. The authors would like to extend their deepest gratitude to all the contributors and beta-testers who have made this project possible. Your dedication, insightful feedback, and innovative contributions have been invaluable.
+
+This project has also greatly benefited from the use of several open-source projects, and we are grateful to their respective communities for their ongoing support and development.
+
+Lastly, we appreciate the user community for your enthusiasm and engagement, which inspire continual improvement and innovation.
+Thank you all for your support and collaboration.
 
 ### Changelog
 
