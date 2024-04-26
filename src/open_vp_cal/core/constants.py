@@ -277,9 +277,10 @@ class ColourSpace:
     CS_ACES = "ACES2065-1"
     CS_BT2020 = "ITU-R BT.2020"
     CS_SRGB = "sRGB"
+    CS_P3 = "DCI-P3"
     CS_DEFAULT_TARGET = CS_BT2020
     CS_DEFAULT_REF = CS_ACES
-    CS_ALL = [CS_ACES, CS_BT2020, CS_SRGB]
+    CS_ALL = [CS_ACES, CS_BT2020, CS_SRGB, CS_P3]
 
 
 class CameraColourSpace:
