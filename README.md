@@ -1653,6 +1653,8 @@ This project has also greatly benefited from the use of several open-source proj
 Lastly, we appreciate the user community for your enthusiasm and engagement, which inspire continual improvement and innovation.
 Thank you all for your support and collaboration.
 
+[Contributors](https://github.com/Netflix-Skunkworks/OpenVPCal/graphs/contributors)
+
 ### Changelog
 
 
