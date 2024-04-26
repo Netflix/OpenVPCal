@@ -58,7 +58,6 @@ The full user guide for OpenVPCal can be found below or here as a pdf [UserGuide
   - [Validation](#validation)
   - [SPG Test patterns](#spg-test-patterns)
 - [Developer Guide](#developer-guide)
-- [License](#license)
 - [Changelog](#changelog)
 - [Acknowledgements](#acknowledgements)
 
