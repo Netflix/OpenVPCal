@@ -1,4 +1,18 @@
 """
+Copyright 2024 Netflix Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 The module is dedicated to the handling of accessing non python file resources from within the package.
 """
 import importlib.resources
@@ -62,6 +76,15 @@ class ResourceLoader:
         return cls._get_resource("OpenVpCal_Full_Logo.png")
 
     @classmethod
+    def open_vp_cal_logo_full_bw(cls) -> str:
+        """
+
+        Returns: The absolute path to the OpenVP Cal logo full bw
+
+        """
+        return cls._get_resource("OpenVpCAL_Full_logo_bw.png")
+
+    @classmethod
     def slate(cls) -> str:
         """
 
@@ -87,24 +110,6 @@ class ResourceLoader:
 
         """
         return cls._get_resource("Roboto-Bold.ttf")
-
-    @classmethod
-    def netflix_logo(cls) -> str:
-        """
-
-        Returns: The absolute path to the Netflix logo
-
-        """
-        return cls._get_resource("Netflix_Logo_RGB.png")
-
-    @classmethod
-    def orca_logo(cls) -> str:
-        """
-
-        Returns: The absolute path to the Orca logo
-
-        """
-        return cls._get_resource("Orca.png")
 
     @classmethod
     def icon(cls) -> str:
@@ -190,15 +195,6 @@ class ResourceLoader:
         if not os.path.exists(str(log_dir)):
             os.makedirs(log_dir)
         return log_dir
-
-    @classmethod
-    def logging(cls) -> str:
-        """
-
-        Returns: The logging resource
-
-        """
-        return cls._get_resource("logging.bin")
 
     @classmethod
     def spg_pattern_basic_config(cls) -> str:

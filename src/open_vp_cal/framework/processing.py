@@ -1,4 +1,18 @@
 """
+Copyright 2024 Netflix Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 Module which contains the Processing class, which is responsible for taking in the project settings and a sequence
 loader, and processing the analysis of the images and producing the resulting ocio configs
 """
@@ -393,18 +407,6 @@ class Processing:
         project_settings.to_json(
             os.path.join(project_settings.output_folder, DEFAULT_PROJECT_SETTINGS_NAME)
         )
-
-        data_dict = project_settings.to_dict()
-        for led_wall in walls:
-            processed_data = {
-                "samples": led_wall.processing_results.samples,
-                "reference_samples": led_wall.processing_results.reference_samples,
-            }
-            data_dict[f"{led_wall.name}_processed_data"] = processed_data
-
-        thread = threading.Thread(target=framework_utils.log_results, args=(data_dict,), daemon=True)
-        thread.start()
-        thread.join(timeout=5)
         return walls
 
     def auto_detect_roi(self, separation_results) -> Union[AutoROIResults, None]:

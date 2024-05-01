@@ -1,4 +1,18 @@
 """
+Copyright 2024 Netflix Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 Module which is responsible for the models, view and controllers which make up the project settings ui components
 """
 import json
@@ -71,6 +85,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         Refreshes the default data dictionary with the current default values from the LedWallSettings class
         """
         target_gamut_options = constants.ColourSpace.CS_ALL
+        target_gamut_options.pop(target_gamut_options.index(constants.ColourSpace.CS_ACES))
         target_gamut_options.extend(self.project_custom_primaries.keys())
         default_led_wall = LedWallSettings(self, constants.DEFAULT)
 
@@ -1090,6 +1105,18 @@ class ProjectSettingsController(QObject):
         if isinstance(widget, QLineEdit) and key in self.model.default_data:
             widget.setText(self.model.default_data[key][constants.DEFAULT])
 
+    def lock_target_max_nits(self, led_wall_name: str) -> None:
+        """ Locks the target max nits if we are not using PQ
+
+        Args:
+            led_wall_name: The name of the wall
+        """
+        led_wall = self.model.get_led_wall(led_wall_name)
+        enabled = True
+        if led_wall.target_eotf != constants.EOTF.EOTF_ST2084:
+            enabled = False
+        self.led_settings_view.target_max_lum_nits.setEnabled(enabled)
+
     def highlight_invalid_settings(self, led_wall_name: str) -> None:
         """ Highlights the invalid settings in the UI
 
@@ -1333,3 +1360,4 @@ class ProjectSettingsController(QObject):
         # If we select a sequence which has no sequence loaded we handle the disabling of params
         self.handle_plate_settings_if_no_sequence_loaded_or_verification_wall(self.model.current_wall.name)
         self.highlight_invalid_settings(self.model.current_wall.name)
+        self.lock_target_max_nits(self.model.current_wall.name)

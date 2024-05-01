@@ -1,4 +1,18 @@
 """
+Copyright 2024 Netflix Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 Module which contains the functionality to compile the python application into its platform-specific executable and
 installer
 """
@@ -353,7 +367,6 @@ def main() -> int:
         cmds.append("--add-data")
         cmds.append(add_data)
 
-
     manual_paths = get_additional_library_paths(vcpkg_folder)
     for manual_path in manual_paths:
         cmds.append("--add-data")
@@ -366,9 +379,12 @@ def main() -> int:
     # Wait for the process to finish and get the return code.
     return_code = process.wait()
     if platform.system() == 'Darwin':
-        certificate_name = "Developer ID Application: Adam Davis (2UP2ABAGD7)"
-        return_code = osx_sign_app_and_build_dmg(
-            app_name, certificate_name, version)
+        certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "")
+        if certificate_name:
+            return_code = osx_sign_app_and_build_dmg(
+                app_name, certificate_name, version)
+        else:
+            print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
         return_code = build_windows_installer(manual_paths, version)
