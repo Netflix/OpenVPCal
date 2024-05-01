@@ -3,10 +3,10 @@ name: Python CI/CD Workflow
 on:
   push:
     branches:
-      - main
+      - feature/ci
   pull_request:
     branches:
-      - main
+      - feature/ci
 
 jobs:
   build_windows:
