@@ -13,9 +13,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # Step 1: Check out the code from the repository
+      # Restore the .git directory from the cache
+      - name: Cache repository
+        uses: actions/cache@v3
+        with:
+          path: .git
+          key: ${{ runner.os }}-git-${{ hashFiles('.git/HEAD') }}
+          restore-keys:
+            - ${{ runner.os }}-git-
+
+      # Check out the repository with LFS support
       - name: Check out repository
         uses: actions/checkout@v3
+        with:
+          lfs: true  # Enable Git LFS support
 
       # Step 2: Set up Python environment
       - name: Set up Python 3.11
@@ -23,14 +34,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      # # Step 3: Install necessary C++ dependencies only if a flag file doesn't exist
-      # - name: Check for C++ dependencies
-      #   run: |
-      #     if not exist cxx_installed.txt (
-      #         echo Installing C++ dependencies...
-      #         choco install <package_name>  # Replace with specific commands for C++ packages
-      #         echo "C++ dependencies installed" > cxx_installed.txt
-      #     )
+      # Step 3: Install necessary C++ dependencies only if a flag file doesn't exist
+      - name: Check for C++ dependencies
+        run: |
+           if not exist cxx_installed.txt (
+               echo Installing C++ dependencies...
+               ./build_dev.bat
+           )
 
       # Step 4: Install Python dependencies
       - name: Install Python dependencies
