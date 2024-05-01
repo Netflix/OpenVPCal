@@ -14,7 +14,7 @@ docutils==0.20.1
 execnet==2.0.2
 flake8==6.1.0
 fonttools==4.46.0
-idna==3.6
+idna==3.7
 imageio==2.33.1
 imagesize==1.4.1
 importlib-resources==6.1.1
