@@ -1,0 +1,95 @@
+name: Python CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_windows:
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: Check out the code from the repository
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # # Step 3: Install necessary C++ dependencies only if a flag file doesn't exist
+      # - name: Check for C++ dependencies
+      #   run: |
+      #     if not exist cxx_installed.txt (
+      #         echo Installing C++ dependencies...
+      #         choco install <package_name>  # Replace with specific commands for C++ packages
+      #         echo "C++ dependencies installed" > cxx_installed.txt
+      #     )
+
+      # Step 4: Install Python dependencies
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 5: Run unit tests
+      - name: Run unit tests
+        run: |
+          pytest tests  # Adjust as needed
+
+      # Step 6: Create executable with PyInstaller
+  #     - name: Create executable with PyInstaller
+  #       run: |
+  #         pyinstaller --onefile your_script.py  # Replace with your script
+
+  #     # Step 7: Save executable as an artifact
+  #     - name: Upload executable
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: executable
+  #         path: dist/your_script.exe  # Adjust path as needed
+
+  # build_macos:
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # Step 1: Check out the code from the repository
+  #     - name: Check out repository
+  #       uses: actions/checkout@v3
+
+  #     # Step 2: Set up Python environment
+  #     - name: Set up Python 3.x
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.x'  # Replace '3.x' with your required version
+
+  #     # Step 3: Install necessary C++ dependencies
+  #     - name: Check for C++ dependencies
+  #       run: |
+  #         if [ ! -f cxx_installed.txt ]; then
+  #             echo Installing C++ dependencies...
+  #             brew install <package_name>  # Replace with specific commands
+  #             echo "C++ dependencies installed" > cxx_installed.txt
+  #         fi
+
+  #     # Step 4: Install Python dependencies
+  #     - name: Install Python dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements.txt
+
+  #     # Step 5: Run unit tests
+  #       name: Run unit tests
+  #       run: |
+  #         pytest tests  # Adjust as needed
+
+  #     # Step 6: Create an executable using PyInstaller
+  #     - name: Create executable with PyInstaller
+  #       run: |
+  #         pyins
