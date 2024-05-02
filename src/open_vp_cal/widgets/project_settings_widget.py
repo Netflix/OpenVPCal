@@ -84,7 +84,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         """
         Refreshes the default data dictionary with the current default values from the LedWallSettings class
         """
-        target_gamut_options = constants.ColourSpace.CS_ALL
+        target_gamut_options = constants.ColourSpace.CS_ALL.copy()
         target_gamut_options.pop(target_gamut_options.index(constants.ColourSpace.CS_ACES))
         target_gamut_options.extend(self.project_custom_primaries.keys())
         default_led_wall = LedWallSettings(self, constants.DEFAULT)
