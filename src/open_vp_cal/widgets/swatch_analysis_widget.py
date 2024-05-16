@@ -227,7 +227,7 @@ class SwatchViewer(QWidget):
         preview_calibration = self.preview_calibration_checkbox.isChecked()
         for led_wall in self.led_walls:
             if (not led_wall.auto_wb_source and not led_wall.match_reference_wall
-                    and not led_wall.use_external_white_point):
+                    and not led_wall.use_white_point_offset):
                 apply_white_balance_checked = False
             else:
                 apply_white_balance_checked = self.apply_white_balance_checkbox.isChecked()

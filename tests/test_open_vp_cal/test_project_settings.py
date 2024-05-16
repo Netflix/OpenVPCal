@@ -87,8 +87,8 @@ class TestProjectSettings(TestBase):
                             constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_CAT02,
                             constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: False,
                             constants.LedWallSettingsKeys.REFERENCE_WALL: "",
-                            constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT: False,
-                            constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE: "",
+                            constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET: False,
+                            constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE: "",
                             constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
                             constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
                             constants.LedWallSettingsKeys.AVOID_CLIPPING: True

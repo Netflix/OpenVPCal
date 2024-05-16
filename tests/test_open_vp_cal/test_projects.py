@@ -225,8 +225,8 @@ class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
     def setUp(self):
         super().setUp()
         for led_wall in self.project_settings.led_walls:
-            if led_wall.external_white_point_file:
-                led_wall.external_white_point_file = os.path.join(
+            if led_wall.white_point_offset_source:
+                led_wall.white_point_offset_source = os.path.join(
                     self.get_sample_plates(), "A104_C003_11080B_001.R3D", "A104_C003_11080B_001.01397369.exr")
 
     def test_project5(self):
@@ -253,8 +253,8 @@ class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlat
     def setUp(self):
         super().setUp()
         for led_wall in self.project_settings.led_walls:
-            if led_wall.external_white_point_file:
-                led_wall.external_white_point_file = os.path.join(
+            if led_wall.white_point_offset_source:
+                led_wall.white_point_offset_source = os.path.join(
                     self.get_sample_plates(), "A104_C003_11080B_001.R3D", "A104_C003_11080B_001.01397369.exr")
 
     def test_project6(self):
