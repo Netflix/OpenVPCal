@@ -51,8 +51,8 @@ class TestLedWallSettings(TestBase):
             constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.RED_WIDE_GAMUT,
             constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: False,
             constants.LedWallSettingsKeys.REFERENCE_WALL: "",
-            constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT: False,
-            constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE: "",
+            constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET: False,
+            constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE: "",
             constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
             constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
             constants.LedWallSettingsKeys.AVOID_CLIPPING: True
@@ -157,12 +157,12 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(self.wall.match_reference_wall, True)
 
     def test_use_external_white_point(self):
-        self.wall.use_external_white_point = True
-        self.assertEqual(self.wall.use_external_white_point, True)
+        self.wall.use_white_point_offset = True
+        self.assertEqual(self.wall.use_white_point_offset, True)
 
     def test_external_white_point_file(self):
-        self.wall.external_white_point_file = "new_file.exr"
-        self.assertEqual(self.wall.external_white_point_file, "new_file.exr")
+        self.wall.white_point_offset_source = "new_file.exr"
+        self.assertEqual(self.wall.white_point_offset_source, "new_file.exr")
 
 
     def test_reference_wall(self):
@@ -223,8 +223,8 @@ class TestLedWallSettings(TestBase):
             "target_max_lum_nits",
             "target_to_screen_cat",
             "match_reference_wall",
-            "use_external_white_point",
-            "external_white_point_file"]
+            "use_white_point_offset",
+            "white_point_offset_source"]
 
         # We test all the other linked params with false data
         for count, linked_prop in enumerate(other_linked_properties):
@@ -263,11 +263,11 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(new_wall.match_reference_wall, False)
 
     def test_reset_defaults(self):
-        self.wall.use_external_white_point = True
-        self.assertEqual(self.wall.use_external_white_point, True)
+        self.wall.use_white_point_offset = True
+        self.assertEqual(self.wall.use_white_point_offset, True)
 
         self.wall.reset_defaults()
-        self.assertEqual(self.wall.use_external_white_point, False)
+        self.assertEqual(self.wall.use_white_point_offset, False)
 
         self.assertEqual(self.wall._default_led_settings, self.wall._led_settings)
 

@@ -139,12 +139,12 @@ class OpenVPCalBase:
                 self.error_message(message)
                 return False
 
-            if led_wall.use_external_white_point:
-                if not led_wall.external_white_point_file:
+            if led_wall.use_white_point_offset:
+                if not led_wall.white_point_offset_source:
                     self.error_message(f"External White Point Enabled But File Not Set {led_wall.name}")
                     return False
 
-                if not os.path.exists(led_wall.external_white_point_file):
+                if not os.path.exists(led_wall.white_point_offset_source):
                     self.error_message(f"External White Point File Set Does Not Exist {led_wall.name}")
                     return False
 
