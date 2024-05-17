@@ -162,8 +162,8 @@ class Processing:
         target_cs, target_to_screen_cat, native_camera_cs = self._analysis_prep()
 
         reference_wall_external_white_balance_matrix = None
-        if self.led_wall.match_reference_wall and self.led_wall.use_external_white_point:
-            raise ValueError("Cannot use external white point and a reference wall")
+        if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
+            raise ValueError("Cannot use white point offset and a reference wall")
 
         if self.led_wall.match_reference_wall:
             if self.led_wall.reference_wall_as_wall:
@@ -174,9 +174,9 @@ class Processing:
                     Results.WHITE_BALANCE_MATRIX]
 
         decoupled_lens_white_samples = None
-        if self.led_wall.use_external_white_point:
+        if self.led_wall.use_white_point_offset:
             decoupled_lens_white_samples = imaging_utils.get_decoupled_white_samples_from_file(
-                self.led_wall.external_white_point_file)
+                self.led_wall.white_point_offset_source)
 
         default_wall = LedWallSettings("default")
 
@@ -227,8 +227,8 @@ class Processing:
         target_cs, target_to_screen_cat, native_camera_cs = self._analysis_prep()
 
         reference_wall_external_white_balance_matrix = None
-        if self.led_wall.match_reference_wall and self.led_wall.use_external_white_point:
-            raise ValueError("Cannot use external white point and a reference wall")
+        if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
+            raise ValueError("Cannot use white point offset and a reference wall")
 
         if self.led_wall.match_reference_wall:
             if self.led_wall.reference_wall_as_wall:
@@ -239,9 +239,9 @@ class Processing:
                     Results.WHITE_BALANCE_MATRIX]
 
         decoupled_lens_white_samples = None
-        if self.led_wall.use_external_white_point:
+        if self.led_wall.use_white_point_offset:
             decoupled_lens_white_samples = imaging_utils.get_decoupled_white_samples_from_file(
-                self.led_wall.external_white_point_file)
+                self.led_wall.white_point_offset_source)
 
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,

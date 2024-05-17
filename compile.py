@@ -210,12 +210,13 @@ def check_python_is_64_bit() -> bool:
 
 
 def check_python_version() -> bool:
-    """ Checks the version of python we have installed is 3.11.6
+    """ Checks the version of python we have installed is 3.11
 
-    Returns: True if python is 3.11.6, False if not
+    Returns: True if python is 3.11, False if not
 
     """
-    return '3.11.6' == platform.python_version()
+    major_minor_version = '.'.join(platform.python_version().split('.')[:2])
+    return '3.11' == major_minor_version
 
 
 def is_git_installed() -> bool:
@@ -555,7 +556,7 @@ def check_dependencies() -> None:
     if not check_python_is_64_bit():
         raise RuntimeError("Python must be 64 bit")
     if not check_python_version():
-        raise RuntimeError("Python must be 3.11.6")
+        raise RuntimeError("Python must be 3.11")
     if not is_git_installed():
         raise RuntimeError("Git must be installed")
     if not is_pkgconfig_installed():

@@ -84,7 +84,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         """
         Refreshes the default data dictionary with the current default values from the LedWallSettings class
         """
-        target_gamut_options = constants.ColourSpace.CS_ALL
+        target_gamut_options = constants.ColourSpace.CS_ALL.copy()
         target_gamut_options.pop(target_gamut_options.index(constants.ColourSpace.CS_ACES))
         target_gamut_options.extend(self.project_custom_primaries.keys())
         default_led_wall = LedWallSettings(self, constants.DEFAULT)
@@ -692,9 +692,9 @@ class PlateSettingsView(LockableWidget):
         self.match_reference_wall = QCheckBox()
         self.reference_wall = QComboBox()
         self.auto_wb_source = QCheckBox()
-        self.external_white_point_file_button = None
-        self.use_external_white_point = QCheckBox()
-        self.external_white_point_file = QLineEdit()
+        self.white_point_offset_source_button = None
+        self.use_white_point_offset = QCheckBox()
+        self.white_point_offset_source = QLineEdit()
         self.init_ui()
 
     def init_ui(self):
@@ -722,17 +722,17 @@ class PlateSettingsView(LockableWidget):
         reference_settings_group.setLayout(reference_settings_layout)
         main_layout.addWidget(reference_settings_group)
 
-        self.external_white_point_file_button = QPushButton("Browse")
-        external_white_point_file_layout = QHBoxLayout()
-        external_white_point_file_layout.addWidget(self.external_white_point_file)
-        external_white_point_file_layout.addWidget(self.external_white_point_file_button)
+        self.white_point_offset_source_button = QPushButton("Browse")
+        white_point_offset_source_layout = QHBoxLayout()
+        white_point_offset_source_layout.addWidget(self.white_point_offset_source)
+        white_point_offset_source_layout.addWidget(self.white_point_offset_source_button)
 
-        external_white_point_group = QGroupBox("External White Point")
-        external_white_point_layout = QFormLayout()
-        external_white_point_layout.addRow(QLabel("Use External White Point:"), self.use_external_white_point)
-        external_white_point_layout.addRow("External White Point File:", external_white_point_file_layout)
-        external_white_point_group.setLayout(external_white_point_layout)
-        main_layout.addWidget(external_white_point_group)
+        white_point_offset_group = QGroupBox("White Point Offset")
+        white_point_layout = QFormLayout()
+        white_point_layout.addRow(QLabel("Use White Point Offset:"), self.use_white_point_offset)
+        white_point_layout.addRow("White Point Offset Source:", white_point_offset_source_layout)
+        white_point_offset_group.setLayout(white_point_layout)
+        main_layout.addWidget(white_point_offset_group)
 
         # Add the main widget to the scroll area
         scroll.setWidget(main_widget)
@@ -940,9 +940,9 @@ class ProjectSettingsController(QObject):
         self.model = model
         self.reference_wall_widget = self.plate_settings_view.reference_wall
         self.match_reference_wall_widget = self.plate_settings_view.match_reference_wall
-        self.use_external_white_point_widget = self.plate_settings_view.use_external_white_point
-        self.external_white_point_file_widget = self.plate_settings_view.external_white_point_file
-        self.external_white_point_file_button_widget = self.plate_settings_view.external_white_point_file_button
+        self.use_white_point_offset_widget = self.plate_settings_view.use_white_point_offset
+        self.white_point_offset_source_widget = self.plate_settings_view.white_point_offset_source
+        self.white_point_offset_source_button_widget = self.plate_settings_view.white_point_offset_source_button
 
         self.reference_wall_widget.setEnabled(
             self.match_reference_wall_widget.checkState() == Qt.Checked
@@ -1012,14 +1012,14 @@ class ProjectSettingsController(QObject):
         self.plate_settings_view.reference_wall.currentIndexChanged.connect(
             lambda: self.model.set_data(
                 constants.LedWallSettingsKeys.REFERENCE_WALL, self.plate_settings_view.reference_wall.currentText()))
-        self.plate_settings_view.use_external_white_point.stateChanged.connect(
+        self.plate_settings_view.use_white_point_offset.stateChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT,
-                self.plate_settings_view.use_external_white_point.isChecked()))
-        self.plate_settings_view.external_white_point_file.textChanged.connect(
+                constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET,
+                self.plate_settings_view.use_white_point_offset.isChecked()))
+        self.plate_settings_view.white_point_offset_source.textChanged.connect(
             lambda: self.model.set_data(
-                constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE,
-                self.plate_settings_view.external_white_point_file.text()))
+                constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE,
+                self.plate_settings_view.white_point_offset_source.text()))
         self.led_analysis_settings_view.target_to_screen_cat.currentIndexChanged.connect(
             lambda: self.model.set_data(constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT,
                                         self.led_analysis_settings_view.target_to_screen_cat.currentText()))
@@ -1048,8 +1048,8 @@ class ProjectSettingsController(QObject):
         self.led_settings_view.gamut_dialog_button.clicked.connect(self.open_custom_gamut_dialog)
         self.project_settings_view.output_folder_button.clicked.connect(self.open_folder_select_dialog)
         self.project_settings_view.custom_logo_button.clicked.connect(self.open_logo_select_dialog)
-        self.plate_settings_view.external_white_point_file_button.clicked.connect(
-            self.open_external_white_point_file_dialog)
+        self.plate_settings_view.white_point_offset_source_button.clicked.connect(
+            self.open_white_point_source_dialog)
 
         self.match_reference_wall_widget.stateChanged.connect(self.on_match_reference_wall_changed)
         self.model.led_wall_removed.connect(self.on_led_wall_removed)
@@ -1130,10 +1130,10 @@ class ProjectSettingsController(QObject):
 
         self.plate_settings_view.auto_wb_source.setStyleSheet(style_sheet if led_wall.auto_wb_source else "")
         self.match_reference_wall_widget.setStyleSheet(style_sheet if led_wall.match_reference_wall else "")
-        self.use_external_white_point_widget.setStyleSheet(style_sheet if led_wall.use_external_white_point else "")
-        self.external_white_point_file_widget.setStyleSheet(style_sheet if led_wall.use_external_white_point else "")
-        self.external_white_point_file_button_widget.setStyleSheet(
-            style_sheet if led_wall.use_external_white_point else "")
+        self.use_white_point_offset_widget.setStyleSheet(style_sheet if led_wall.use_white_point_offset else "")
+        self.white_point_offset_source_widget.setStyleSheet(style_sheet if led_wall.use_white_point_offset else "")
+        self.white_point_offset_source_button_widget.setStyleSheet(
+            style_sheet if led_wall.use_white_point_offset else "")
 
         if led_wall.match_reference_wall and not led_wall.reference_wall:
             self.reference_wall_widget.setStyleSheet(error_style_sheet)
@@ -1151,7 +1151,7 @@ class ProjectSettingsController(QObject):
             return
         self.model.set_data(constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH, filename)
 
-    def open_external_white_point_file_dialog(self)-> None:
+    def open_white_point_source_dialog(self)-> None:
         """ Opens a file dialogue to select an image to use as a reference to an external white point analysis,
         and sets the path in the model
         """
@@ -1161,8 +1161,8 @@ class ProjectSettingsController(QObject):
         )
         if not filename:
             return
-        self.model.set_data(constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT, True)
-        self.model.set_data(constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE, filename)
+        self.model.set_data(constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET, True)
+        self.model.set_data(constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE, filename)
 
     def open_folder_select_dialog(self) -> None:
         """

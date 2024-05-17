@@ -57,8 +57,8 @@
                 "target_to_screen_cat": "CAT02",
                 "match_reference_wall": false,
                 "reference_wall": "",
-                "use_external_white_point": false,
-                "external_white_point_file": "",
+                "use_white_point_offset": false,
+                "white_point_offset_source": "",
                 "is_verification_wall": false,
                 "verification_wall": "",
                 "avoid_clipping": true
