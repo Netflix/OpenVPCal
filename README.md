@@ -24,8 +24,7 @@ For more enquires please contact
 
 [openvpcal@netflix.com](mailto:openvpcal@netflix.com)
 
-The full user guide for OpenVPCal can be found below or here as a pdf [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
-
+The full user guide for OpenVPCal can be found below. 
 ## Quick Start - Tutorial Video
 A quick start tutorial video can be found below
 
