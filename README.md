@@ -26,6 +26,11 @@ For more enquires please contact
 
 The full user guide for OpenVPCal can be found below or here as a pdf [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
 
+## Quick Start - Tutorial Video
+A quick start tutorial video can be found below
+
+[![Tutorial Video - Quick Start](https://img.youtube.com/vi/ORrTdUGl0JI/0.jpg)](https://www.youtube.com/watch?v=ORrTdUGl0JI)
+
 # Table of Contents
 
 - [OpenVPCal](#openvpcal)
@@ -565,19 +570,19 @@ Right clicking offers a context menu which resets the ROI should you make a mist
    </td>
   </tr>
   <tr>
-   <td colspan="2" ><strong><code>USE EXTERNAL WHITE POINT</code></strong>
+   <td colspan="2" ><strong><code>USE WHITE POINT OFFSET</code></strong>
    </td>
   </tr>
   <tr>
-   <td><code>USE EXTERNAL WHITE POINT</code>
+   <td><code>USE WHITE POINT OFFSET</code>
    </td>
-   <td>If checked, the plate original white point will be converted to the external white point prior to perform the analysis and the calibration 
+   <td>If checked, the plate original white point will be shofted towards the measured white point of the indicated file, prior to perform the analysis and the calibration 
    </td>
   </tr>
   <tr>
-   <td><code>EXTERNAL WHITE POINT FILE</code>
+   <td><code>WHITE POINT OFFSET SOURCE FILE</code>
    </td>
-   <td>A path to a file with the external white point
+   <td>A path to a file with the white point offset source
    </td>
   </tr>
 </table>
@@ -962,7 +967,7 @@ The widget offers a series of tools:
   <tr>
    <td><code>Apply White Balance Preview</code>
    </td>
-   <td>Applies a preview of the Auto-WB and or External White Balance, if present
+   <td>Applies a preview of the Auto-WB and or White Balance Offset, if present
    </td>
   </tr>
   <tr>
@@ -1372,17 +1377,17 @@ In this use case, we ask to perform an auto white-balance in the camera on the f
 
 ##### MATCH WALL CALIBRATION: Shiting the calibration to make multiple walls match
 
-When your stage has multiple LED wall types (brands/models) and you want to match them in camera, this workflow allows you to select a “reference wall” that is used as main target for the calibration. By enabling “Match Reference Wall” and selecting from the dropdown menu one of the other walls from the Stage View Bin, OpenVpCal will make sure that the wall you are calibrating will match the Reference one when keeping the camera at the same white balance. The Reference wall can follow any of the other workflows (Simple, Auto-WB and External White), and these shifts will be handed along to the matching wall(s). 
+When your stage has multiple LED wall types (brands/models) and you want to match them in camera, this workflow allows you to select a “reference wall” that is used as main target for the calibration. By enabling “Match Reference Wall” and selecting from the dropdown menu one of the other walls from the Stage View Bin, OpenVpCal will make sure that the wall you are calibrating will match the Reference one when keeping the camera at the same white balance. The Reference wall can follow any of the other workflows (Simple, Auto-WB and White Point offset), and these shifts will be handed along to the matching wall(s). 
 
 <img src="docs/source/images/image7.png" alt="image_tooltip" width="60%" height="50%">
 
 
 
-##### EXTERNAL WHITE BALANCE CALIBRATION: Decoupling lenses or shifting to external white points
+##### WHITE POINT OFFSET CALIBRATION: Decoupling lenses or shifting to external white points
 
 Like the auto-wb option, this option allows to correct the plate prior to be passed to the analysis. 
 
-However, in this case the calibration plate is white balanced towards an external white point, instead of the target white point. There are different use cases for this workflow, but it has mostly been designed to decouple the effect of the lens used to shoot the calibration plate. When enabeling this option, OpenVpCal requires the user to select a frame from which it will calculate the white balance matrix to apply to the calibration patches. When aiming to decouple the effect of the lens, we perform the workflow in these simple steps:
+However, in this case the calibration plate is white balanced towards a different white point, instead of the target white point. There are different use cases for this workflow, but it has mostly been designed to decouple the effect of the lens or filters used to shoot the calibration plate. When enabeling this option, OpenVpCal requires the user to select a frame from which it will calculate the white balance matrix to apply to the calibration patches. When aiming to decouple the effect of the lens, we perform the workflow in these simple steps:
 
 
 
@@ -1390,12 +1395,12 @@ However, in this case the calibration plate is white balanced towards an externa
 2. Remove the lens from the camera, don’t change anything else;
 3. The incoming light from the LED wall to the sensor will be bright without a lens, so change the shutter speed and/or fps of the camera to make sure that the blurred image doesn’t clip. Ideally it should be exposed correctly (using the false color of the camera, should get to the 18% level). 
 4. Shoot just a second (a single frame is necessary) of the first patch of the calibration sequence only. You don’t need to run the entire sequence. 
-5. Use one frame of the clip shot without a lens as External White Point File
+5. Use one frame of the clip shot without a lens as White Point Offset Source File
 
 <table>
   <tr>
    <td colspan="2" >
-<strong><code>EXTERNAL WHITE BALANCE CALIBRATION CALIBRATION</code></strong>
+<strong><code>WHITE BALANCE OFFSET CALIBRATION CALIBRATION</code></strong>
    </td>
   </tr>
   <tr>
@@ -1422,7 +1427,7 @@ However, in this case the calibration plate is white balanced towards an externa
 <img src="docs/source/images/image18.png" alt="image_tooltip" width="60%" height="50%">
 
 
-Once applied, the gray patches on the right hand of the viewer will show the before and after the external white point shift calibration. 
+Once applied, the gray patches on the right hand of the viewer will show the before and after the white point offset calibration. 
 
 
 #### EXPORT CALIBRATION
