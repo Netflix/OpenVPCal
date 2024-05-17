@@ -26,6 +26,11 @@ For more enquires please contact
 
 The full user guide for OpenVPCal can be found below or here as a pdf [UserGuide](https://github.com/Netflix-Skunkworks/OpenVPCal/blob/main/User_Guide_OpenVPCal.pdf).
 
+## Quick Start - Tutorial Video
+A quick start tutorial video can be found below
+
+[![Tutorial Video - Quick Start](https://img.youtube.com/vi/ORrTdUGl0JI/0.jpg)](https://www.youtube.com/watch?v=ORrTdUGl0JI)
+
 # Table of Contents
 
 - [OpenVPCal](#openvpcal)
