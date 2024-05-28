@@ -43,7 +43,8 @@ except ImportError:
         """
 
         def __getattr__(self, name):
-            raise MissingModuleError(f"'OpenImageIO' module is missing. Can't access '{name}'.")
+            raise MissingModuleError(
+                f"'OpenImageIO' module is missing. Can't access '{name}'.")
 
 
     Oiio = MockModule()
@@ -52,7 +53,8 @@ import colour
 from colour.models import RGB_COLOURSPACE_ACES2065_1
 import numpy as np
 
-from open_vp_cal.core.constants import OIIO_COMPRESSION_ATTRIBUTE, OIIO_COMPRESSION_NONE, OIIO_BITS_PER_SAMPLE
+from open_vp_cal.core.constants import OIIO_COMPRESSION_ATTRIBUTE, \
+    OIIO_COMPRESSION_NONE, OIIO_BITS_PER_SAMPLE
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.core import utils
 
@@ -93,7 +95,9 @@ def img_buf_from_numpy_array(np_array: np.array) -> Oiio.ImageBuf:
     Returns: The Oiio.ImgBuf
 
     """
-    image_buf = Oiio.ImageBuf(Oiio.ImageSpec(np_array.shape[1], np_array.shape[0], np_array.shape[2], Oiio.FLOAT))
+    image_buf = Oiio.ImageBuf(
+        Oiio.ImageSpec(np_array.shape[1], np_array.shape[0], np_array.shape[2],
+                       Oiio.FLOAT))
 
     # Set the pixels of the ImageBuf using the numpy array
     image_buf.set_pixels(Oiio.ROI(0, np_array.shape[1], 0, np_array.shape[0]), np_array)
@@ -177,7 +181,8 @@ def get_oiio_bit_depth(value: Union[int, str]) -> Oiio.BASETYPE:
         "float": Oiio.FLOAT
     }
     if value not in bit_depth_map:
-        raise KeyError("Unsupported Bit Depth - Must Be " + ",".join([str(k) for k in bit_depth_map]))
+        raise KeyError("Unsupported Bit Depth - Must Be " + ",".join(
+            [str(k) for k in bit_depth_map]))
 
     return bit_depth_map[value]
 
@@ -239,7 +244,8 @@ def stitch_images_horizontally(img_buffers):
 
     # Create an output image buffer with the total width and maximum height
     output = Oiio.ImageBuf(
-        Oiio.ImageSpec(total_width, max_height, img_buffers[0].nchannels, img_buffers[0].spec().format)
+        Oiio.ImageSpec(total_width, max_height, img_buffers[0].nchannels,
+                       img_buffers[0].spec().format)
     )
 
     # Initialize x_offset to 0
@@ -274,7 +280,8 @@ def apply_color_conversion(
         color_config = ResourceLoader.ocio_config_path()
 
     image = image_buf_to_np_array(image_buffer)
-    apply_color_converstion_to_np_array(image, from_transform, to_transform, color_config)
+    apply_color_converstion_to_np_array(image, from_transform, to_transform,
+                                        color_config)
     converted_buffer = img_buf_from_numpy_array(image)
     return converted_buffer
 
@@ -361,13 +368,15 @@ def apply_display_conversion_to_np_array(
         color_config = ResourceLoader.ocio_config_path()
 
     config = ocio.Config().CreateFromFile(color_config)
-    processor = config.getProcessor(ocio.ROLE_SCENE_LINEAR, display, view, ocio.TRANSFORM_DIR_FORWARD)
+    processor = config.getProcessor(ocio.ROLE_SCENE_LINEAR, display, view,
+                                    ocio.TRANSFORM_DIR_FORWARD)
     cpu = processor.getDefaultCPUProcessor()
     cpu.applyRGB(image)
 
 
 def nest_analysis_swatches(
-        source_img: Oiio.ImageBuf, target_img: Oiio.ImageBuf, patch_size: tuple[int, int] = (200, 200),
+        source_img: Oiio.ImageBuf, target_img: Oiio.ImageBuf,
+        patch_size: tuple[int, int] = (200, 200),
         central_roi_size: tuple[int, int] = (100, 100)) -> Oiio.ImageBuf:
     """
     The function takes a source image and a target image. For each patch of size patch_size in the source image,
@@ -386,14 +395,17 @@ def nest_analysis_swatches(
 
     """
     # Calculate the central offsets for the region of interest
-    central_roi_offset = ((patch_size[0] - central_roi_size[0]) // 2, (patch_size[1] - central_roi_size[1]) // 2)
+    central_roi_offset = ((patch_size[0] - central_roi_size[0]) // 2,
+                          (patch_size[1] - central_roi_size[1]) // 2)
 
     # Iterate over the patches in the source image
     for i in range(0, source_img.spec().width, patch_size[0]):
         for j in range(0, source_img.spec().height, patch_size[1]):
             # Define the region of interest in the source image
-            src_roi = Oiio.ROI(i + central_roi_offset[0], i + central_roi_offset[0] + central_roi_size[0],
-                               j + central_roi_offset[1], j + central_roi_offset[1] + central_roi_size[1])
+            src_roi = Oiio.ROI(i + central_roi_offset[0],
+                               i + central_roi_offset[0] + central_roi_size[0],
+                               j + central_roi_offset[1],
+                               j + central_roi_offset[1] + central_roi_size[1])
 
             # Read the central region from the source image
             src_patch = source_img.get_pixels(roi=src_roi)
@@ -453,7 +465,8 @@ def generate_image_cie(scale: int, file_path: str) -> bool:
     return True
 
 
-def insert_resized_image(image_a: Oiio.ImageBuf, image_b: Oiio.ImageBuf, resize_percent) -> Oiio.ImageBuf:
+def insert_resized_image(image_a: Oiio.ImageBuf, image_b: Oiio.ImageBuf,
+                         resize_percent) -> Oiio.ImageBuf:
     """
     Resize imageA by the given percentage and insert it into the center of imageB.
 
@@ -472,7 +485,8 @@ def insert_resized_image(image_a: Oiio.ImageBuf, image_b: Oiio.ImageBuf, resize_
     new_width = int(image_a.spec().width - width_reduction)
     new_height = int(image_a.spec().height - height_reduction)
     resized_image_a = Oiio.ImageBuf()
-    res = Oiio.ImageBufAlgo.resize(resized_image_a, image_a, "", 0, Oiio.ROI(0, new_width, 0, new_height))
+    res = Oiio.ImageBufAlgo.resize(resized_image_a, image_a, "", 0,
+                                   Oiio.ROI(0, new_width, 0, new_height))
     if not res:
         raise ValueError("Failed to resize image buffer")
 
@@ -542,7 +556,8 @@ def get_scaled_cie_spectrum_bg_image(max_scale: int) -> Oiio.ImageBuf:
     return image_buf
 
 
-def load_image_buffer_to_qimage(buffer: Oiio.ImageBuf, project_settings: "ProjectSettings") -> QImage:
+def load_image_buffer_to_qimage(buffer: Oiio.ImageBuf,
+                                project_settings: "ProjectSettings") -> QImage:
     """ Load an image buffer into a QImage
 
     Args:
@@ -566,7 +581,8 @@ def load_image_buffer_to_qimage(buffer: Oiio.ImageBuf, project_settings: "Projec
     return image
 
 
-def load_image_buffer_to_qpixmap(buffer: Oiio.ImageBuf, project_settings: "ProjectSettings") -> QPixmap:
+def load_image_buffer_to_qpixmap(buffer: Oiio.ImageBuf,
+                                 project_settings: "ProjectSettings") -> QPixmap:
     """ Load an Oiio.ImageBuf into a QPixmap so we can display it
 
     Args:
@@ -648,7 +664,8 @@ def create_and_stitch_analysis_strips(
     return sample_buffers_stitched, reference_buffers_stitched
 
 
-def add_text_to_image_buffer(text: str, img_buffer: Oiio.ImageBuf, text_color: List, text_size: int) -> None:
+def add_text_to_image_buffer(text: str, img_buffer: Oiio.ImageBuf, text_color: List,
+                             text_size: int) -> None:
     """ Adds text to the given image buffer
 
     Args:
@@ -721,7 +738,8 @@ def sample_image(img_buf: Oiio.ImageBuf) -> List:
     return result
 
 
-def get_average_value_above_average(img_buf: Oiio.ImageBuf) -> Tuple[List[float], Oiio.ImageBuf]:
+def get_average_value_above_average(img_buf: Oiio.ImageBuf) -> Tuple[
+    List[float], Oiio.ImageBuf]:
     """ Eliminates any pixels which are below the average pixel value of the whole image, ie often black or very dark
         pixels, this leaves us the pixels from the whole image which are often not black, in this case the patch
         sections.
@@ -749,7 +767,8 @@ def get_average_value_above_average(img_buf: Oiio.ImageBuf) -> Tuple[List[float]
 
     # Create a copy of the original image for mask output
     img_to_write_out_with_mask = np.copy(img_array)
-    img_to_write_out_with_mask[below_average_mask] = [1, 0, 0]  # Set below average pixels to red
+    img_to_write_out_with_mask[below_average_mask] = [1, 0,
+                                                      0]  # Set below average pixels to red
 
     # Create another copy for average calculation
     img_avg_copy = np.copy(img_array)
@@ -847,7 +866,8 @@ def compute_clipped_mean(image: np.array, channel_idx: int, sigma: int = 3):
     upper_bound = mean_val + sigma * std_dev
 
     # Clip the outliers
-    clipped_data = channel_data[(channel_data >= lower_bound) & (channel_data <= upper_bound)]
+    clipped_data = channel_data[
+        (channel_data >= lower_bound) & (channel_data <= upper_bound)]
 
     # Recompute the mean
     refined_mean = np.mean(clipped_data)
@@ -873,3 +893,23 @@ def get_decoupled_white_samples_from_file(external_white_point_file: str) -> Lis
 
     image_buffer = Oiio.ImageBuf(external_white_point_file)
     return sample_image(image_buffer)
+
+
+def calculate_distance(rgb1, rgb2) -> float:
+    """ Calculates Euclidean distance between two RGB values."""
+    return np.sqrt(np.sum((np.array(rgb2) - np.array(rgb1)) ** 2)) * 100
+
+
+def is_within_range(value: float, target: float, x: float) -> bool:
+    """
+    Check if the value is within x units of the target value.
+
+    Parameters:
+        value (float): The value to check.
+        target (float): The target value.
+        x (float): The range to check within.
+
+    Returns:
+        bool: True if value is within x units of target, False otherwise.
+    """
+    return abs(value - target) <= x
