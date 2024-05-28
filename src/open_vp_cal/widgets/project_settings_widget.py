@@ -500,8 +500,8 @@ class CustomGamutDialog(QDialog):
 
         layout = QFormLayout()
         self.grid_layout = QGridLayout()
-        self.grid_layout.addWidget(QLabel("X"), 0, 1)
-        self.grid_layout.addWidget(QLabel("Y"), 0, 2)
+        self.grid_layout.addWidget(QLabel("x"), 0, 1)
+        self.grid_layout.addWidget(QLabel("y"), 0, 2)
 
         # Add the line edit for the custom name at the top
         self.custom_name_edit = QLineEdit()
