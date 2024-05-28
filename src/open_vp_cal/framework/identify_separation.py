@@ -113,6 +113,11 @@ class IdentifySeparation:
         """
         return imaging_utils.detect_green(mean_color)
 
+    def calculate_distance(self, rgb1, rgb2):
+        import numpy as np
+        """Calculate Euclidean distance between two RGB values."""
+        return np.sqrt(np.sum((np.array(rgb2) - np.array(rgb1)) ** 2)) * 100
+
     def _find_first_red_and_green_frames(self) -> None:
         """
         Iterates over all frames in the sequence loader, computes the mean colour of each frame, and finds the first
@@ -120,22 +125,37 @@ class IdentifySeparation:
 
         The results are stored in the separation_results attribute.
         """
+        previous_mean_frame = None
         for frame in self.led_wall.sequence_loader:
             # Load the image from the frame
             image = frame.extract_roi(self.led_wall.roi)
 
             # Compute the average for all the values which are above the initial average
             mean_color, _ = imaging_utils.get_average_value_above_average(image)
+            distance = 0
+            if previous_mean_frame:
+                distance = self.calculate_distance(mean_color, previous_mean_frame)
 
-            # Check if the image is red
-            if self.check_red(mean_color):
+
+            print (frame.frame_num, distance)
+            previous_mean_frame = mean_color
+
+            # Check if the image is red or we detect a significant change in the mean
+            if self.check_red(mean_color) or distance > 1:
                 if self.separation_results.first_red_frame is None:
+                    print ("Setting Red")
+                    print(frame.frame_num, distance)
                     self.separation_results.first_red_frame = frame
+                    continue
 
-            # Check if the image is green
-            if self.check_green(mean_color):
+            # Check if the image is green or if we detect a significant change in the
+            # mean colour
+            if self.check_green(mean_color) or distance > 1:
                 if self.separation_results.first_green_frame is None:
+                    print("Setting Green")
+                    print(frame.frame_num, distance)
                     self.separation_results.first_green_frame = frame
+                    continue
 
             # If we've found both the first red and green frames, we can stop
             if self.separation_results.first_red_frame is not None \
