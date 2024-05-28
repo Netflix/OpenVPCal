@@ -18,6 +18,9 @@ is done through identifying the first red frame and first green frame in the ima
 """
 from typing import List
 
+import numpy as np
+from scipy.signal import find_peaks
+
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 
@@ -113,11 +116,6 @@ class IdentifySeparation:
         """
         return imaging_utils.detect_green(mean_color)
 
-    def calculate_distance(self, rgb1, rgb2):
-        import numpy as np
-        """Calculate Euclidean distance between two RGB values."""
-        return np.sqrt(np.sum((np.array(rgb2) - np.array(rgb1)) ** 2)) * 100
-
     def _find_first_red_and_green_frames(self) -> None:
         """
         Iterates over all frames in the sequence loader, computes the mean colour of each frame, and finds the first
@@ -125,6 +123,9 @@ class IdentifySeparation:
 
         The results are stored in the separation_results attribute.
         """
+        frame_numbers = []
+        distances = []
+
         previous_mean_frame = None
         for frame in self.led_wall.sequence_loader:
             # Load the image from the frame
@@ -134,30 +135,65 @@ class IdentifySeparation:
             mean_color, _ = imaging_utils.get_average_value_above_average(image)
             distance = 0
             if previous_mean_frame:
-                distance = self.calculate_distance(mean_color, previous_mean_frame)
+                distance = imaging_utils.calculate_distance(
+                    mean_color, previous_mean_frame)
 
-
-            print (frame.frame_num, distance)
+            # Store the frame number and distance
+            frame_numbers.append(frame.frame_num)
+            distances.append(distance)
             previous_mean_frame = mean_color
 
             # Check if the image is red or we detect a significant change in the mean
-            if self.check_red(mean_color) or distance > 1:
+            if self.check_red(mean_color):
                 if self.separation_results.first_red_frame is None:
-                    print ("Setting Red")
-                    print(frame.frame_num, distance)
                     self.separation_results.first_red_frame = frame
                     continue
 
             # Check if the image is green or if we detect a significant change in the
             # mean colour
-            if self.check_green(mean_color) or distance > 1:
+            if self.check_green(mean_color):
                 if self.separation_results.first_green_frame is None:
-                    print("Setting Green")
-                    print(frame.frame_num, distance)
                     self.separation_results.first_green_frame = frame
                     continue
 
-            # If we've found both the first red and green frames, we can stop
-            if self.separation_results.first_red_frame is not None \
-                    and self.separation_results.first_green_frame is not None:
-                break
+            distances_array = np.array(distances)
+            peaks, _ = find_peaks(distances_array, height=1)
+            if len(peaks) >= 4:
+
+                first_peak_frame_num = frame_numbers[peaks[0]]
+                first_peak_frame = self.led_wall.sequence_loader.get_frame(
+                    first_peak_frame_num
+                )
+                # If we didn't find a red frame, set the first red frame to the first
+                # peak
+                if self.separation_results.first_red_frame is None:
+                    self.separation_results.first_red_frame = first_peak_frame
+
+                # If the detected red frame is not within 3 frames of the first peak
+                # we detected the second red patch so we should use the first peak as
+                # the first red frame
+                if not imaging_utils.is_within_range(
+                        self.separation_results.first_red_frame.frame_num,
+                        first_peak_frame_num, 3):
+                    self.separation_results.first_red_frame = first_peak_frame
+
+                second_peak_frame_num = frame_numbers[peaks[1]]
+                second_peak_frame = self.led_wall.sequence_loader.get_frame(
+                    second_peak_frame_num
+                )
+                # If we didn't find a green frame, set the first green frame to the
+                # second peak
+                if self.separation_results.first_green_frame is None:
+                    self.separation_results.first_green_frame = second_peak_frame
+
+                # If the detected green frame is not within 3 frames of the second peak
+                # we detected the second green patch so we should use the first peak as
+                # the first red frame
+                if not imaging_utils.is_within_range(
+                        self.separation_results.first_green_frame.frame_num,
+                        second_peak_frame_num, 3):
+                    self.separation_results.first_green_frame = second_peak_frame
+
+                if (self.separation_results.first_red_frame is not None
+                        and self.separation_results.first_green_frame is not None):
+                    break
