@@ -500,6 +500,26 @@ def insert_resized_image(image_a: Oiio.ImageBuf, image_b: Oiio.ImageBuf,
     return image_b
 
 
+def resize_image(image: Oiio.ImageBuf, width: int, height: int) -> Oiio.ImageBuf:
+    """
+    Resize the image to the specified width and height.
+
+    Args:
+        image (oiio.ImageBuf): The image to be resized.
+        width (int): The width of the resized image.
+        height (int): The height of the resized image.
+
+    Returns:
+        oiio.ImageBuf: The resized image.
+    """
+    resized_image = Oiio.ImageBuf()
+    res = Oiio.ImageBufAlgo.resize(resized_image, image, "", 0, Oiio.ROI(
+        0, width, 0, height))
+    if not res:
+        raise ValueError("Failed to resize image buffer")
+    return resized_image
+
+
 def list_to_roi(roi: list) -> Oiio.ROI:
     """ Converts a list to an Oiio.ROI
 
