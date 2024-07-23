@@ -17,9 +17,10 @@ Module that contains classes who are responsible for sampling and analysing the 
 """
 import threading
 import numpy as np
-from colour_checker_detection.detection.segmentation import \
-    detect_colour_checkers_segmentation
+from colour_checker_detection.detection.segmentation import (
+    detect_colour_checkers_segmentation)
 
+from open_vp_cal.core.utils import find_factors_pairs
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.core.structures import SamplePatchResults
 from open_vp_cal.framework.identify_separation import SeparationResults
@@ -242,18 +243,47 @@ class MacBethSample(BaseSamplePatch):
         for frame_num in range(first_patch_frame + self.trim_frames,
                                (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
-            section = frame.extract_roi(self.led_wall.roi)
             sample_results.frames.append(frame)
-            section_np_array = imaging_utils.image_buf_to_np_array(section)
-            for colour_checker_swatches_data in detect_colour_checkers_segmentation(
-                    section_np_array, additional_data=True):
+
+            # Extract our region
+            section_orig = frame.extract_roi(self.led_wall.roi)
+
+            # Convert this to display for the detection and convert to numpy
+            section_display = imaging_utils.apply_color_conversion(
+                section_orig, str(self.led_wall.input_plate_gamut),
+                "sRGB - Display"
+            )
+            section_display_np_array = imaging_utils.image_buf_to_np_array(section_display)
+
+            # Run the detections
+            detections = detect_colour_checkers_segmentation(
+                section_display_np_array, additional_data=True)
+
+            for colour_checker_swatches_data in detections:
+                # Get the swatch colours
                 swatch_colours, _, _ = (
                     colour_checker_swatches_data.values)
 
+                # Reshape the number of swatches from a 24, 3 array to an x, y, 3 array
+                num_swatches = swatch_colours.shape[0]
+                factor_pairs = find_factors_pairs(num_swatches)
+                x, y = factor_pairs[0]
+                array_x_y_3 = swatch_colours.reshape(x, y, 3)
+
+                # Convert the colours back to the input plate gamut
+                imaging_utils.apply_color_converstion_to_np_array(
+                    array_x_y_3,
+                    "sRGB - Display",
+                    str(self.led_wall.input_plate_gamut))
+
+                # Reshape the array back to a 24, 3 array
+                swatch_colours = array_x_y_3.reshape(num_swatches, 3)
+
                 samples.append(swatch_colours)
 
-        # Compute the mean for each tuple index across all tuples, if the detection fails and we get nans, then we
-        # replace the nans with black patches as these are not used in the calibration directly
+        # Compute the mean for each tuple index across all tuples, if the
+        # detection fails, and we get nans, then we replace the nans with black patches
+        # as these are not used in the calibration directly
         averaged_tuple = np.mean(np.array(samples), axis=0)
         if not np.isnan(averaged_tuple).any():
             sample_results.samples = averaged_tuple.tolist()
