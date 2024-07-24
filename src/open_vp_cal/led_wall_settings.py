@@ -60,7 +60,7 @@ class LedWallSettings:
             constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE: "",
             constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
             constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
-            constants.LedWallSettingsKeys.AVOID_CLIPPING: True
+            constants.LedWallSettingsKeys.AVOID_CLIPPING: False
         }
 
         self._led_settings = copy.deepcopy(self._default_led_settings)
