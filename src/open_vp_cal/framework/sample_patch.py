@@ -248,12 +248,12 @@ class MacBethSample(BaseSamplePatch):
             # Extract our region
             section_orig = frame.extract_roi(self.led_wall.roi)
 
-            # Convert this to display for the detection and convert to numpy
-            section_display = imaging_utils.apply_color_conversion(
-                section_orig, str(self.led_wall.input_plate_gamut),
-                "sRGB - Display"
+            section_display_np_array = imaging_utils.image_buf_to_np_array(section_orig)
+            imaging_utils.apply_color_converstion_to_np_array(
+                section_display_np_array,
+                str(self.led_wall.input_plate_gamut),
+                "ACEScct",
             )
-            section_display_np_array = imaging_utils.image_buf_to_np_array(section_display)
 
             # Run the detections
             detections = detect_colour_checkers_segmentation(
@@ -261,8 +261,8 @@ class MacBethSample(BaseSamplePatch):
 
             for colour_checker_swatches_data in detections:
                 # Get the swatch colours
-                swatch_colours, _, _ = (
-                    colour_checker_swatches_data.values)
+                swatch_colours, _, _ = colour_checker_swatches_data.values
+                swatch_colours = np.array(swatch_colours, dtype=np.float32)
 
                 # Reshape the number of swatches from a 24, 3 array to an x, y, 3 array
                 num_swatches = swatch_colours.shape[0]
@@ -273,7 +273,7 @@ class MacBethSample(BaseSamplePatch):
                 # Convert the colours back to the input plate gamut
                 imaging_utils.apply_color_converstion_to_np_array(
                     array_x_y_3,
-                    "sRGB - Display",
+                    "ACEScct",
                     str(self.led_wall.input_plate_gamut))
 
                 # Reshape the array back to a 24, 3 array
