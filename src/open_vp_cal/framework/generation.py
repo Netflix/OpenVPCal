@@ -931,7 +931,7 @@ class PatchGeneration:
         """
         patch_roi = Oiio.ROI(start_x, start_x + patch_width, start_y, start_y + patch_height)
         inner_edge_roi = self.reduce_roi(patch_roi, 1)
-        inner_patch_roi = self.reduce_roi(inner_edge_roi, 0.25)
+        inner_patch_roi = self.reduce_roi(inner_edge_roi, 0.5)
         Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum), roi=patch_roi)
         Oiio.ImageBufAlgo.fill(patch, (0.0, 0.0, 0.0), roi=inner_edge_roi)
         Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum),
