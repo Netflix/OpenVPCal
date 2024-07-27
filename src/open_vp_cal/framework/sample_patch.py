@@ -82,6 +82,20 @@ class BaseSamplePatch:
             self.trim_frames = trim_frames
         return first_patch_frame, last_patch_frame
 
+    def get_white_balance_matrix_from_slate(self) -> np.ndarray:
+        """ Get the white balance matrix from the slate frame
+
+        Returns:
+            np.ndarray: The white balance matrix
+
+        """
+        slate_frame = self.led_wall.sequence_loader.get_frame(
+            self.led_wall.sequence_loader.start_frame
+        )
+        white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
+            slate_frame.image_buf)
+        return white_balance_matrix
+
 
 class SamplePatch(BaseSamplePatch):
     """
@@ -240,6 +254,7 @@ class MacBethSample(BaseSamplePatch):
         # We trim a number of frames off either side of the patch to ensure we remove multiplexing
         sample_results = SamplePatchResults()
         samples = []
+        white_balance_matrix = self.get_white_balance_matrix_from_slate()
         for frame_num in range(first_patch_frame + self.trim_frames,
                                (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
@@ -247,6 +262,12 @@ class MacBethSample(BaseSamplePatch):
 
             # Extract our region
             section_orig = frame.extract_roi(self.led_wall.roi)
+
+            # White balance the images so we increase the detection likelihood of
+            # success
+            section_orig = imaging_utils.apply_matrix_to_img_buf(
+                section_orig, white_balance_matrix
+            )
 
             section_display_np_array = imaging_utils.image_buf_to_np_array(section_orig)
             imaging_utils.apply_color_converstion_to_np_array(
@@ -276,9 +297,12 @@ class MacBethSample(BaseSamplePatch):
                     "ACEScct",
                     str(self.led_wall.input_plate_gamut))
 
+                # Inverse the white balance back to the original values
+                inv_wb_matrix = np.linalg.inv(white_balance_matrix)
+                array_x_y_3 = array_x_y_3 @ inv_wb_matrix
+
                 # Reshape the array back to a 24, 3 array
                 swatch_colours = array_x_y_3.reshape(num_swatches, 3)
-
                 samples.append(swatch_colours)
 
         # Compute the mean for each tuple index across all tuples, if the
