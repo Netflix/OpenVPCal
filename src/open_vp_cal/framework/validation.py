@@ -74,7 +74,7 @@ class Validation:
         if measured_18_percent < quarter_stop_down_18_percent or measured_18_percent > quarter_stop_up_18_percent:
             result.status = ValidationStatus.FAIL
             result.message = (
-                f"The Measured Exposure: {measured_18_percent}\n"
+                f"The Exposure of the 18% Patch is measured at {round(measured_18_percent, 1) * 100}%\n"
                 "It seems that you have not exposed the calibration patches correctly. "
                 "Please ensure to expose the first 18% patch correctly using the camera false colour or light meter."
             )
@@ -87,8 +87,7 @@ class Validation:
         else:
             result.status = ValidationStatus.WARNING
             result.message = (
-                f"The Measured Exposure: {measured_18_percent} is not ideal\n"
-                "It seems that you have not exposed the calibration patches correctly. "
+                f"The Exposure of the 18% Patch is measured at {round(measured_18_percent, 1) * 100}%, this is not ideal.\n"
                 "Please ensure to expose the first 18% patch correctly using the camera false colour or light meter."
             )
 
@@ -202,7 +201,7 @@ class Validation:
         if not is_between:
             result.status = ValidationStatus.FAIL
             result.message = (
-                f"When scaled the measured 18 percent patch is not within a reasonable range: {scaled_18_percent_nits}."
+                f"When scaled the measured 18 percent patch is not within a reasonable range: {round(scaled_18_percent_nits, 1)} nits."
                 " Please check that the wall settings match the actual peak luminance of your wall also check your "
                 "imaging chain from content engine to LED processor and re shoot the plates"
             )

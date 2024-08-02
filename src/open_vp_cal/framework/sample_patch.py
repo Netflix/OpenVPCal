@@ -17,8 +17,10 @@ Module that contains classes who are responsible for sampling and analysing the 
 """
 import threading
 import numpy as np
-from colour_checker_detection.detection.segmentation import detect_colour_checkers_segmentation
+from colour_checker_detection.detection.segmentation import (
+    detect_colour_checkers_segmentation)
 
+from open_vp_cal.core.utils import find_factors_pairs
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.core.structures import SamplePatchResults
 from open_vp_cal.framework.identify_separation import SeparationResults
@@ -41,6 +43,23 @@ class BaseSamplePatch:
         self.trim_frames = 1  # The num frames we trim from the start and end of the patch, so we avoid multiplexing
         self.required_sample_frames = 3
 
+    def get_num_patches_relative_to_red(self, red_patch_index) -> int:
+        """ Returns the number of patches relative to the red patch index, accounting
+        for if the patch occurs before or after the eotf ramp patches
+
+        Args:
+            red_patch_index (int): The index of the red patch.
+
+        Returns:
+            int: The number of patches relative to the red patch index.
+        """
+        eotf_ramp_index = constants.PATCHES.get_patch_index(
+            constants.PATCHES.EOTF_RAMPS)
+        patch_index = constants.PATCHES.get_patch_index(self.patch)
+        if patch_index > eotf_ramp_index:
+            return patch_index - red_patch_index + self.led_wall.num_grey_patches
+        return patch_index - red_patch_index
+
     def calculate_first_and_last_patch_frame(self) -> tuple[int, int]:
         """
         Calculate the first and last frame of the patch.
@@ -48,16 +67,34 @@ class BaseSamplePatch:
         Returns:
             tuple[int, int]: The first and last frame of the patch.
         """
-        patch_index = constants.PATCHES.get_patch_index(self.patch)
-        red_patch_index = constants.PATCHES.get_patch_index(constants.PATCHES.RED_PRIMARY_DESATURATED)
-        number_of_patches_relative_to_red = patch_index - red_patch_index
+        red_patch_index = constants.PATCHES.get_patch_index(
+            constants.PATCHES.RED_PRIMARY_DESATURATED)
+
+        number_of_patches_relative_to_red = self.get_num_patches_relative_to_red(
+            red_patch_index
+        )
         number_of_frames = number_of_patches_relative_to_red * self.separation_results.separation
         first_patch_frame = number_of_frames + self.separation_results.first_red_frame.frame_num
         last_patch_frame = first_patch_frame + (self.separation_results.separation - 1)
-        trim_frames = (last_patch_frame - first_patch_frame) // self.required_sample_frames
+        trim_frames = (
+                                  last_patch_frame - first_patch_frame) // self.required_sample_frames
         if trim_frames > self.trim_frames:
             self.trim_frames = trim_frames
         return first_patch_frame, last_patch_frame
+
+    def get_white_balance_matrix_from_slate(self) -> np.ndarray:
+        """ Get the white balance matrix from the slate frame
+
+        Returns:
+            np.ndarray: The white balance matrix
+
+        """
+        slate_frame = self.led_wall.sequence_loader.get_frame(
+            self.led_wall.sequence_loader.start_frame
+        )
+        white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
+            slate_frame.image_buf)
+        return white_balance_matrix
 
 
 class SamplePatch(BaseSamplePatch):
@@ -97,7 +134,8 @@ class SamplePatch(BaseSamplePatch):
             None
         """
         first_patch_frame, last_patch_frame = self.calculate_first_and_last_patch_frame()
-        self.analyse_patch_frames(0, self.sample_results, first_patch_frame, last_patch_frame)
+        self.analyse_patch_frames(0, self.sample_results, first_patch_frame,
+                                  last_patch_frame)
 
     def analyse_patch_frames(self, idx: int, results: list,
                              first_patch_frame: int, last_patch_frame: int) -> None:
@@ -115,14 +153,16 @@ class SamplePatch(BaseSamplePatch):
         # We trim a number of frames off either side of the patch to ensure we remove multiplexing
         sample_results = SamplePatchResults()
         samples = []
-        for frame_num in range(first_patch_frame + self.trim_frames, (last_patch_frame - self.trim_frames) + 1):
+        for frame_num in range(first_patch_frame + self.trim_frames,
+                               (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
             section = frame.extract_roi(self.led_wall.roi)
             mean_color = imaging_utils.sample_image(section)
 
             samples.append(mean_color)
             sample_results.frames.append(frame)
-        sample_results.samples = [sum(channel) / len(channel) for channel in zip(*samples)]
+        sample_results.samples = [sum(channel) / len(channel) for channel in
+                                  zip(*samples)]
         results[idx] = sample_results
 
 
@@ -162,8 +202,10 @@ class SampleRampPatches(SamplePatch):
         threads = []
         results = [None] * grey_patches
         for patch_count in range(0, grey_patches):
-            patch_start_frame = first_patch_frame + (patch_count * self.separation_results.separation)
-            patch_last_frame = patch_start_frame + (self.separation_results.separation - 1)
+            patch_start_frame = first_patch_frame + (
+                        patch_count * self.separation_results.separation)
+            patch_last_frame = patch_start_frame + (
+                        self.separation_results.separation - 1)
 
             thread = threading.Thread(target=self.analyse_patch_frames, args=(
                 patch_count, results, patch_start_frame, patch_last_frame)
@@ -190,7 +232,8 @@ class MacBethSample(BaseSamplePatch):
             led_wall_settings (LedWallSettings): The LED wall settings we want to sample
             separation_results (SeparationResults): The results of the separation.
         """
-        super().__init__(led_wall_settings, separation_results, constants.PATCHES.MACBETH)
+        super().__init__(led_wall_settings, separation_results,
+                         constants.PATCHES.MACBETH)
         self.sample_results = [None]
 
     def run(self) -> list:
@@ -211,21 +254,60 @@ class MacBethSample(BaseSamplePatch):
         # We trim a number of frames off either side of the patch to ensure we remove multiplexing
         sample_results = SamplePatchResults()
         samples = []
-        for frame_num in range(first_patch_frame + self.trim_frames, (last_patch_frame - self.trim_frames) + 1):
+        white_balance_matrix = self.get_white_balance_matrix_from_slate()
+        for frame_num in range(first_patch_frame + self.trim_frames,
+                               (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
-            section = frame.extract_roi(self.led_wall.roi)
             sample_results.frames.append(frame)
-            section_np_array = imaging_utils.image_buf_to_np_array(section)
-            for colour_checker_swatches_data in detect_colour_checkers_segmentation(
-                    section_np_array, additional_data=True):
-                swatch_colours, _, _ = (
-                    colour_checker_swatches_data.values)
 
+            # Extract our region
+            section_orig = frame.extract_roi(self.led_wall.roi)
 
+            # White balance the images so we increase the detection likelihood of
+            # success
+            section_orig = imaging_utils.apply_matrix_to_img_buf(
+                section_orig, white_balance_matrix
+            )
+
+            section_display_np_array = imaging_utils.image_buf_to_np_array(section_orig)
+            imaging_utils.apply_color_converstion_to_np_array(
+                section_display_np_array,
+                str(self.led_wall.input_plate_gamut),
+                "ACEScct",
+            )
+
+            # Run the detections
+            detections = detect_colour_checkers_segmentation(
+                section_display_np_array, additional_data=True)
+
+            for colour_checker_swatches_data in detections:
+                # Get the swatch colours
+                swatch_colours, _, _ = colour_checker_swatches_data.values
+                swatch_colours = np.array(swatch_colours, dtype=np.float32)
+
+                # Reshape the number of swatches from a 24, 3 array to an x, y, 3 array
+                num_swatches = swatch_colours.shape[0]
+                factor_pairs = find_factors_pairs(num_swatches)
+                x, y = factor_pairs[0]
+                array_x_y_3 = swatch_colours.reshape(x, y, 3)
+
+                # Convert the colours back to the input plate gamut
+                imaging_utils.apply_color_converstion_to_np_array(
+                    array_x_y_3,
+                    "ACEScct",
+                    str(self.led_wall.input_plate_gamut))
+
+                # Inverse the white balance back to the original values
+                inv_wb_matrix = np.linalg.inv(white_balance_matrix)
+                array_x_y_3 = array_x_y_3 @ inv_wb_matrix
+
+                # Reshape the array back to a 24, 3 array
+                swatch_colours = array_x_y_3.reshape(num_swatches, 3)
                 samples.append(swatch_colours)
 
-        # Compute the mean for each tuple index across all tuples, if the detection fails and we get nans, then we
-        # replace the nans with black patches as these are not used in the calibration directly
+        # Compute the mean for each tuple index across all tuples, if the
+        # detection fails, and we get nans, then we replace the nans with black patches
+        # as these are not used in the calibration directly
         averaged_tuple = np.mean(np.array(samples), axis=0)
         if not np.isnan(averaged_tuple).any():
             sample_results.samples = averaged_tuple.tolist()

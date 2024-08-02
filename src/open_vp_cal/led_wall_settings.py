@@ -56,11 +56,11 @@ class LedWallSettings:
             constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_NONE,
             constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: False,
             constants.LedWallSettingsKeys.REFERENCE_WALL: "",
-            constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT: False,
-            constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE: "",
+            constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET: False,
+            constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE: "",
             constants.LedWallSettingsKeys.IS_VERIFICATION_WALL: False,
             constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
-            constants.LedWallSettingsKeys.AVOID_CLIPPING: True
+            constants.LedWallSettingsKeys.AVOID_CLIPPING: False
         }
 
         self._led_settings = copy.deepcopy(self._default_led_settings)
@@ -583,41 +583,40 @@ class LedWallSettings:
         self._set_property(constants.LedWallSettingsKeys.REFERENCE_WALL, led_wall.name)
 
     @property
-    def use_external_white_point(self) -> bool:
-        """ Whether we are using an external white point for the LED wall or not
+    def use_white_point_offset(self) -> bool:
+        """ Whether we are using a white point offset for the LED wall or not
 
         Returns:
-            bool: Gets whether we want to use an external white point or not
+            bool: Gets whether we want to use a white point offset or not
         """
-        return self._led_settings[constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT]
+        return self._led_settings[constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET]
 
-    @use_external_white_point.setter
-    def use_external_white_point(self, value: bool):
-        """ Set whether we are using an external white point or not
+    @use_white_point_offset.setter
+    def use_white_point_offset(self, value: bool):
+        """ Set whether we are using a white point offset or not
 
         Args:
             value (bool): Whether to use the external white point or not
         """
-        self._set_property(constants.LedWallSettingsKeys.USE_EXTERNAL_WHITE_POINT, value)
+        self._set_property(constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET, value)
 
     @property
-    def external_white_point_file(self) -> str:
-        """ The file which contains an image sample from which we want to calculate the external white point from
+    def white_point_offset_source(self) -> str:
+        """ The source which contains an image sample from which we want to calculate the white point offset from
 
         Returns:
-            str: The filepath which contains the image we want to sample to calculate the external white point from
+            str: The filepath which contains the image we want to sample to calculate the white point offset from
         """
-        return self._led_settings[constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE]
+        return self._led_settings[constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE]
 
-    @external_white_point_file.setter
-    def external_white_point_file(self, value: str):
-        """ Set the file which contains an image sample from which we want to calculate the external white point from
+    @white_point_offset_source.setter
+    def white_point_offset_source(self, value: str):
+        """ Set the source which contains an image sample from which we want to calculate the white point offset from
 
         Args:
-            value (str): The filepath which contains the image we want to sample to calculate the external
-            white point from
+            value (str): The filepath which contains the image we want to sample to calculate the white point offset from
         """
-        self._set_property(constants.LedWallSettingsKeys.EXTERNAL_WHITE_POINT_FILE, value)
+        self._set_property(constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE, value)
 
     @property
     def verification_wall(self) -> str:
@@ -694,7 +693,7 @@ class LedWallSettings:
         Returns: True or False depending on whether the white balance options are valid or not
 
         """
-        values = [self.auto_wb_source, self.match_reference_wall, self.use_external_white_point].count(True)
+        values = [self.auto_wb_source, self.match_reference_wall, self.use_white_point_offset].count(True)
         if values > 1:
             return False
         return True

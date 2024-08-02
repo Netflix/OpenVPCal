@@ -37,8 +37,8 @@
                 "target_to_screen_cat": "None",
                 "match_reference_wall": true,
                 "reference_wall": "ROE_DECOWP",
-                "use_external_white_point": false,
-                "external_white_point_file": "",
+                "use_white_point_offset": false,
+                "white_point_offset_source": "",
                 "is_verification_wall": false,
                 "verification_wall": "",
                 "avoid_clipping": false
@@ -68,8 +68,8 @@
                 "target_to_screen_cat": "None",
                 "match_reference_wall": false,
                 "reference_wall": "",
-                "use_external_white_point": true,
-                "external_white_point_file": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A104_C003_11080B_001.R3D/A104_C003_11080B_001.01397369.exr",
+                "use_white_point_offset": true,
+                "white_point_offset_source": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/A104_C003_11080B_001.R3D/A104_C003_11080B_001.01397369.exr",
                 "is_verification_wall": false,
                 "verification_wall": "",
                 "avoid_clipping": false

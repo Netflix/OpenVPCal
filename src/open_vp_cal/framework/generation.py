@@ -67,6 +67,8 @@ class PatchGeneration:
         self.desaturated_green = np.array([])
         self.desaturated_blue = np.array([])
         self.flat_field = [0.5, 0.5, 0.5]
+        self._generation_width = 3840
+        self._generation_height = 2160
 
         self.calc_constants()
 
@@ -341,8 +343,8 @@ class PatchGeneration:
 
         """
         patch_width, patch_height = self.patch_size
-        start_x = (self.led_wall.project_settings.resolution_width - patch_width) // 2
-        start_y = (self.led_wall.project_settings.resolution_height - patch_height) // 2
+        start_x = (self._generation_width - patch_width) // 2
+        start_y = (self._generation_height - patch_height) // 2
         return start_x, start_y
 
     def distort_and_roi(self, patch_values: list[int]) -> list[Oiio.ImageBuf]:
@@ -363,7 +365,7 @@ class PatchGeneration:
         roi_size, checker_size, checker_odd, checker_even = patch_values
 
         full_image = Oiio.ImageBuf(Oiio.ImageSpec(
-            self.led_wall.project_settings.resolution_width, self.led_wall.project_settings.resolution_height, 3,
+            self._generation_width, self._generation_height, 3,
             Oiio.FLOAT)
         )
 
@@ -570,8 +572,8 @@ class PatchGeneration:
         src_patch = Oiio.ImageBuf(ResourceLoader.slate())
         patch = Oiio.ImageBufAlgo.resize(
             src_patch, roi=Oiio.ROI(
-                0, self.led_wall.project_settings.resolution_width, 0,
-                self.led_wall.project_settings.resolution_height
+                0, self._generation_width, 0,
+                self._generation_height
             )
         )
 
@@ -929,7 +931,7 @@ class PatchGeneration:
         """
         patch_roi = Oiio.ROI(start_x, start_x + patch_width, start_y, start_y + patch_height)
         inner_edge_roi = self.reduce_roi(patch_roi, 1)
-        inner_patch_roi = self.reduce_roi(inner_edge_roi, 1)
+        inner_patch_roi = self.reduce_roi(inner_edge_roi, 0.5)
         Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum), roi=patch_roi)
         Oiio.ImageBufAlgo.fill(patch, (0.0, 0.0, 0.0), roi=inner_edge_roi)
         Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum),
@@ -968,7 +970,7 @@ class PatchGeneration:
         """
         # Create the colour patch for the full image size
         full_image = Oiio.ImageBuf(Oiio.ImageSpec(
-            self.led_wall.project_settings.resolution_width, self.led_wall.project_settings.resolution_height, 3,
+            self._generation_width, self._generation_height, 3,
             Oiio.FLOAT)
         )
         Oiio.ImageBufAlgo.fill(full_image, (patch_values[0], patch_values[1], patch_values[2]))
@@ -984,8 +986,8 @@ class PatchGeneration:
         Returns:
             Oiio.ImageBuf: The image buffer of the generated colour square.
         """
-        image_width, image_height = self.led_wall.project_settings.resolution_width, \
-            self.led_wall.project_settings.resolution_height
+        image_width, image_height = self._generation_width, \
+            self._generation_height
 
         patches, _ = self.find_and_generate_patch_from_map(patch_name)
 
@@ -1075,7 +1077,15 @@ class PatchGeneration:
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_TIF:
             bit_depth = 16
 
-        imaging_utils.write_image(img_buf, file_path, bit_depth, channel_mapping=None)
+        if (self.led_wall.project_settings.resolution_height != self._generation_height
+                or self.led_wall.project_settings.resolution_width !=
+                self._generation_width):
+            img_buf = imaging_utils.resize_image(
+                img_buf, self.led_wall.project_settings.resolution_width,
+                self.led_wall.project_settings.resolution_height)
+
+        imaging_utils.write_image(
+            img_buf, file_path, bit_depth, channel_mapping=None)
         return file_path
 
     def generate_patches(self, patch_names: list[constants.PATCHES]):
