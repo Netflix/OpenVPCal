@@ -22,13 +22,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-git-
 
-      # Check out the repository with LFS support
+      # Check out the repository without LFS support
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          lfs: false  # Enable Git LFS support
+          lfs: false  # Disable Git LFS
 
-        # Step 1: Set up Miniconda
+      # Step 1: Set up Miniconda
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -36,10 +36,36 @@ jobs:
           python-version: 3.11
           environment-file: environment.yml
           activate-environment: OpenVPCal
-          miniconda-version: "latest"
+          miniconda-version: "latest"  # Ensure Miniconda is installed
 
-      # Step 2: Create and activate the conda environment (if not using environment.yml)
-      - name: Create and activate conda environment
+      # Step 2: Initialize Conda
+      - name: Initialize Conda
+        shell: bash
         run: |
+          source $HOME/miniconda/etc/profile.d/conda.sh
+          conda init bash
+          conda config --set auto_activate_base false
+
+      # Step 3: Create and activate the conda environment (if not using environment.yml)
+      - name: Create and activate conda environment
+        shell: bash
+        run: |
+          source $HOME/miniconda/etc/profile.d/conda.sh
           conda create --name OpenVPCal python=3.11 -y
           conda activate OpenVPCal
+
+      # Step 4: Install Python dependencies
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          source $HOME/miniconda/etc/profile.d/conda.sh
+          conda activate OpenVPCal
+          pip install -r requirements.txt
+
+      # Step 5: Run unit tests
+      - name: Run unit tests
+        shell: bash
+        run: |
+          source $HOME/miniconda/etc/profile.d/conda.sh
+          conda activate OpenVPCal
+          pytest tests
