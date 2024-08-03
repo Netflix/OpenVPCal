@@ -41,5 +41,9 @@ jobs:
           brew update
           brew install pkg-config autoconf automake autoconf-archive
         
-        
+      # Run build_dev.sh script
+      - name: Run build_dev.sh script
+        run: |
+          chmod +x build_dev.sh
+          ./build_dev.sh
 
