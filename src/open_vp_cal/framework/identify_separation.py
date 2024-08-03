@@ -127,9 +127,21 @@ class IdentifySeparation:
         distances = []
 
         previous_mean_frame = None
+
+        slate_frame = self.led_wall.sequence_loader.get_frame(
+            self.led_wall.sequence_loader.start_frame
+        )
+        white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
+            slate_frame.image_buf)
+
         for frame in self.led_wall.sequence_loader:
             # Load the image from the frame
             image = frame.extract_roi(self.led_wall.roi)
+
+            # Apply the white balance matrix to the frame
+            image = imaging_utils.apply_matrix_to_img_buf(
+                image, white_balance_matrix
+            )
 
             # Compute the average for all the values which are above the initial average
             mean_color, _ = imaging_utils.get_average_value_above_average(image)

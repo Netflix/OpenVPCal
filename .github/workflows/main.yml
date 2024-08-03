@@ -1,0 +1,49 @@
+name: Python CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - feature/ci
+  pull_request:
+    branches:
+      - feature/ci
+
+jobs:
+  build_macos:
+    runs-on: macos-latest
+
+    steps:
+      # Restore the .git directory from the cache
+      - name: Cache repository
+        uses: actions/cache@v3
+        with:
+          path: .git
+          key: ${{ runner.os }}-git-${{ hashFiles('.git/HEAD') }}
+          restore-keys: |
+            ${{ runner.os }}-git-
+
+      # Check out the repository without LFS support
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          lfs: false  # Disable Git LFS
+
+      # Set up Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+            python-version: 3.11
+
+      # Install dependencies
+      # Step 1: Install dependencies
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install pkg-config autoconf automake autoconf-archive
+        
+      # Run build_dev.sh script
+      - name: Run build_dev.sh script
+        run: |
+          chmod +x build_dev.sh
+          ./build.sh
+
