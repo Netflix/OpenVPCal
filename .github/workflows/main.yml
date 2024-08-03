@@ -26,10 +26,19 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          lfs: true  # Enable Git LFS support
+          lfs: false  # Enable Git LFS support
 
-      # Step 2: Set up Python environment
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+            # Step 1: Set up Miniconda
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: '3.11'
+          auto-update-conda: true
+          python-version: 3.11
+          environment-file: environment.yml
+          activate-environment: OpenVPCal
+
+      # Step 2: Create and activate the conda environment (if not using environment.yml)
+      - name: Create and activate conda environment
+        run: |
+          conda create --name OpenVPCal python=3.11 -y
+          conda activate OpenVPCal
