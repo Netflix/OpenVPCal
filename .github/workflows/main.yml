@@ -42,15 +42,7 @@ jobs:
       - name: Initialize Conda
         shell: bash
         run: |
-          conda init bash
-          conda config --set auto_activate_base false
-
-      # Step 3: Create and activate the conda environment (if not using environment.yml)
-      - name: Create and activate conda environment
-        shell: bash
-        run: |
-          conda create --name OpenVPCal python=3.11 -y
-          conda activate OpenVPCal
+          conda init
 
       # Step 4: Run unit tests
       - name: Run unit tests
