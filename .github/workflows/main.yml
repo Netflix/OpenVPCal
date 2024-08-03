@@ -28,7 +28,7 @@ jobs:
         with:
           lfs: false  # Enable Git LFS support
 
-            # Step 1: Set up Miniconda
+        # Step 1: Set up Miniconda
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -36,6 +36,7 @@ jobs:
           python-version: 3.11
           environment-file: environment.yml
           activate-environment: OpenVPCal
+          miniconda-version: "latest"
 
       # Step 2: Create and activate the conda environment (if not using environment.yml)
       - name: Create and activate conda environment
