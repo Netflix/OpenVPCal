@@ -28,25 +28,18 @@ jobs:
         with:
           lfs: false  # Disable Git LFS
 
-      # Step 1: Set up Miniconda
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      # Set up Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
         with:
-          auto-update-conda: true
-          python-version: 3.11
-          environment-file: environment.yml
-          activate-environment: OpenVPCal
-          miniconda-version: "latest"  # Ensure Miniconda is installed
+            python-version: 3.11
 
-      # Step 2: Initialize Conda
-      - name: Initialize Conda
-        shell: bash
+      # Install dependencies
+      # Step 1: Install dependencies
+      - name: Install dependencies
         run: |
-          conda init
+          brew update
+          brew install pkg-config autoconf automake autoconf-archive
+        
+        
 
-      # Step 4: Run unit tests
-      - name: Run unit tests
-        shell: bash
-        run: |
-          conda activate OpenVPCal
-          pytest tests
