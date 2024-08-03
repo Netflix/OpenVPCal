@@ -19,8 +19,8 @@ jobs:
         with:
           path: .git
           key: ${{ runner.os }}-git-${{ hashFiles('.git/HEAD') }}
-          restore-keys:
-            - ${{ runner.os }}-git-
+          restore-keys: |
+            ${{ runner.os }}-git-
 
       # Check out the repository with LFS support
       - name: Check out repository
