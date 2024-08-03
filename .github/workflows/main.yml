@@ -42,7 +42,6 @@ jobs:
       - name: Initialize Conda
         shell: bash
         run: |
-          source $HOME/miniconda/etc/profile.d/conda.sh
           conda init bash
           conda config --set auto_activate_base false
 
@@ -50,22 +49,12 @@ jobs:
       - name: Create and activate conda environment
         shell: bash
         run: |
-          source $HOME/miniconda/etc/profile.d/conda.sh
           conda create --name OpenVPCal python=3.11 -y
           conda activate OpenVPCal
 
-      # Step 4: Install Python dependencies
-      - name: Install Python dependencies
-        shell: bash
-        run: |
-          source $HOME/miniconda/etc/profile.d/conda.sh
-          conda activate OpenVPCal
-          pip install -r requirements.txt
-
-      # Step 5: Run unit tests
+      # Step 4: Run unit tests
       - name: Run unit tests
         shell: bash
         run: |
-          source $HOME/miniconda/etc/profile.d/conda.sh
           conda activate OpenVPCal
           pytest tests
