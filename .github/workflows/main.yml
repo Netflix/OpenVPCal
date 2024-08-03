@@ -45,5 +45,5 @@ jobs:
       - name: Run build_dev.sh script
         run: |
           chmod +x build_dev.sh
-          ./build_dev.sh
+          ./build.sh
 
