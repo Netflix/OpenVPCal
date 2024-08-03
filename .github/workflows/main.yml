@@ -9,8 +9,8 @@ on:
       - feature/ci
 
 jobs:
-  build_windows:
-    runs-on: windows-latest
+  build_macos:
+    runs-on: macos-latest
 
     steps:
       # Restore the .git directory from the cache
