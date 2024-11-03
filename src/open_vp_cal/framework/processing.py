@@ -123,9 +123,20 @@ class Processing:
                 "\nIf the region of interest is correct there is likely a sync or multiplexing issue within "
                 "the recording")
 
+        # We get the last slate frame and calculate what it should be based on the
+        # separation.
         end_slate_sampler = BaseSamplePatch(
             self.led_wall, self.led_wall.separation_results, constants.PATCHES.END_SLATE)
         _, last_frame = end_slate_sampler.calculate_first_and_last_patch_frame()
+
+        # If our calculated last frame is greater than the length of the sequence
+        # we remove the end slate frames (1 x separation) to account for someone not
+        # exporting the sequence fully
+        if last_frame > self.led_wall.sequence_loader.end_frame:
+            last_frame -= self.led_wall.separation_results.separation
+
+        # If the last frame is still greater than the end frame of the sequence
+        # then we have to raise an error as someone made a critical mistake
         if last_frame > self.led_wall.sequence_loader.end_frame:
             raise ValueError(f"Separation Calculation was not successful\n"
                              f"Separation Frames: {self.led_wall.separation_results.separation}\n"
