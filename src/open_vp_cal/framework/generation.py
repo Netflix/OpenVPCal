@@ -1068,7 +1068,7 @@ class PatchGeneration:
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        file_path = os.path.join(folder_path, f"{patch_name}.{self.led_wall.project_settings.file_format}")
+        file_path = os.path.join(folder_path, f"{patch_name}{self.led_wall.project_settings.file_format}")
 
         bit_depth = 10
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_EXR:

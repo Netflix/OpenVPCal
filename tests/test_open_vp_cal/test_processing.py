@@ -21,7 +21,7 @@ from test_open_vp_cal.test_utils import TestProject
 class Test_Processing(TestProject):
     def test_swatch_analysis_generation(self):
         self.led_wall.sequence_loader.load_sequence(
-            self.led_wall.input_sequence_folder, file_type=self.project_settings.file_format)
+            self.led_wall.input_sequence_folder)
         processing = Processing(self.led_wall)
         processing.run_sampling()
 

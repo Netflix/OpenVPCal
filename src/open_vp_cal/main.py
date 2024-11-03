@@ -183,7 +183,7 @@ def run_cli(
 
     # Load all the led walls and load the sequences
     for led_wall in project_settings.led_walls:
-        led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder, file_type=constants.FileFormats.FF_EXR)
+        led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder)
 
         if not led_wall.roi:
             _, auto_roi_results = open_vp_cal_base.run_auto_detect(led_wall)
@@ -244,7 +244,8 @@ def run_args(args: argparse.Namespace) -> None:
         run_cli(
             args.project_settings,
             args.output_folder,
-            args.ocio_config_path)
+            args.ocio_config_path
+        )
 
 
 def str2bool(v: str) -> bool:

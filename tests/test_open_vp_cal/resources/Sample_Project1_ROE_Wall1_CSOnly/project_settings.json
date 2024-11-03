@@ -1,7 +1,7 @@
 {
     "openvp_cal_version": "1.0.0-rc.1",
     "project_settings": {
-        "file_format": "exr",
+        "file_format": ".exr",
         "resolution_width": 3839,
         "resolution_height": 2160,
         "output_folder": "/Users/adamdavis/Downloads/OpenVP_UnitTest_Projects/Sample_Project1_ROE_Wall1_CSOnly",

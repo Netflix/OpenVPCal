@@ -1,6 +1,6 @@
 {
     "project_settings": {
-        "file_format": "exr",
+        "file_format": ".exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
         "output_folder": "/Users/adamdavis/OpenVPCal_output",

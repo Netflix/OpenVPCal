@@ -1,7 +1,7 @@
 {
     "openvp_cal_version": "1.0.0-rc.9c",
     "project_settings": {
-        "file_format": "exr",
+        "file_format": ".exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
         "output_folder": "/Users/adamdavis/Downloads/Sample_Project10_SRGB_EOTF",

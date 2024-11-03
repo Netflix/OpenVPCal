@@ -128,16 +128,15 @@ class TimelineModel(QObject):
         self.set_current_frame(self.project_settings.current_wall.sequence_loader.start_frame)
         self.sequence_changed = False
 
-    def load_sequence(self, folder_path: str, file_type: str = constants.FileFormats.FF_EXR) -> None:
+    def load_sequence(self, folder_path: str) -> None:
         """ Loads a sequence into the sequence loader and stores the folder path in the LED wall we have set as the
         current wall
 
         Args:
             folder_path: The folder path to load
-            file_type: The file type to load
         """
         # Load the sequence into the sequence loader and store the folder path
-        self.project_settings.current_wall.sequence_loader.load_sequence(folder_path, file_type)
+        self.project_settings.current_wall.sequence_loader.load_sequence(folder_path)
         self.project_settings.current_wall.input_sequence_folder = folder_path
 
         # We now force the system to note that the LED wall selection has changed because the sequence has changed
@@ -145,7 +144,7 @@ class TimelineModel(QObject):
         self.led_wall_selection_changed()
         self.sequence_loaded.emit(self.project_settings.current_wall)
 
-    def load_all_sequences_for_led_walls(self, file_type: str = constants.FileFormats.FF_EXR) -> None:
+    def load_all_sequences_for_led_walls(self) -> None:
         """ Loads all sequences for all led walls
 
         Args:
@@ -153,7 +152,7 @@ class TimelineModel(QObject):
         """
         for wall in self.project_settings.led_walls:
             if wall.input_sequence_folder:
-                wall.sequence_loader.load_sequence(wall.input_sequence_folder, file_type)
+                wall.sequence_loader.load_sequence(wall.input_sequence_folder)
 
     @property
     def start_frame(self) -> int:
@@ -373,8 +372,7 @@ class TimelineWidget(LockableWidget):
         if not os.path.exists(folder_path):
             return
 
-        file_ext = constants.FileFormats.FF_EXR
-        self.model.load_sequence(folder_path, file_ext)
+        self.model.load_sequence(folder_path)
         frame = self.model.current_frame
 
         self.model.set_current_frame(frame + 1)

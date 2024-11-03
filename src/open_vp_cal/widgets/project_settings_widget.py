@@ -142,7 +142,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
             constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
-                constants.OPTIONS: constants.FileFormats.FF_ALL, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
+                constants.OPTIONS: constants.FileFormats.FF_ALL_WRITE, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
             constants.LedWallSettingsKeys.CALCULATION_ORDER: {
                 constants.OPTIONS: constants.CalculationOrder.CO_ALL,
                 constants.DEFAULT: default_led_wall.calculation_order
