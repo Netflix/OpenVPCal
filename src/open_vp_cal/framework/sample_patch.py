@@ -89,11 +89,18 @@ class BaseSamplePatch:
             np.ndarray: The white balance matrix
 
         """
-        slate_frame = self.led_wall.sequence_loader.get_frame(
+        slate_frame_plate_gamut = self.led_wall.sequence_loader.get_frame(
             self.led_wall.sequence_loader.start_frame
         )
+
+        # Ensure the slate frame is in ACES2065-1
+        slate_frame = imaging_utils.apply_color_conversion(
+            slate_frame_plate_gamut.image_buf,
+            str(self.led_wall.input_plate_gamut),
+            constants.ColourSpace.CS_ACES
+        )
         white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
-            slate_frame.image_buf)
+            slate_frame)
         return white_balance_matrix
 
 
