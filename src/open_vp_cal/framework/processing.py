@@ -145,7 +145,7 @@ class Processing:
                              f"Last Frame Of Sequence: {self.led_wall.sequence_loader.end_frame}\n"
                              f"Calculated End Slate Last Frame: {last_frame}\n"
                              f"Separation result will lead to out of frame range result\n\n"
-                             f"Ensure Plate Was Exported Correctly Into Linear EXR {self.led_wall.input_plate_gamut}")
+                             f"Ensure Plate Is In Correct Format {self.led_wall.input_plate_gamut}")
 
         self.auto_detect_roi(self.led_wall.separation_results)
 
@@ -194,7 +194,7 @@ class Processing:
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
-            input_plate_gamut=self.led_wall.input_plate_gamut,
+            input_plate_gamut=constants.ColourSpace.CS_ACES,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=default_wall.reference_to_target_cat,
@@ -257,7 +257,7 @@ class Processing:
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
-            input_plate_gamut=self.led_wall.input_plate_gamut,
+            input_plate_gamut=constants.ColourSpace.CS_ACES,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=self.led_wall.reference_to_target_cat,
@@ -566,7 +566,7 @@ class Processing:
         Returns: Tuple of sample swatch, and reference swatch
 
         """
-        input_gamut = self.led_wall.input_plate_gamut
+        reference_gamut = constants.ColourSpace.CS_ACES
         working_gamut = constants.ColourSpace.CS_ACES
 
         if not os.path.exists(self.led_wall.project_settings.export_folder):
@@ -584,7 +584,7 @@ class Processing:
         converted_sample_buffers = []
         for img_buf in self.led_wall.processing_results.sample_buffers:
             output_img_buf = imaging_utils.apply_color_conversion(
-                img_buf, str(input_gamut), working_gamut,
+                img_buf, str(reference_gamut), working_gamut,
                 color_config=generation_ocio_config_path
             )
             converted_sample_buffers.append(output_img_buf)

@@ -18,7 +18,7 @@
                 "num_grey_patches": 33,
                 "primaries_saturation": 0.7,
                 "calculation_order": "EOTF > CS",
-                "input_plate_gamut": "ACES2065-1",
+                "input_plate_gamut": "Log3G10 REDWideGamutRGB",
                 "native_camera_gamut": "REDWideGamutRGB",
                 "reference_to_target_cat": "Bradford",
                 "roi": [
@@ -30,8 +30,8 @@
                 "target_to_screen_cat": "None",
                 "match_reference_wall": false,
                 "reference_wall": "",
-                "use_external_white_point": false,
-                "external_white_point_file": "",
+                "use_white_point_offset": false,
+                "white_point_offset_source": "",
                 "is_verification_wall": false,
                 "verification_wall": "",
                 "avoid_clipping": true

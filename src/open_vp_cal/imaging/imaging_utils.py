@@ -964,7 +964,7 @@ def calculate_white_balance_matrix_from_img_buf(
     red_mult_val = average_rgb[1] / average_rgb[0]
     blue_mult_val = average_rgb[1] / average_rgb[2]
     white_balance_matrix = np.asarray(
-        [[red_mult_val, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, blue_mult_val]])
+        [[red_mult_val, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, blue_mult_val]], dtype=np.float32)
     return white_balance_matrix
 
 

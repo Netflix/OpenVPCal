@@ -261,3 +261,18 @@ def bake_3d_lut(
     # Bake the LUT
     baker.bake(output_lut_path)
     return output_lut_path
+
+def get_colorspace_names(color_config: str)-> list[str]:
+    """ Gets the colour space names from the given color config
+
+    Args:
+        color_config: The file path to the colour config
+
+    Returns:
+        Returns a list of strings for the names of the available colour configs
+    """
+    if not os.path.exists(color_config):
+        raise ValueError("Color config does not exist: " + color_config)
+
+    config = ocio.Config().CreateFromFile(color_config)
+    return [name for name in config.getColorSpaceNames()]

@@ -537,7 +537,9 @@ def run(
         measured_samples: a dictionary containing the measured values sampled from the input plate
         reference_samples: a dictionary containing the reference values for the calibration process displayed on
         the led wall
-        input_plate_gamut: The colour space of the input plate we measured the samples from
+        input_plate_gamut: The colour space of the input plate we measured the samples from, this should be ACES2065-1,
+            the samples and the plate are preprocessed in the framework into ACES before being passed in.
+            If using directly ensure your samples are pre processed correctly
         native_camera_gamut: The native colour space of the camera, used to capture the input plate
         target_gamut: The colour space we want to target for the calibration
         target_to_screen_cat: The chromatic adaptation transform method for target to screen calibration matrix

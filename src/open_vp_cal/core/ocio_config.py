@@ -394,7 +394,7 @@ class OcioConfigWriter:
         Returns: The matrix transform which goes from the reference colour space to the target colour space
 
         """
-        reference_colour_space = RGB_COLOURSPACES[led_wall_settings.input_plate_gamut]
+        reference_colour_space = RGB_COLOURSPACES[constants.ColourSpace.CS_ACES]
         target_color_space = utils.get_target_colourspace_for_led_wall(led_wall_settings)
         reference_to_target_matrix = matrix_RGB_to_RGB(
             input_colourspace=reference_colour_space,

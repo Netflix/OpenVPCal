@@ -98,7 +98,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.OPTIONS: constants.EOTF.EOTF_ALL, constants.DEFAULT: default_led_wall.target_eotf
             },
             constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: {
-                constants.OPTIONS: constants.ColourSpace.CS_ALL, constants.DEFAULT: default_led_wall.input_plate_gamut
+                constants.OPTIONS: self.get_ocio_colorspace_names(), constants.DEFAULT: default_led_wall.input_plate_gamut
             },
             constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: {
                 constants.OPTIONS: constants.CameraColourSpace.CS_ALL,

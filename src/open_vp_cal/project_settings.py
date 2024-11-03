@@ -23,8 +23,9 @@ from pathlib import Path
 from typing import Dict, List
 
 import open_vp_cal
-from open_vp_cal.core import constants
+from open_vp_cal.core import constants, ocio_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
+from open_vp_cal.core.resource_loader import ResourceLoader
 
 
 class ProjectSettings:
@@ -514,3 +515,15 @@ class ProjectSettings:
         led_wall.verification_wall = ""
         led_wall.reset_defaults()
         led_wall.verification_wall = verification_wall
+
+    def get_ocio_colorspace_names(self)-> list[str]:
+        """ Gets the colour space names from either the project ocio config, or the
+            default config
+
+        Returns:
+            Returns a list of strings for the names of the available colour configs
+        """
+        config_path = self.ocio_config_path
+        if not config_path:
+            config_path = ResourceLoader.ocio_config_path()
+        return ocio_utils.get_colorspace_names(config_path)
