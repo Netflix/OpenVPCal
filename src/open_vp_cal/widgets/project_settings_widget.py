@@ -62,6 +62,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
     led_wall_removed = Signal(object)
     error_occurred = Signal(str)
     register_custom_gamut_from_load = Signal(str)
+    input_plate_gamut_changed = Signal()
 
     def __init__(self, parent=None, led_wall_class=None):
         """
@@ -190,6 +191,11 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             if key == constants.LedWallSettingsKeys.TARGET_EOTF or constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS:
                 self.data_changed.emit(
                     constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, self.current_wall.target_max_lum_nits)
+
+        # If the input plate gamut changes then we emit a signal so we can update the
+        # preview in the correct colour space
+        if key == constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT:
+            self.input_plate_gamut_changed.emit()
 
     def get_data(self, key: str):
         """

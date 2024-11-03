@@ -57,6 +57,11 @@ class PixMapFrame(Frame):
         if not self._pixmap:
             self._pixmap = load_image_buffer_to_qpixmap(self._image_buf, self._project_settings)
 
+    def clear_pixmap(self) -> None:
+        """ Clears the pixmap
+        """
+        self._pixmap = None
+
 
 class TimelineModel(QObject):
     """
@@ -185,6 +190,19 @@ class TimelineModel(QObject):
             return -1
         return self.project_settings.current_wall.sequence_loader.end_frame
 
+    def on_input_plate_gamut_changed(self) -> None:
+        """ Triggered when the input plate gamut changes, and we force the sequence
+        loader to refresh the preview. We then toggle from the first frame and back
+        so the timeline loader re loads the preview
+
+        """
+        if not self.project_settings.current_wall:
+            return
+        self.project_settings.current_wall.sequence_loader.refresh_preview()
+        if self.start_frame > -1:
+            self.set_current_frame(self.start_frame + 1)
+            self.set_current_frame(self.start_frame)
+
 
 class TimelineLoader(SequenceLoader):
     """
@@ -201,6 +219,15 @@ class TimelineLoader(SequenceLoader):
     def _load_and_cache(self, frame):
         super()._load_and_cache(frame)
         self.cache[frame].load_pixmap()
+
+    def refresh_preview(self) -> None:
+        """ When called it clears each of the pixmaps for every frame stored in the
+            cache
+
+        """
+        for frame in self.cache:
+            self.cache[frame].clear_pixmap()
+
 
 
 class TimelineWidget(LockableWidget):
