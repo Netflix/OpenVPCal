@@ -1064,7 +1064,10 @@ class PatchGeneration:
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        folder_path = os.path.join(folder_path, self.base_name, self.led_wall.project_settings.file_format)
+        folder_path = os.path.join(
+            folder_path, self.base_name,
+            self.led_wall.project_settings.file_format.replace(".", "")
+        )
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
