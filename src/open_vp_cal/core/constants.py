@@ -357,10 +357,12 @@ class FileFormats:
     """
     Class to hold the constants to describe the file formats we can use
     """
-    FF_EXR = "exr"
-    FF_DPX = "dpx"
-    FF_TIF = "tif"
-    FF_ALL = [FF_EXR, FF_DPX, FF_TIF]
+    FF_EXR = ".exr"
+    FF_DPX = ".dpx"
+    FF_TIF = ".tif"
+    FF_PNG = ".png"
+    FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
+    FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
     FF_DEFAULT = FF_EXR
 
 

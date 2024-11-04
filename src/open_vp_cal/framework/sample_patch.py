@@ -89,11 +89,18 @@ class BaseSamplePatch:
             np.ndarray: The white balance matrix
 
         """
-        slate_frame = self.led_wall.sequence_loader.get_frame(
+        slate_frame_plate_gamut = self.led_wall.sequence_loader.get_frame(
             self.led_wall.sequence_loader.start_frame
         )
+
+        # Ensure the slate frame is in ACES2065-1
+        slate_frame = imaging_utils.apply_color_conversion(
+            slate_frame_plate_gamut.image_buf,
+            str(self.led_wall.input_plate_gamut),
+            constants.ColourSpace.CS_ACES
+        )
         white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
-            slate_frame.image_buf)
+            slate_frame)
         return white_balance_matrix
 
 
@@ -156,8 +163,16 @@ class SamplePatch(BaseSamplePatch):
         for frame_num in range(first_patch_frame + self.trim_frames,
                                (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
-            section = frame.extract_roi(self.led_wall.roi)
-            mean_color = imaging_utils.sample_image(section)
+            section_input = frame.extract_roi(self.led_wall.roi)
+
+            # Convert the patch from into ACES2065-1 from the input plate gamut
+            # so all samples are sampled as ACES2065-1
+            section_aces = imaging_utils.apply_color_conversion(
+                section_input,
+                str(self.led_wall.input_plate_gamut),
+                constants.ColourSpace.CS_ACES
+            )
+            mean_color = imaging_utils.sample_image(section_aces)
 
             samples.append(mean_color)
             sample_results.frames.append(frame)
@@ -300,6 +315,13 @@ class MacBethSample(BaseSamplePatch):
                 # Inverse the white balance back to the original values
                 inv_wb_matrix = np.linalg.inv(white_balance_matrix)
                 array_x_y_3 = array_x_y_3 @ inv_wb_matrix
+
+
+                # Convert From Input To ACES2065-1 So all our samples are in ACES
+                imaging_utils.apply_color_converstion_to_np_array(
+                    array_x_y_3,
+                    str(self.led_wall.input_plate_gamut),
+                    constants.ColourSpace.CS_ACES)
 
                 # Reshape the array back to a 24, 3 array
                 swatch_colours = array_x_y_3.reshape(num_swatches, 3)

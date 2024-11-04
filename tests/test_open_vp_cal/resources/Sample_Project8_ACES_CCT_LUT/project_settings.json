@@ -1,7 +1,7 @@
 {
     "openvp_cal_version": "1.0.0-rc.3",
     "project_settings": {
-        "file_format": "dpx",
+        "file_format": ".exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
         "output_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Sample_Project8_ACES_CCT_LUT",

@@ -19,6 +19,7 @@ The Module has classes dedicated to identifying the region of interest within th
 import sys
 from typing import List
 
+from docutils.nodes import image
 
 from open_vp_cal.core.utils import clamp
 from open_vp_cal.led_wall_settings import LedWallSettings
@@ -174,15 +175,23 @@ class AutoROI(BaseSamplePatch):
         frame = self.led_wall.sequence_loader.get_frame(
             first_patch_frame + self.trim_frames)
 
+        image_plate_gamut = frame.image_buf
         pixel_buffer = 5
         detection_threshold = 1.7
 
         # Create the white balance matrix
         white_balance_matrix = self.get_white_balance_matrix_from_slate()
 
+        # Ensure the image is in ACES2065-1
+        frame_image = imaging_utils.apply_color_conversion(
+            image_plate_gamut,
+            str(self.led_wall.input_plate_gamut),
+            constants.ColourSpace.CS_ACES
+        )
+
         # Apply the white balance matrix to the frame
         balanced_image = imaging_utils.apply_matrix_to_img_buf(
-            frame.image_buf, white_balance_matrix
+            frame_image, white_balance_matrix
         )
         for y_pos in range(balanced_image.spec().height):
             for x_pos in range(balanced_image.spec().width):

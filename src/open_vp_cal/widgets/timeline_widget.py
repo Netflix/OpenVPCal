@@ -57,6 +57,11 @@ class PixMapFrame(Frame):
         if not self._pixmap:
             self._pixmap = load_image_buffer_to_qpixmap(self._image_buf, self._project_settings)
 
+    def clear_pixmap(self) -> None:
+        """ Clears the pixmap
+        """
+        self._pixmap = None
+
 
 class TimelineModel(QObject):
     """
@@ -128,16 +133,15 @@ class TimelineModel(QObject):
         self.set_current_frame(self.project_settings.current_wall.sequence_loader.start_frame)
         self.sequence_changed = False
 
-    def load_sequence(self, folder_path: str, file_type: str = constants.FileFormats.FF_EXR) -> None:
+    def load_sequence(self, folder_path: str) -> None:
         """ Loads a sequence into the sequence loader and stores the folder path in the LED wall we have set as the
         current wall
 
         Args:
             folder_path: The folder path to load
-            file_type: The file type to load
         """
         # Load the sequence into the sequence loader and store the folder path
-        self.project_settings.current_wall.sequence_loader.load_sequence(folder_path, file_type)
+        self.project_settings.current_wall.sequence_loader.load_sequence(folder_path)
         self.project_settings.current_wall.input_sequence_folder = folder_path
 
         # We now force the system to note that the LED wall selection has changed because the sequence has changed
@@ -145,7 +149,7 @@ class TimelineModel(QObject):
         self.led_wall_selection_changed()
         self.sequence_loaded.emit(self.project_settings.current_wall)
 
-    def load_all_sequences_for_led_walls(self, file_type: str = constants.FileFormats.FF_EXR) -> None:
+    def load_all_sequences_for_led_walls(self) -> None:
         """ Loads all sequences for all led walls
 
         Args:
@@ -153,7 +157,7 @@ class TimelineModel(QObject):
         """
         for wall in self.project_settings.led_walls:
             if wall.input_sequence_folder:
-                wall.sequence_loader.load_sequence(wall.input_sequence_folder, file_type)
+                wall.sequence_loader.load_sequence(wall.input_sequence_folder)
 
     @property
     def start_frame(self) -> int:
@@ -186,6 +190,19 @@ class TimelineModel(QObject):
             return -1
         return self.project_settings.current_wall.sequence_loader.end_frame
 
+    def on_input_plate_gamut_changed(self) -> None:
+        """ Triggered when the input plate gamut changes, and we force the sequence
+        loader to refresh the preview. We then toggle from the first frame and back
+        so the timeline loader re loads the preview
+
+        """
+        if not self.project_settings.current_wall:
+            return
+        self.project_settings.current_wall.sequence_loader.refresh_preview()
+        if self.start_frame > -1:
+            self.set_current_frame(self.start_frame + 1)
+            self.set_current_frame(self.start_frame)
+
 
 class TimelineLoader(SequenceLoader):
     """
@@ -202,6 +219,15 @@ class TimelineLoader(SequenceLoader):
     def _load_and_cache(self, frame):
         super()._load_and_cache(frame)
         self.cache[frame].load_pixmap()
+
+    def refresh_preview(self) -> None:
+        """ When called it clears each of the pixmaps for every frame stored in the
+            cache
+
+        """
+        for frame in self.cache:
+            self.cache[frame].clear_pixmap()
+
 
 
 class TimelineWidget(LockableWidget):
@@ -373,8 +399,7 @@ class TimelineWidget(LockableWidget):
         if not os.path.exists(folder_path):
             return
 
-        file_ext = constants.FileFormats.FF_EXR
-        self.model.load_sequence(folder_path, file_ext)
+        self.model.load_sequence(folder_path)
         frame = self.model.current_frame
 
         self.model.set_current_frame(frame + 1)

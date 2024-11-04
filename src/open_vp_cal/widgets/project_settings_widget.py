@@ -62,6 +62,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
     led_wall_removed = Signal(object)
     error_occurred = Signal(str)
     register_custom_gamut_from_load = Signal(str)
+    input_plate_gamut_changed = Signal()
 
     def __init__(self, parent=None, led_wall_class=None):
         """
@@ -98,7 +99,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.OPTIONS: constants.EOTF.EOTF_ALL, constants.DEFAULT: default_led_wall.target_eotf
             },
             constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: {
-                constants.OPTIONS: constants.ColourSpace.CS_ALL, constants.DEFAULT: default_led_wall.input_plate_gamut
+                constants.OPTIONS: self.get_ocio_colorspace_names(), constants.DEFAULT: default_led_wall.input_plate_gamut
             },
             constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: {
                 constants.OPTIONS: constants.CameraColourSpace.CS_ALL,
@@ -142,7 +143,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
             constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
-                constants.OPTIONS: constants.FileFormats.FF_ALL, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
+                constants.OPTIONS: constants.FileFormats.FF_ALL_WRITE, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
             constants.LedWallSettingsKeys.CALCULATION_ORDER: {
                 constants.OPTIONS: constants.CalculationOrder.CO_ALL,
                 constants.DEFAULT: default_led_wall.calculation_order
@@ -190,6 +191,11 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             if key == constants.LedWallSettingsKeys.TARGET_EOTF or constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS:
                 self.data_changed.emit(
                     constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, self.current_wall.target_max_lum_nits)
+
+        # If the input plate gamut changes then we emit a signal so we can update the
+        # preview in the correct colour space
+        if key == constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT:
+            self.input_plate_gamut_changed.emit()
 
     def get_data(self, key: str):
         """
