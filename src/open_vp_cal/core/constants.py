@@ -92,6 +92,7 @@ class ProjectSettingsKeys:
     OCIO_CONFIG_PATH = "ocio_config_path"
     CUSTOM_LOGO_PATH = "custom_logo_path"
     FRAMES_PER_PATCH = "frames_per_patch"
+    REFERENCE_GAMUT = 'reference_gamut'
     LED_WALLS = "led_walls"
     PROJECT_CUSTOM_PRIMARIES = "project_custom_primaries"
     PROJECT_SETTINGS = "project_settings"
@@ -99,7 +100,7 @@ class ProjectSettingsKeys:
     EXPORT_LUT_FOR_ACES_CCT = "export_lut_for_aces_cct"
     EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT = "export_lut_for_aces_cct_in_target_out"
     ALL = [FILE_FORMAT, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, OUTPUT_FOLDER, OCIO_CONFIG_PATH, CUSTOM_LOGO_PATH,
-           FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT,
+           FRAMES_PER_PATCH, REFERENCE_GAMUT, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT,
            EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT]
 
 

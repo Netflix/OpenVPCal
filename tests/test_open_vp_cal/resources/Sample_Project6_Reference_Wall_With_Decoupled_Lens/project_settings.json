@@ -8,6 +8,7 @@
         "ocio_config_path": "",
         "custom_logo_path": "",
         "frames_per_patch": 1,
+        "reference_gamut": "ACES2065-1",
         "frame_rate": 24.0,
         "export_lut_for_aces_cct": false,
         "export_lut_for_aces_cct_in_target_out": false,

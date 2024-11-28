@@ -133,22 +133,22 @@ class IdentifySeparation:
             self.led_wall.sequence_loader.start_frame
         )
 
-        # Ensure the slate frame is in ACES2065-1
+        # Ensure the slate frame is in reference gamut
         slate_frame = imaging_utils.apply_color_conversion(
             slate_frame_plate_gamut.image_buf,
             str(self.led_wall.input_plate_gamut),
-            constants.ColourSpace.CS_ACES
+            str(self.led_wall.project_settings.reference_gamut)
         )
         white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
             slate_frame)
 
         for frame in self.led_wall.sequence_loader:
-            # Load the image from the frame and ensure it is in ACES2065-1
+            # Load the image from the frame and ensure it is in reference gamut
             image_plate_gamut = frame.extract_roi(self.led_wall.roi)
             image = imaging_utils.apply_color_conversion(
                 image_plate_gamut,
                 str(self.led_wall.input_plate_gamut),
-                constants.ColourSpace.CS_ACES
+                str(self.led_wall.project_settings.reference_gamut)
             )
 
             # Apply the white balance matrix to the frame

@@ -349,7 +349,7 @@ def apply_luts(
 
 def get_ocio_reference_to_target_matrix(
         input_plate_cs: RGB_Colourspace,
-        target_cs: RGB_Colourspace, cs_cat: str = None, ocio_reference_cs: RGB_Colourspace = None):
+        target_cs: RGB_Colourspace, ocio_reference_cs: str, cs_cat: str = None):
     """ Get a matrix which goes from the reference space of ocio config, to the target space provided.
         If not ocio reference cs is provided, it defaults to ACES2065-1
         If no cat is provided, it defaults to Bradford
@@ -357,16 +357,15 @@ def get_ocio_reference_to_target_matrix(
     Args:
         input_plate_cs: the input plate colourspace
         target_cs: the target colourspace we want to convert to
-        cs_cat: the chromatic adaptation transform we want to use
         ocio_reference_cs: the reference colourspace of the ocio config
+        cs_cat: the chromatic adaptation transform we want to use
 
     Returns:
         ocio_reference_to_target_matrix: the matrix which goes from the ocio reference space to the target space
         ocio_reference_cs: the reference colourspace of the ocio config
 
     """
-    if ocio_reference_cs is None:
-        ocio_reference_cs = colour.RGB_COLOURSPACES[ColourSpace.CS_ACES]
+    ocio_reference_cs = colour.RGB_COLOURSPACES[ocio_reference_cs]
 
     if cs_cat is None:
         cs_cat = CAT.CAT_BRADFORD
@@ -530,7 +529,9 @@ def run(
         gamut_compression_shadow_rolloff: float = constants.GAMUT_COMPRESSION_SHADOW_ROLLOFF,
         reference_wall_external_white_balance_matrix: Union[None, List] = None,
         decoupled_lens_white_samples: Union[None, List] = None,
-        avoid_clipping: bool = True):
+        avoid_clipping: bool = True,
+        reference_gamut = constants.ColourSpace.CS_ACES
+    ):
     """ Run the entire calibration process.
 
     Args:
@@ -612,8 +613,24 @@ def run(
                          "or decoupled lens white balance is allowed")
 
     # 1) First We Get Our Colour Spaces
-    input_plate_cs, native_camera_gamut_cs, target_cs = get_calibration_colour_spaces(
-        input_plate_gamut, native_camera_gamut, target_gamut)
+    input_plate_cs, native_camera_gamut_cs, target_cs, reference_cs = get_calibration_colour_spaces(
+        input_plate_gamut, native_camera_gamut, target_gamut, reference_gamut)
+
+    # 1a) If our input plate gamut is different to our native camera gamut,
+    # we convert the samples to reference gamut, if samples are coming from the framework
+    # samples will already be in reference gamut and we skip this step
+    if input_plate_gamut != reference_gamut:
+        for key in measured_samples:
+            if key not in [constants.Measurements.EOTF_RAMP_SIGNAL, constants.Measurements.PRIMARIES_SATURATION]:
+                print (key)
+                measured_samples[key] = colour.RGB_to_RGB(
+                    measured_samples[key], input_plate_cs, reference_cs,
+                    None
+                ).tolist()
+
+        # Now we convert our samples from input to reference out input_plate_cs is now
+        # the reference_cs
+        input_plate_cs = reference_cs
 
     # 2) Once we have our camera native colour space we decide on the cat we want to use to convert to camera space
     camera_conversion_cat = utils.get_cat_for_camera_conversion(native_camera_gamut_cs.name)
@@ -661,7 +678,7 @@ def run(
         target_to_XYZ_matrix, reference_to_XYZ_matrix,
         reference_to_input_matrix
     ) = get_ocio_reference_to_target_matrix(
-        input_plate_cs, target_cs, cs_cat=reference_to_target_cat
+        input_plate_cs, target_cs, reference_gamut, cs_cat=reference_to_target_cat
     )
 
     # 7) We Get The Green Value From The 18% Grey Patch, Scale This So It Equals 18% Of Peak Luminance
@@ -1096,8 +1113,9 @@ def convert_samples_to_required_cs(
 def get_calibration_colour_spaces(
         input_plate_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
         native_camera_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
-        target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
-) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
+        target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
+        reference_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
+) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
     """ Get the colour spaces needed for the calibration process
 
     Args:
@@ -1117,7 +1135,10 @@ def get_calibration_colour_spaces(
     target_cs = (
         colour.RGB_COLOURSPACES[target_gamut] if isinstance(target_gamut, str) else target_gamut
     )
-    return input_plate_cs, native_camera_gamut_cs, target_cs
+    reference_cs = (
+        colour.RGB_COLOURSPACES[reference_gamut] if isinstance(reference_gamut, str) else reference_gamut
+    )
+    return input_plate_cs, native_camera_gamut_cs, target_cs, reference_cs
 
 
 def read_results_from_json(filename):

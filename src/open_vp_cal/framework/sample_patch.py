@@ -93,11 +93,11 @@ class BaseSamplePatch:
             self.led_wall.sequence_loader.start_frame
         )
 
-        # Ensure the slate frame is in ACES2065-1
+        # Ensure the slate frame is in reference gamut (ACES2065-1)
         slate_frame = imaging_utils.apply_color_conversion(
             slate_frame_plate_gamut.image_buf,
             str(self.led_wall.input_plate_gamut),
-            constants.ColourSpace.CS_ACES
+            str(self.led_wall.project_settings.reference_gamut)
         )
         white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
             slate_frame)
@@ -165,12 +165,12 @@ class SamplePatch(BaseSamplePatch):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
             section_input = frame.extract_roi(self.led_wall.roi)
 
-            # Convert the patch from into ACES2065-1 from the input plate gamut
-            # so all samples are sampled as ACES2065-1
+            # Convert the patch from into reference gamut from the input plate gamut
+            # so all samples are sampled as reference space (ACES2065-1)
             section_aces = imaging_utils.apply_color_conversion(
                 section_input,
                 str(self.led_wall.input_plate_gamut),
-                constants.ColourSpace.CS_ACES
+                str(self.led_wall.project_settings.reference_gamut)
             )
             mean_color = imaging_utils.sample_image(section_aces)
 
@@ -317,11 +317,12 @@ class MacBethSample(BaseSamplePatch):
                 array_x_y_3 = array_x_y_3 @ inv_wb_matrix
 
 
-                # Convert From Input To ACES2065-1 So all our samples are in ACES
+                # Convert From Input To reference gamut So all our samples are in ACES
                 imaging_utils.apply_color_converstion_to_np_array(
                     array_x_y_3,
                     str(self.led_wall.input_plate_gamut),
-                    constants.ColourSpace.CS_ACES)
+                    str(self.led_wall.project_settings.reference_gamut)
+                )
 
                 # Reshape the array back to a 24, 3 array
                 swatch_colours = array_x_y_3.reshape(num_swatches, 3)

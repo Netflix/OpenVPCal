@@ -267,7 +267,7 @@ class SwatchViewer(QWidget):
                                     constants.Results.WHITE_BALANCE_MATRIX]
 
                         if white_balance_matrix:
-                            working_cs = colour.RGB_COLOURSPACES[constants.ColourSpace.CS_ACES]
+                            working_cs = colour.RGB_COLOURSPACES[self.project_settings.reference_gamut]
                             native_camera_gamut_cs = core_utils.get_native_camera_colourspace_for_led_wall(led_wall)
 
                             camera_conversion_cat = constants.CAT.CAT_CAT02
@@ -295,7 +295,7 @@ class SwatchViewer(QWidget):
                             calibration_cs_metadata = OcioConfigWriter.get_calibration_preview_space_metadata(led_wall)
                             imaging_utils.apply_color_converstion_to_np_array(
                                 sp_np,
-                                constants.ColourSpace.CS_ACES,
+                                self.project_settings.reference_gamut,
                                 calibration_cs_metadata[0],
                                 color_config=led_wall.processing_results.ocio_config_output_file
                             )

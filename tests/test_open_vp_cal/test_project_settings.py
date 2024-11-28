@@ -43,6 +43,7 @@ class TestProjectSettings(TestBase):
                     constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",
                     constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "test",
                     constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
+                    constants.ProjectSettingsKeys.REFERENCE_GAMUT: constants.ColourSpace.CS_ACES,
                     constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_48,
                     constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: True,
                     constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: True,

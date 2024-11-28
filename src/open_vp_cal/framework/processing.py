@@ -191,10 +191,15 @@ class Processing:
 
         default_wall = LedWallSettings("default")
 
+        # In our framework and sampling our samples have already been converted from
+        # the input_plate gamut to the working colour space, this is to ensure things
+        # like the mac beth detection work as expected, from the framework this means
+        # we now set our input_plate_gamut to reference as this is now the colour space
+        # the samples are now in
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
-            input_plate_gamut=constants.ColourSpace.CS_ACES,
+            input_plate_gamut=self.led_wall.project_settings.reference_gamut,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=default_wall.reference_to_target_cat,
@@ -206,7 +211,8 @@ class Processing:
             gamut_compression_shadow_rolloff=default_wall.shadow_rolloff,
             reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
             decoupled_lens_white_samples=decoupled_lens_white_samples,
-            avoid_clipping=self.led_wall.avoid_clipping
+            avoid_clipping=self.led_wall.avoid_clipping,
+            reference_gamut=self.led_wall.project_settings.reference_gamut
         )
 
         self.led_wall.processing_results.pre_calibration_results = calibration_results
@@ -254,10 +260,15 @@ class Processing:
             decoupled_lens_white_samples = imaging_utils.get_decoupled_white_samples_from_file(
                 self.led_wall.white_point_offset_source)
 
+        # In our framework and sampling our samples have already been converted from
+        # the input_plate gamut to the working colour space, this is to ensure things
+        # like the mac beth detection work as expected, from the framework this means
+        # we now set our input_plate_gamut to reference as this is now the colour space
+        # the samples are now in
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
-            input_plate_gamut=constants.ColourSpace.CS_ACES,
+            input_plate_gamut=self.led_wall.project_settings.reference_gamut,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=self.led_wall.reference_to_target_cat,
@@ -270,7 +281,8 @@ class Processing:
             gamut_compression_shadow_rolloff=self.led_wall.shadow_rolloff,
             reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
             decoupled_lens_white_samples=decoupled_lens_white_samples,
-            avoid_clipping=self.led_wall.avoid_clipping
+            avoid_clipping=self.led_wall.avoid_clipping,
+            reference_gamut=self.led_wall.project_settings.reference_gamut
         )
 
         self.led_wall.processing_results.calibration_results = calibration_results
@@ -566,9 +578,6 @@ class Processing:
         Returns: Tuple of sample swatch, and reference swatch
 
         """
-        reference_gamut = constants.ColourSpace.CS_ACES
-        working_gamut = constants.ColourSpace.CS_ACES
-
         if not os.path.exists(self.led_wall.project_settings.export_folder):
             os.makedirs(self.led_wall.project_settings.export_folder)
 
@@ -583,18 +592,20 @@ class Processing:
 
         converted_sample_buffers = []
         for img_buf in self.led_wall.processing_results.sample_buffers:
-            output_img_buf = imaging_utils.apply_color_conversion(
-                img_buf, str(reference_gamut), working_gamut,
-                color_config=generation_ocio_config_path
-            )
-            converted_sample_buffers.append(output_img_buf)
+            # output_img_buf = imaging_utils.apply_color_conversion(
+            #     img_buf,
+            #     str(self.led_wall.reference_gamut),
+            #     str(self.led_wall.reference_gamut),
+            #     color_config=generation_ocio_config_path
+            # )
+            converted_sample_buffers.append(img_buf)
 
         converted_reference_buffers = []
 
         target_gamut_only_cs_name, _ = ocio_config_writer.target_gamut_only_cs_metadata(self.led_wall)
         for img_buf in self.led_wall.processing_results.sample_reference_buffers:
             output_img_buf = imaging_utils.apply_color_conversion(
-                img_buf, target_gamut_only_cs_name, working_gamut,
+                img_buf, target_gamut_only_cs_name, str(self.led_wall.project_settings.reference_gamut),
                 color_config=generation_ocio_config_path)
             converted_reference_buffers.append(output_img_buf)
 

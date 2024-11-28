@@ -42,6 +42,7 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
+            constants.ProjectSettingsKeys.REFERENCE_GAMUT: constants.ColourSpace.CS_ACES,
             constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False
@@ -239,6 +240,26 @@ class ProjectSettings:
             value (int): The resolution height
         """
         self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
+
+    @property
+    def reference_gamut(self) -> constants.ColourSpace:
+        """ Returns the reference colorspace of the working space
+
+        Returns:
+            constants.ColourSpace: Returns the reference colorspace of the working space
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.REFERENCE_GAMUT]
+
+    @reference_gamut.setter
+    def reference_gamut(self, value: constants.ColourSpace):
+        """ Set the reference colorspace of the working space, defaults to ACES2065-1
+            should only be set with extreme care, as other working spaces
+            not fully supported
+
+        Args:
+            value (constants.ColourSpace): The colour space we want to set the input too for the plate
+        """
+        self._project_settings[constants.ProjectSettingsKeys.REFERENCE_GAMUT] = value
 
     @property
     def frame_rate(self) -> float:

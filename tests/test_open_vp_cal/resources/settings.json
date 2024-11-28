@@ -6,6 +6,7 @@
         "output_folder": "",
         "custom_logo_path": "",
         "ocio_config_path": "",
+        "reference_gamut": "ACES2065-1",
         "frames_per_patch": 1,
         "led_walls" : [
             {

@@ -182,11 +182,11 @@ class AutoROI(BaseSamplePatch):
         # Create the white balance matrix
         white_balance_matrix = self.get_white_balance_matrix_from_slate()
 
-        # Ensure the image is in ACES2065-1
+        # Ensure the image is in reference space (ACES2065-1)
         frame_image = imaging_utils.apply_color_conversion(
             image_plate_gamut,
             str(self.led_wall.input_plate_gamut),
-            constants.ColourSpace.CS_ACES
+            str(self.led_wall.project_settings.reference_gamut)
         )
 
         # Apply the white balance matrix to the frame

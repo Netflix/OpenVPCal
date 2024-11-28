@@ -22,6 +22,8 @@ from typing import List
 import PyOpenColorIO as ocio
 from PyOpenColorIO import ColorSpace
 from colour import RGB_COLOURSPACES, matrix_RGB_to_RGB
+from docutils.nodes import reference
+
 from open_vp_cal.core import constants, ocio_utils, utils
 from open_vp_cal.core.constants import EOTF, Results, CalculationOrder
 from open_vp_cal.core.ocio_utils import numpy_matrix_to_ocio_matrix
@@ -394,7 +396,7 @@ class OcioConfigWriter:
         Returns: The matrix transform which goes from the reference colour space to the target colour space
 
         """
-        reference_colour_space = RGB_COLOURSPACES[constants.ColourSpace.CS_ACES]
+        reference_colour_space = RGB_COLOURSPACES[led_wall_settings.project_settings.reference_gamut]
         target_color_space = utils.get_target_colourspace_for_led_wall(led_wall_settings)
         reference_to_target_matrix = matrix_RGB_to_RGB(
             input_colourspace=reference_colour_space,
@@ -419,6 +421,9 @@ class OcioConfigWriter:
         Returns: The colour spaces for the given LED wall settings
 
         """
+        if not led_wall_settings:
+            raise ValueError("No LED Wall Settings Provided")
+
         led_wall_colour_spaces = LedWallColourSpaces()
         results = led_wall_settings.processing_results.calibration_results
 
@@ -448,7 +453,8 @@ class OcioConfigWriter:
         led_wall_colour_spaces.transfer_function_only_cs = self.get_transfer_function_only_cs(led_wall_settings)
 
         if export_lut_for_aces_cct:
-            led_wall_colour_spaces.aces_cct_view_transform = self.get_aces_cct_view_transform()
+            reference_gamut = led_wall_settings.project_settings.reference_gamut
+            led_wall_colour_spaces.aces_cct_view_transform = self.get_aces_cct_view_transform(reference_gamut)
             led_wall_colour_spaces.aces_cct_calibration_view_transform = self.get_aces_cct_calibration_view_transform(
                 led_wall_settings)
             led_wall_colour_spaces.aces_cct_display_colour_space_cs = self.get_aces_cct_display_colour_space()
@@ -501,20 +507,25 @@ class OcioConfigWriter:
         group = ocio.GroupTransform()
         group.appendTransform(
             ocio.ColorSpaceTransform(
-                src=constants.ColourSpace.CS_ACES, dst=calibration_name
+                src=led_wall_settings.project_settings.reference_gamut,
+                dst=calibration_name
             )
         )
         group.appendTransform(
             ocio.ColorSpaceTransform(
-                src=constants.ColourSpace.CS_ACES, dst=constants.CameraColourSpace.CS_ACES_CCT
+                src=led_wall_settings.project_settings.reference_gamut,
+                dst=constants.CameraColourSpace.CS_ACES_CCT
             )
         )
 
         view_transform.setTransform(group, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE)
         return view_transform
 
-    def get_aces_cct_view_transform(self) -> ocio.ViewTransform:
+    def get_aces_cct_view_transform(self, reference_gamut) -> ocio.ViewTransform:
         """ Get the ACEScct view transform which we use for baking luts that need to go via ACEScct
+
+        Args:
+            reference_gamut: The reference gamut we want to use for the view transform
 
         Returns: The ACEScct view transform
 
@@ -523,7 +534,7 @@ class OcioConfigWriter:
         view_transform_description = "An ACEScct view output"
         view_transform = self._get_view_transform(view_transform_name, view_transform_description)
         cs_transform = ocio.ColorSpaceTransform(
-                src=constants.ColourSpace.CS_ACES, dst=constants.CameraColourSpace.CS_ACES_CCT
+                src=reference_gamut, dst=constants.CameraColourSpace.CS_ACES_CCT
             )
 
         view_transform.setTransform(cs_transform, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE)
@@ -614,7 +625,7 @@ class OcioConfigWriter:
         group = ocio.GroupTransform()
         group.appendTransform(
             ocio.ColorSpaceTransform(
-                src=constants.ColourSpace.CS_ACES, dst=self.get_calibration_space_metadata(led_wall_settings)
+                src=led_wall_settings.project_settings.reference_gamut, dst=self.get_calibration_space_metadata(led_wall_settings)
             )
         )
 
@@ -700,6 +711,9 @@ class OcioConfigWriter:
         """
         reference_spaces = []
         led_walls = [led_wall for led_wall in led_walls if not led_wall.is_verification_wall]
+        if not led_walls:
+            raise ValueError("No LED walls found to generate OCIO config")
+
         for led_wall in led_walls:
             if led_wall.processing_results:
                 if led_wall.processing_results.calibration_results:
@@ -714,7 +728,9 @@ class OcioConfigWriter:
 
         ocio_config_reference_space_names = list(set(reference_spaces))
         if not ocio_config_reference_space_names:
-            ocio_config_reference_space_names.append(constants.ColourSpace.CS_ACES)
+            ocio_config_reference_space_names.append(
+                led_walls[0].project_settings.reference_gamut
+            )
 
         if len(ocio_config_reference_space_names) != 1:
             raise ValueError("Multiple reference colour spaces found for the ocio config")

@@ -7,6 +7,7 @@
         "custom_logo_path": "",
         "frames_per_patch": 1,
         "ocio_config_path": "",
+        "reference_gamut": "ACES2065-1",
         "led_walls": [
             {
                 "name": "Wall2",

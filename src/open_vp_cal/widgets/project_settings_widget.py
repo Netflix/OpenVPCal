@@ -142,6 +142,8 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.DEFAULT: self.frames_per_patch, "min": 0, "max": 100, "step": 1},
             constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
             constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
+            constants.ProjectSettingsKeys.REFERENCE_GAMUT: {
+                constants.OPTIONS: [constants.ColourSpace.CS_ACES], constants.DEFAULT: constants.ColourSpace.CS_ACES},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
                 constants.OPTIONS: constants.FileFormats.FF_ALL_WRITE, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
             constants.LedWallSettingsKeys.CALCULATION_ORDER: {
@@ -619,6 +621,7 @@ class ProjectSettingsView(LockableWidget):
         self.frame_rate = None
         self.export_lut_for_aces_cct_in_target_out = None
         self.export_lut_for_aces_cct = None
+        self.reference_gamut = None
         self.init_ui()
 
     def init_ui(self):
@@ -661,6 +664,12 @@ class ProjectSettingsView(LockableWidget):
         aces_cct_layout.addRow(QLabel("Export LUT For ACEScct In/Target Out:"),
                                self.export_lut_for_aces_cct_in_target_out)
         main_layout.addLayout(aces_cct_layout)
+
+
+        self.reference_gamut = QComboBox()
+        reference_gamut_layout = QFormLayout()
+        reference_gamut_layout.addRow(QLabel("Reference Gamut:"), self.reference_gamut)
+        main_layout.addLayout(reference_gamut_layout)
 
         self.file_format = QComboBox()
         self.resolution_width = QSpinBox()
