@@ -665,7 +665,6 @@ class ProjectSettingsView(LockableWidget):
                                self.export_lut_for_aces_cct_in_target_out)
         main_layout.addLayout(aces_cct_layout)
 
-
         self.reference_gamut = QComboBox()
         reference_gamut_layout = QFormLayout()
         reference_gamut_layout.addRow(QLabel("Reference Gamut:"), self.reference_gamut)
@@ -872,6 +871,8 @@ class CalibrationSettingsView(LockableWidget):
         self.reference_to_target_cat = None
         self.target_to_screen_cat = None
         self.avoid_clipping = None
+        self.export_lut_for_aces_cct = None
+        self.export_lut_for_aces_cct_in_target_out = None
 
         self.init_ui()
 
@@ -916,6 +917,17 @@ class CalibrationSettingsView(LockableWidget):
         patch_analysis_layout.addRow(QLabel("Avoid Clipping:"), self.avoid_clipping)
         patch_analysis_group.setLayout(patch_analysis_layout)
         main_layout.addWidget(patch_analysis_group)
+
+        self.export_lut_for_aces_cct = QCheckBox()
+        self.export_lut_for_aces_cct_in_target_out = QCheckBox()
+        export_options_group = QGroupBox("Export Options")
+        aces_cct_layout = QFormLayout()
+        aces_cct_layout.addRow(QLabel("Export LUT For ACEScct:"),
+                               self.export_lut_for_aces_cct)
+        aces_cct_layout.addRow(QLabel("Export LUT For ACEScct In/Target Out:"),
+                               self.export_lut_for_aces_cct_in_target_out)
+        export_options_group.setLayout(aces_cct_layout)
+        main_layout.addWidget(export_options_group)
 
 
 class ProjectSettingsController(QObject):
@@ -1001,6 +1013,16 @@ class ProjectSettingsController(QObject):
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT,
                 self.project_settings_view.export_lut_for_aces_cct_in_target_out.isChecked())
+        )
+        self.led_analysis_settings_view.export_lut_for_aces_cct.stateChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT,
+                self.led_analysis_settings_view.export_lut_for_aces_cct.isChecked())
+        )
+        self.led_analysis_settings_view.export_lut_for_aces_cct_in_target_out.stateChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT,
+                self.led_analysis_settings_view.export_lut_for_aces_cct_in_target_out.isChecked())
         )
         self.project_settings_view.output_folder.textChanged.connect(
             lambda: self.model.set_data(
