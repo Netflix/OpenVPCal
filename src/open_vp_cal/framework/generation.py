@@ -332,6 +332,21 @@ class PatchGeneration:
             Oiio.FLOAT)
         )
 
+        self.draw_crosshair(scaled_img, 20, 20, 5, 2, [1.0, 1.0, 1.0])
+        self.draw_crosshair(scaled_img, 20, 650, 5, 2, [1.0, 1.0, 1.0])
+        self.draw_crosshair(scaled_img, 980, 650, 5, 2, [1.0, 1.0, 1.0])
+        self.draw_crosshair(scaled_img, 980, 20, 5, 2, [1.0, 1.0, 1.0])
+
+        text = f"Macbeth Chart - OpenVPCal"
+        Oiio.ImageBufAlgo.render_text(
+            scaled_img, 40, 20, text,
+            fontname=ResourceLoader.bold_font(),
+            fontsize=12,
+            textcolor=[1, 1, 1]
+        )
+
+        Oiio.ImageBufAlgo.fill(outer_image_buf, [0.1, 0.1, 0.1])
+
         outer_image_buf = imaging_utils.insert_resized_image(scaled_img, outer_image_buf, 20)
 
         return [outer_image_buf]
