@@ -176,9 +176,14 @@ class TestCLIGeneratePatterns(TestProject):
 
         patches_folder = os.path.join(
             self.project_settings.output_folder, constants.ProjectFolders.EXPORT, constants.ProjectFolders.PATCHES)
-        files = os.listdir(patches_folder)
-        self.assertTrue(len(files), 1)
-        images = os.listdir(os.path.join(patches_folder, files[0], self.project_settings.file_format))
+        walls = os.listdir(patches_folder)
+        self.assertTrue(len(walls), 1)
+        images = os.listdir(
+            os.path.join(
+                patches_folder, walls[0],
+                self.project_settings.file_format.replace(".", "")
+            )
+        )
         self.assertTrue(len(images), 45)
         self.assertTrue(os.path.exists(result))
         shutil.rmtree(patches_folder)
