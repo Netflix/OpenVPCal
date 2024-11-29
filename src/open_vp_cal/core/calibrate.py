@@ -519,6 +519,45 @@ def create_decoupling_white_balance_matrix(
     return decoupling_white_balance_matrix
 
 
+def check_eotf_max_values(measured_samples):
+    """ If the playback or capture setup of the media server, camera, processor is incorrect,
+        such as mis matching playback and capture rates, genlock issues, or sync issues,
+        or a media server which is incorrectly interpolating the calibration patches,
+        or is "struggling" to playback the frames with a consistent separation.
+
+        The sampling of the eotf ramp later in the sequence can "miss" the last patch and sample the end slate.
+
+        Firstly, this is a major issue of the playback setup on stage and needs to be corrected, but laterly the last frame of the eotf ramp
+        is used to calculate the delta between the actual peak luminance and the expected peak luminance.
+
+        If the last frame is the end slate, the measured peak lum is dramatically lower
+        than the expected peak lum, which will cause the calibration to fail.
+
+    Args:
+        measured_samples: The measured samples
+
+    Raises:
+        ValueError: If the last frame of the EOTF ramp is sampled as the end slate
+
+    """
+    eotf_ramp_check = measured_samples[constants.Measurements.EOTF_RAMP]
+    eotf_ramp_check_last = eotf_ramp_check[-1]
+    eotf_ramp_check_next_to_last = eotf_ramp_check[-2]
+    eotf_last_mean = sum(eotf_ramp_check_last) / len(eotf_ramp_check_last)
+    eotf_next_to_last_mean = sum(eotf_ramp_check_next_to_last) / len(
+        eotf_ramp_check_next_to_last)
+    last_frame_delta = abs(eotf_next_to_last_mean - eotf_last_mean)
+
+    # If we see a huge delta in the last frame of the EOTF ramp, we likely have a genlock, frame rate, sync issue
+    # which has caused us to sample the end slate frame vs the EOTF ramp frame
+    if last_frame_delta > 0.6:
+        raise ValueError(
+            "\nThe EOTF Ramp Samples Show A Large Difference Between The Last "
+            "Two Patches.\nMost Likely Due Sampling The End Slate Instead Of The Last EOTF Ramp."
+            "\nThis Is Likely Due To A Genlock, Frame Rate Mismatch, Sync Issue, "
+            "Or Inconsistent Playback Rates."
+            "Ensure You Playback & Capture Setup Is Correct")
+
 def run(
         measured_samples: Dict,
         reference_samples: Dict,
@@ -618,6 +657,10 @@ def run(
     if configuration_check > 1:
         raise ValueError("Only one of auto white balance, external white balance, "
                          "or decoupled lens white balance is allowed")
+
+    # 0) Validate that the EOTF ramp for the last frame is not accidentally the
+    # end slate due to infra structure issues
+    check_eotf_max_values(measured_samples)
 
     # 1) First We Get Our Colour Spaces
     input_plate_cs, native_camera_gamut_cs, target_cs, reference_cs = get_calibration_colour_spaces(
