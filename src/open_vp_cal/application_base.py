@@ -216,6 +216,9 @@ class OpenVPCalBase:
             except SeparationException as e:
                 self.error_message(f"{led_wall.name}\n{e}")
                 return False
+            except ValueError as e:
+                self.error_message(f"{led_wall.name}\n{e}")
+                return False
         return True
 
     def calibrate(self, led_walls: List[LedWallSettings]) -> bool:
