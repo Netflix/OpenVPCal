@@ -442,6 +442,13 @@ def deltaE_ICtCp(
     eotf_ramp_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
         eotf_ramp_reference_samples, target_cs, native_camera_gamut_cs, None)
 
+
+    # Because the white balance could be extremely off when we calculate the delta_e for the eotf ramp
+    # we use the single green channel value to calculate the linearity
+    eotf_ramp_camera_native_gamut = [
+        [g, g, g] for r, g, b in eotf_ramp_camera_native_gamut
+    ]
+
     rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_measurements_camera_native_gamut, 'Dolby 2016')
     eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_camera_native_gamut, 'Dolby 2016')
     macbeth_samples_ICtCp = colour.RGB_to_ICtCp(macbeth_measurements_camera_native_gamut, 'Dolby 2016')
@@ -622,7 +629,6 @@ def run(
     if input_plate_gamut != reference_gamut:
         for key in measured_samples:
             if key not in [constants.Measurements.EOTF_RAMP_SIGNAL, constants.Measurements.PRIMARIES_SATURATION]:
-                print (key)
                 measured_samples[key] = colour.RGB_to_RGB(
                     measured_samples[key], input_plate_cs, reference_cs,
                     None
@@ -681,8 +687,7 @@ def run(
         input_plate_cs, target_cs, reference_gamut, cs_cat=reference_to_target_cat
     )
 
-    # 7) We Get The Green Value From The 18% Grey Patch, Scale This So It Equals 18% Of Peak Luminance
-    # Apply This Scaling To RGBW & Grey Ramp Samples
+    # 7) We Get The Max Green Value Of The EOTF Ramp And We Scale So It Hits Peak Lum
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
     grey_measurements_white_balanced_native_gamut_green = grey_measurements_white_balanced_native_gamut[1]
 
