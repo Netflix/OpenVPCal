@@ -127,6 +127,20 @@ def validate_folder_path(folder_path: str) -> str:
     return folder_path
 
 
+def validate_is_file(file_path: str) -> str:
+    """ Validates that the file path exists and is a file.
+
+    Args:
+        file_path: The file path to validate
+    """
+    if not os.path.exists(file_path):
+        raise argparse.ArgumentTypeError(f"{file_path} does not exist.")
+
+    if not os.path.isfile(file_path):
+        raise argparse.ArgumentTypeError(f"{file_path} is not a valid file.")
+    return file_path
+
+
 def validate_project_settings(file_path: str) -> str:
     """ Validates that the project settings file path exists and is a valid JSON file.
 
@@ -169,10 +183,32 @@ def generate_patterns(project_settings_file_path: str, output_folder: str) -> st
     project_settings.output_folder = output_folder
     return generate_patterns_for_led_walls(project_settings, project_settings.led_walls)
 
+def add_error_to_log(error_log: str, error: str) -> None:
+    """ Adds an error to the error log file.
+
+    Args:
+        error_log: The error log file path
+        error: The error to add to the log file
+
+    """
+    if not error_log:
+        return
+
+    data = {"errors": []}
+    with open(error_log, 'r') as handle:
+        try:
+            data = json.load(handle)
+        except json.JSONDecodeError:
+            pass
+
+    data["errors"].append(error)
+    with open(error_log, 'a') as handle:
+        handle.write(json.dumps(data))
+
 def run_cli(
         project_settings_file_path: str,
         output_folder: str,
-        ocio_config_path: str = None, force=False) -> dict[str, LedWallSettings]:
+        ocio_config_path: str = None, force=False, error_log: str = None ) -> dict[str, LedWallSettings]:
     """ Runs the application in CLI mode to process the given project settings file.
 
     Args:
@@ -181,6 +217,7 @@ def run_cli(
         ocio_config_path: The OCIO config path
         force: Whether to force the processing to continue even if there are warnings and errors, highly discouraged and
             primarily for testing purposes
+        error_log: The error log file path to store errors in as a json file
 
     Returns: The list of ProcessingResults
 
@@ -195,42 +232,60 @@ def run_cli(
     # Load all the led walls and load the sequences
     for led_wall in project_settings.led_walls:
         if not led_wall.input_sequence_folder:
-            raise IOError(f"Input sequence folder not set for {led_wall.name}")
-        if os.path.exists(led_wall.input_sequence_folder):
-            raise IOError(f"Input sequence folder {led_wall.input_sequence_folder} does not exist")
+            output = f"Input sequence folder not set for '{led_wall.name}'"
+            add_error_to_log(error_log, output)
+            raise IOError(output)
+        if not os.path.exists(led_wall.input_sequence_folder):
+            output = f"Input sequence folder '{led_wall.input_sequence_folder}' does not exist"
+            add_error_to_log(error_log, output)
+            raise IOError(output)
         led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder)
 
         if not led_wall.roi:
             _, auto_roi_results = open_vp_cal_base.run_auto_detect(led_wall)
             if not auto_roi_results or not auto_roi_results.is_valid:
-                raise ValueError("Auto ROI detection failed.")
+                output = "Auto ROI detection failed."
+                add_error_to_log(error_log, output)
+                raise ValueError(output)
 
         led_wall.sequence_loader.set_current_frame(led_wall.sequence_loader.start_frame)
 
     # Now we have everything lets sort the led walls so they are in the correct order
     status = open_vp_cal_base.analyse(project_settings.led_walls)
-    if not status and not force:
+    if not status:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
-        raise ValueError(f"Analysis Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+        output = f"Analysis Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n"
+        add_error_to_log(error_log, output)
+        if not force:
+            raise ValueError(output)
 
     status = open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
-    if not status and not force:
+    if not status:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
-        raise ValueError(f"Analysis Validation Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+        output = f"Analysis Validation Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n"
+        add_error_to_log(error_log, output)
+        if not force:
+            raise ValueError(output)
 
     status = open_vp_cal_base.calibrate(project_settings.led_walls)
-    if not status and not force:
+    if not status:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
-        raise ValueError(f"Calibrate Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+        output = f"Calibrate Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n"
+        add_error_to_log(error_log, output)
+        if not force:
+            raise ValueError(output)
 
     status, led_walls = open_vp_cal_base.export(project_settings, project_settings.led_walls)
-    if not status and not force:
+    if not status:
         error_messages = "\n".join(open_vp_cal_base.error_messages())
         warning_messages = "\n".join(open_vp_cal_base.warning_messages())
-        raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+        output = f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n"
+        add_error_to_log(error_log, output)
+        if not force:
+            raise ValueError(output)
 
     return {led_wall.name: led_wall for led_wall in led_walls}
 
@@ -264,7 +319,9 @@ def run_args(args: argparse.Namespace) -> None:
             run_cli(
                 args.project_settings,
                 args.output_folder,
-                args.ocio_config_path
+                args.ocio_config_path,
+                force=args.ignore_errors,
+                error_log=args.error_log
             )
 
 
@@ -295,9 +352,9 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description='Command line arguments')
     parser.add_argument('--ui', type=str2bool, default=True, help='UI flag')
-    parser.add_argument('--generate_patterns', type=bool, default=False,
+    parser.add_argument('--generate_patterns', type=str2bool, default=False,
                         help='CLI flag to generate the calibration patterns for the given project settings')
-    parser.add_argument('--generate_spg_patterns', type=bool, default=False,
+    parser.add_argument('--generate_spg_patterns', type=str2bool, default=False,
                         help='CLI flag to generate the spg roundtrip patterns for the given project settings')
     parser.add_argument('--project_settings', type=validate_project_settings,
                         required=False, help='Path to project settings JSON file')
@@ -305,6 +362,10 @@ def parse_args() -> argparse.Namespace:
                         required=False, help='Path to output folder')
     parser.add_argument('--ocio_config_path', type=validate_file_path,
                         required=False, help='Path to OCIO config file')
+    parser.add_argument('--ignore_errors', type=str2bool, default=False,
+                        help='CLI flag to ignore any errors produced during the calibration process and logging them in the provided error log file')
+    parser.add_argument('--error_log', type=validate_is_file,
+                        required=False, help='Path to project settings JSON file')
     args = parser.parse_args(sys.argv[1:])
 
     if not args.ui:

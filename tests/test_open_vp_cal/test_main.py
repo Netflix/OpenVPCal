@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import shutil
+from pathlib import Path
 from argparse import ArgumentTypeError
 import json
 import os
@@ -214,3 +215,15 @@ class TestCLIGeneratePatterns(TestProject):
         )
         self.assertEqual(len(images), 67)
         shutil.rmtree(patches_folder)
+
+    def test_cli_force_error_log(self):
+        error_log = Path(os.path.join(self.get_test_output_folder(),'filename.txt'))
+        error_log.touch()
+        self.project_settings.led_walls[0].input_sequence_folder = ""
+        with self.assertRaises(IOError):
+            self.run_cli(self.project_settings, force=True, error_log=str(error_log))
+
+        with open(str(error_log), 'r') as f:
+            result = json.load(f)
+
+        self.assertEqual(len(result["errors"]), 1)
