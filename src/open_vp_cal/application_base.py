@@ -24,6 +24,7 @@ from typing import List, Dict, Tuple, Any
 
 from open_vp_cal.core import constants, utils
 from open_vp_cal.core.resource_loader import ResourceLoader
+from open_vp_cal.core.structures import OpenVPCalWarning, OpenVPCalException
 from open_vp_cal.framework.configuraton import Configuration
 from open_vp_cal.framework.processing import Processing, SeparationException
 from open_vp_cal.framework.utils import export_pre_calibration_ocio_config, generate_patterns_for_led_walls
@@ -216,9 +217,12 @@ class OpenVPCalBase:
             except SeparationException as e:
                 self.error_message(f"{led_wall.name}\n{e}")
                 return False
-            except ValueError as e:
+            except OpenVPCalException as e:
                 self.error_message(f"{led_wall.name}\n{e}")
                 return False
+            except OpenVPCalWarning as e:
+                self.error_message(f"{led_wall.name}\n{e}")
+                return True
         return True
 
     def calibrate(self, led_walls: List[LedWallSettings]) -> bool:
