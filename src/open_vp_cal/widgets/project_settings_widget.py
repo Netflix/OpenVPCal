@@ -725,10 +725,10 @@ class PlateSettingsView(LockableWidget):
         plate_settings_group = QGroupBox("Plate Settings")
         plate_settings_layout = QFormLayout()
         plate_settings_layout.addRow(QLabel("Input Plate Gamut:"), self.input_plate_gamut)
-        self.shoot_cam_label = QLabel("Shoot Camera Gamut:")
-        self.shoot_cam_label.setToolTip("The native camera gamut of the camera used on the led "
-                                        "stage to shoot the show, and which "
-                                        "you are also using to record the calibration "
+        self.shoot_cam_label = QLabel("Shooting Camera Gamut:")
+        self.shoot_cam_label.setToolTip("The colour space of the camera used on the led "
+                                        "stage to shoot the production, and which "
+                                        "you are ALSO using to record the calibration."
                                         "patches")
         plate_settings_layout.addRow(self.shoot_cam_label, self.native_camera_gamut)
         plate_settings_layout.addRow(QLabel("Auto WB Source:"), self.auto_wb_source)
