@@ -34,8 +34,8 @@ class ProjectSettings:
         """Initialize an empty ProjectSettings object."""
         self._default_project_settings = {
             constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.FF_DEFAULT,
-            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
-            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: constants.DEFAULT_RESOLUTION_WIDTH,
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: constants.DEFAULT_RESOLUTION_HEIGHT,
             constants.ProjectSettingsKeys.OUTPUT_FOLDER: os.path.join(str(Path.home()), "OpenVPCal_output"),
             constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "",
             constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",

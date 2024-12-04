@@ -140,8 +140,8 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.DEFAULT: default_led_wall.num_grey_patches, "min": 0, "max": 100, "step": 1},
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: {
                 constants.DEFAULT: self.frames_per_patch, "min": 0, "max": 100, "step": 1},
-            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
-            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: constants.DEFAULT_RESOLUTION_WIDTH, "min": 0, "max": 7680, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: constants.DEFAULT_RESOLUTION_HEIGHT, "min": 0, "max": 4320, "step": 1},
             constants.ProjectSettingsKeys.REFERENCE_GAMUT: {
                 constants.OPTIONS: [constants.ColourSpace.CS_ACES], constants.DEFAULT: constants.ColourSpace.CS_ACES},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
