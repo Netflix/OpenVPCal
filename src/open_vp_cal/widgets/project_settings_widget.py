@@ -1221,6 +1221,7 @@ class ProjectSettingsController(QObject):
             self.model.add_custom_primary(gamut_name, primaries)
             self.add_custom_gamut_to_ui(gamut_name)
 
+
     def open_custom_gamut_from_matrix_dialog(self) -> None:
         """
         Opens a dialogue to select custom gamut values, and sets the values in the model
@@ -1244,6 +1245,7 @@ class ProjectSettingsController(QObject):
         """
         self.led_settings_view.target_gamut.addItem(gamut_name)
         self.plate_settings_view.native_camera_gamut.addItem(gamut_name)
+        self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
 
     # pylint: disable=W0613
     def on_led_wall_removed(self, removed_wall: str) -> None:
