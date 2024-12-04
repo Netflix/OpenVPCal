@@ -29,7 +29,8 @@ import open_vp_cal
 from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import constants
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.framework.utils import generate_patterns_for_led_walls
+from open_vp_cal.framework.utils import generate_patterns_for_led_walls, \
+    generate_spg_patterns_for_led_walls
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 
@@ -142,6 +143,17 @@ def validate_project_settings(file_path: str) -> str:
         raise exc
     return file_path
 
+def generate_spg_patterns(project_settings_file_path: str, output_folder: str) -> None:
+    """ Generates then spg round trip test patterns for the given project settings file and output folder.
+
+        Args:
+            project_settings_file_path: the file path to the project settings file we want to generate patterns for
+            output_folder: the output folder to save the patterns to
+
+        """
+    project_settings = ProjectSettings.from_json(project_settings_file_path)
+    project_settings.output_folder = output_folder
+    generate_spg_patterns_for_led_walls(project_settings, project_settings.led_walls)
 
 def generate_patterns(project_settings_file_path: str, output_folder: str) -> str:
     """ Generates then calibration patterns for the given project settings file and output folder.
@@ -156,7 +168,6 @@ def generate_patterns(project_settings_file_path: str, output_folder: str) -> st
     project_settings = ProjectSettings.from_json(project_settings_file_path)
     project_settings.output_folder = output_folder
     return generate_patterns_for_led_walls(project_settings, project_settings.led_walls)
-
 
 def run_cli(
         project_settings_file_path: str,
@@ -183,6 +194,10 @@ def run_cli(
 
     # Load all the led walls and load the sequences
     for led_wall in project_settings.led_walls:
+        if not led_wall.input_sequence_folder:
+            raise IOError(f"Input sequence folder not set for {led_wall.name}")
+        if os.path.exists(led_wall.input_sequence_folder):
+            raise IOError(f"Input sequence folder {led_wall.input_sequence_folder} does not exist")
         led_wall.sequence_loader.load_sequence(led_wall.input_sequence_folder)
 
         if not led_wall.roi:
@@ -238,14 +253,19 @@ def run_args(args: argparse.Namespace) -> None:
     """
     if args.ui:
         open_ui()
-    elif args.generate_patterns:
-        generate_patterns(args.project_settings, args.output_folder)
     else:
-        run_cli(
-            args.project_settings,
-            args.output_folder,
-            args.ocio_config_path
-        )
+
+        if args.generate_patterns:
+            generate_patterns(args.project_settings, args.output_folder)
+        if args.generate_spg_patterns:
+            generate_spg_patterns(args.project_settings, args.output_folder)
+
+        if not args.generate_patterns and not args.generate_spg_patterns:
+            run_cli(
+                args.project_settings,
+                args.output_folder,
+                args.ocio_config_path
+            )
 
 
 def str2bool(v: str) -> bool:
@@ -276,7 +296,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Command line arguments')
     parser.add_argument('--ui', type=str2bool, default=True, help='UI flag')
     parser.add_argument('--generate_patterns', type=bool, default=False,
-                        help='CLI flag to generation calibration patterns for the given project settings')
+                        help='CLI flag to generate the calibration patterns for the given project settings')
+    parser.add_argument('--generate_spg_patterns', type=bool, default=False,
+                        help='CLI flag to generate the spg roundtrip patterns for the given project settings')
     parser.add_argument('--project_settings', type=validate_project_settings,
                         required=False, help='Path to project settings JSON file')
     parser.add_argument('--output_folder', type=validate_folder_path,

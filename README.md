@@ -1505,6 +1505,38 @@ the minimal black level the LED panels are capable of before multiplexing issues
 * **Alignment** - A series of grids and cross patterns which ensures there are no mis alignments in physical 
 construction or mapping of content to the led wall 
 
+## CLI
+OpenVPCal also provides a cli interface to generate calibration patterns, generate SPG test patterns, and to run the calibration itself.
+This requires the project settings file to be completed
+
+### Generate SPG Patterns
+#### OSX & Linux
+```shell
+OpenVPCal --ui false --generate_spg_patterns true --project_settings /tmp/output_folder/project_settings.json --output_folder /tmp/output_folder
+```
+#### Windows
+```cmd
+OpenVPCal.exe --ui=false --generate_spg_patterns=true --project_settings=/tmp/output_folder/project_settings.json --output_folder=/tmp/output_folder
+```
+
+### Generate OpenVPCal Patterns
+#### OSX & Linux
+```shell
+OpenVPCal --ui false --generate_patterns true --project_settings /tmp/output_folder/project_settings.json --output_folder /tmp/output_folder
+```
+#### Windows
+```cmd
+OpenVPCal.exe --ui=false --generate_patterns=true --project_settings=/tmp/output_folder/project_settings.json --output_folder=/tmp/output_folder
+```
+### Run Calibration
+#### OSX & Linux
+```shell
+OpenVPCal --ui false --project_settings /tmp/output_folder/project_settings.json --output_folder /tmp/output_folder
+```
+#### Windows
+```cmd
+OpenVPCal.exe --ui=false --project_settings=/tmp/output_folder/project_settings.json --output_folder=/tmp/output_folder
+```
 
 ## Developer Guide
 Below we outline the core usage of the python module, which is the backbone of the OpenVPCal application.
@@ -1646,6 +1678,205 @@ if not status:
     error_messages = "\n".join(open_vp_cal_base.error_messages())
     warning_messages = "\n".join(open_vp_cal_base.warning_messages())
     raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+```
+
+## OpenVPCal Project Schema
+Whilst the python modules allow for the creation of projects, the schema for the project can be implemented in other languages or libraries.
+Below is the schema for the OpenVPCal project settings file.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "openvp_cal_version": {
+      "type": "string"
+    },
+    "project_settings": {
+      "type": "object",
+      "properties": {
+        "file_format": {
+          "type": "string"
+        },
+        "resolution_width": {
+          "type": "integer"
+        },
+        "resolution_height": {
+          "type": "integer"
+        },
+        "output_folder": {
+          "type": "string"
+        },
+        "ocio_config_path": {
+          "type": ["string", "null"]
+        },
+        "custom_logo_path": {
+          "type": "string"
+        },
+        "frames_per_patch": {
+          "type": "integer"
+        },
+        "led_walls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "enable_eotf_correction": {
+                "type": "boolean"
+              },
+              "enable_gamut_compression": {
+                "type": "boolean"
+              },
+              "auto_wb_source": {
+                "type": "boolean"
+              },
+              "input_sequence_folder": {
+                "type": "string"
+              },
+              "num_grey_patches": {
+                "type": "integer"
+              },
+              "primaries_saturation": {
+                "type": "number"
+              },
+              "calculation_order": {
+                "type": "string"
+              },
+              "input_plate_gamut": {
+                "type": "string"
+              },
+              "native_camera_gamut": {
+                "type": "string"
+              },
+              "reference_to_target_cat": {
+                "type": "string"
+              },
+              "roi": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "shadow_rolloff": {
+                "type": "number"
+              },
+              "target_max_lum_nits": {
+                "type": "integer"
+              },
+              "target_gamut": {
+                "type": "string"
+              },
+              "target_eotf": {
+                "type": "string"
+              },
+              "target_to_screen_cat": {
+                "type": "string"
+              },
+              "match_reference_wall": {
+                "type": "boolean"
+              },
+              "reference_wall": {
+                "type": "string"
+              },
+              "use_white_point_offset": {
+                "type": "boolean"
+              },
+              "white_point_offset_source": {
+                "type": "string"
+              },
+              "is_verification_wall": {
+                "type": "boolean"
+              },
+              "verification_wall": {
+                "type": "string"
+              },
+              "avoid_clipping": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "enable_eotf_correction",
+              "enable_gamut_compression",
+              "auto_wb_source",
+              "input_sequence_folder",
+              "num_grey_patches",
+              "primaries_saturation",
+              "calculation_order",
+              "input_plate_gamut",
+              "native_camera_gamut",
+              "reference_to_target_cat",
+              "roi",
+              "shadow_rolloff",
+              "target_max_lum_nits",
+              "target_gamut",
+              "target_eotf",
+              "target_to_screen_cat",
+              "match_reference_wall",
+              "reference_wall",
+              "use_white_point_offset",
+              "white_point_offset_source",
+              "is_verification_wall",
+              "verification_wall",
+              "avoid_clipping"
+            ]
+          }
+        },
+        "project_custom_primaries": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "additionalProperties": false
+        },
+        "reference_gamut": {
+          "type": "string"
+        },
+        "frame_rate": {
+          "type": "integer"
+        },
+        "export_lut_for_aces_cct": {
+          "type": "boolean"
+        },
+        "export_lut_for_aces_cct_in_target_out": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file_format",
+        "resolution_width",
+        "resolution_height",
+        "output_folder",
+        "ocio_config_path",
+        "custom_logo_path",
+        "frames_per_patch",
+        "led_walls",
+        "project_custom_primaries",
+        "reference_gamut",
+        "frame_rate",
+        "export_lut_for_aces_cct",
+        "export_lut_for_aces_cct_in_target_out"
+      ]
+    }
+  },
+  "required": ["openvp_cal_version", "project_settings"]
+}
 ```
 
 ## Acknowledgements
