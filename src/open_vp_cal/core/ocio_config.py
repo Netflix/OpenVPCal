@@ -232,7 +232,7 @@ class OcioConfigWriter:
         Returns: The OCIO view transform for pre-calibration
 
         """
-        pre_calibration_view_transform_name = f"Pre-Calibration {led_wall_settings.name} - Default Target"
+        pre_calibration_view_transform_name = f"Pre-Calibration - Default Target"
         pre_calibration_view_transform_description = "The OpenVPCal Pre Calibrated native Output"
         pre_calibration_view_transform = self._get_view_transform(
             pre_calibration_view_transform_name,
@@ -677,7 +677,7 @@ class OcioConfigWriter:
             calc_order = CalculationOrder.CO_CS_EOTF_STRING
 
         target_colour_space = utils.get_target_colourspace_for_led_wall(led_wall_settings)
-        view_transform_name = f"Calibrated {led_wall_settings.name} - {led_wall_settings.native_camera_gamut} - {calc_order}"
+        view_transform_name = f"Calibrated {led_wall_settings.target_gamut} - {led_wall_settings.native_camera_gamut} - {calc_order}"
         view_transform_description = f"Calibrated Output - OpenVPCal {target_colour_space.name} {led_wall_settings.native_camera_gamut} - {calc_order}"
         return view_transform_description, view_transform_name
 
@@ -1017,7 +1017,8 @@ class OcioConfigWriter:
         calc_order = CalculationOrder.CO_EOTF_CS_STRING
         if lw_cs.led_wall_settings.calculation_order == CalculationOrder.CO_CS_EOTF:
             calc_order = CalculationOrder.CO_CS_EOTF_STRING
-        calibrated_output_name = (f"{OcioConfigWriter.calibrated_output} "
+        calibrated_output_name = (f"{OcioConfigWriter.calibrated_output} - "
+                                  f"{lw_cs.led_wall_settings.target_gamut} - "
                                   f"{lw_cs.led_wall_settings.native_camera_gamut} - "
                                   f"{calc_order}")
         return calibrated_output_name
