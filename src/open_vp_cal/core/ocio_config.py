@@ -677,7 +677,7 @@ class OcioConfigWriter:
             calc_order = CalculationOrder.CO_CS_EOTF_STRING
 
         target_colour_space = utils.get_target_colourspace_for_led_wall(led_wall_settings)
-        view_transform_name = f"Calibrated {led_wall_settings.target_gamut} - {led_wall_settings.native_camera_gamut} - {calc_order}"
+        view_transform_name = f"Calibrated {led_wall_settings.name} - {led_wall_settings.target_gamut} - {led_wall_settings.native_camera_gamut} - {calc_order}"
         view_transform_description = f"Calibrated Output - OpenVPCal {target_colour_space.name} {led_wall_settings.native_camera_gamut} - {calc_order}"
         return view_transform_description, view_transform_name
 
@@ -934,7 +934,8 @@ class OcioConfigWriter:
 
             # Adds to the displays: section of the config
             if lw_cs.display_colour_space_cs and lw_cs.view_transform:
-                config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(), calibrated_output_name)
+                config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(),
+                                            calibrated_output_name)
 
             if lw_cs.aces_cct_display_colour_space_cs and lw_cs.aces_cct_view_transform:
                 config.addDisplaySharedView(
@@ -1018,6 +1019,7 @@ class OcioConfigWriter:
         if lw_cs.led_wall_settings.calculation_order == CalculationOrder.CO_CS_EOTF:
             calc_order = CalculationOrder.CO_CS_EOTF_STRING
         calibrated_output_name = (f"{OcioConfigWriter.calibrated_output} - "
+                                  f"{lw_cs.led_wall_settings.name} - "
                                   f"{lw_cs.led_wall_settings.target_gamut} - "
                                   f"{lw_cs.led_wall_settings.native_camera_gamut} - "
                                   f"{calc_order}")
