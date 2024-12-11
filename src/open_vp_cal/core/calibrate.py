@@ -112,7 +112,7 @@ def eotf_correction_calculation(
 
     grey_ramp_screen = np.maximum(0, grey_ramp_screen)
 
-    lut_r, lut_g, lut_b = [[0.0, 0.0]], [[0.0, 0.0]], [[0.0, 0.0]]
+    lut_r, lut_g, lut_b = [], [], []
 
     for idx, grey_ramp_screen_value in enumerate(grey_ramp_screen):
         if deltaE_grey_ramp[idx] > deltaE_threshold:
@@ -122,9 +122,16 @@ def eotf_correction_calculation(
         lut_g.append([grey_ramp_screen_value[1], grey_signal_value_rgb[idx][1]])
         lut_b.append([grey_ramp_screen_value[2], grey_signal_value_rgb[idx][2]])
 
+    # The first value should be black we know if the wall is a mess then the black level is a mess
+    # so we hard pin the first step in the ramp to 0,0
+    lut_r[0] = [0.0, 0.0]
+    lut_g[0] = [0.0, 0.0]
+    lut_b[0] = [0.0, 0.0]
+
     lut_r = np.array(lut_r)
     lut_g = np.array(lut_g)
     lut_b = np.array(lut_b)
+
 
     if avoid_clipping:
         if not peak_lum:
