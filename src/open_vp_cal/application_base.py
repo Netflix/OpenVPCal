@@ -351,4 +351,4 @@ class OpenVPCalBase:
             led_walls: the led walls we want to generate patterns from
         """
 
-        generate_spg_patterns_for_led_walls(led_walls, project_settings)
+        generate_spg_patterns_for_led_walls(project_settings, led_walls)
