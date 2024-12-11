@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import os
 
-from open_vp_cal.core.structures import ProcessingResults
+from open_vp_cal.core import constants
 from test_open_vp_cal.test_utils import TestProject
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 
@@ -24,6 +25,20 @@ class TestCalibrate(TestProject):
     def setUp(self):
         super().setUp()
         self.config_writer = OcioConfigWriter(self.project_settings.output_folder)
+
+    def get_pre_calibration_ocio_config(self):
+        return os.path.join(
+            os.path.join(self.get_test_resources_folder(), "TestCalibrate"),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.CALIBRATION,
+            "Pre_Calibration_OpenVPCal.ocio")
+
+    def get_post_calibration_ocio_config(self):
+        return os.path.join(
+            os.path.join(self.get_test_resources_folder(), "TestCalibrate"),
+            constants.ProjectFolders.EXPORT,
+            constants.ProjectFolders.CALIBRATION,
+            "Post_Calibration_OpenVPCal.ocio")
 
     def test_pre_calibration_ocio_config_generation(self):
         actual_file_path = self.config_writer.generate_pre_calibration_ocio_config(self.led_walls)

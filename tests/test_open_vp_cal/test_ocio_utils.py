@@ -110,7 +110,7 @@ class TestCalibrate(TestProject):
             result = ocio_utils.bake_3d_lut(
                 "AOTO_Acheivable - ST 2084",
                 "AOTO_Acheivable - ST 2084 - OpenVPCal LED",
-                "OpenVPCal AOTO_Wall2 - REDWideGamutRGB",
+                "Calibrated Output - AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS",
                 ocio_config_path, filename)
 
             self.assertTrue(os.path.exists(result))
