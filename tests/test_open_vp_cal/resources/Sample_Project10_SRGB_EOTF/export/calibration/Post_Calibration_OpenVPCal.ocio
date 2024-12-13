@@ -46,8 +46,8 @@ shared_views:
   - !<View> {name: ACES 1.1 - SDR Cinema (D65 sim on DCI), view_transform: ACES 1.1 - SDR Cinema (D65 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - HDR Cinema (108 nits & P3 lim), view_transform: ACES 1.1 - HDR Cinema (108 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Un-tone-mapped, view_transform: Un-tone-mapped, display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: OpenVPCal Wall1 - REDWideGamutRGB, view_transform: OpenVPCal Wall1 - REDWideGamutRGB, display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: OpenVPCal PreCalibration, view_transform: OpenVPCal PreCalibration, display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: Calibrated Output - Wall1 - sRGB - REDWideGamutRGB - EOTF_CS, view_transform: Calibrated Wall1 - sRGB - REDWideGamutRGB - EOTF_CS, display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: Pre-Calibration Output, view_transform: Pre-Calibration - Default Target, display_colorspace: <USE_DISPLAY_NAME>}
 
 displays:
   sRGB - Display:
@@ -79,10 +79,10 @@ displays:
     - !<Views> [ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D65 sim on DCI), Un-tone-mapped]
   sRGB - sRGB - OpenVPCal LED:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [OpenVPCal Wall1 - REDWideGamutRGB, OpenVPCal PreCalibration]
+    - !<Views> [Calibrated Output - Wall1 - sRGB - REDWideGamutRGB - EOTF_CS, Pre-Calibration Output]
 
-active_displays: [sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display, sRGB - sRGB - OpenVPCal LED]
-active_views: [ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw, OpenVPCal Wall1 - REDWideGamutRGB, OpenVPCal PreCalibration]
+active_displays: [sRGB - sRGB - OpenVPCal LED, sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
+active_views: [Calibrated Output - Wall1 - sRGB - REDWideGamutRGB - EOTF_CS, Pre-Calibration Output, ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw]
 inactive_colorspaces: [CIE-XYZ-D65, sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, ST2084-P3-D65 - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-D65 - Display, P3-D65 - Display, P3-DCI - Display, P3-DCI - Display, ST2084-P3-D65 - Display]
 
 looks:
@@ -237,16 +237,16 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD}
 
   - !<ViewTransform>
-    name: OpenVPCal PreCalibration
+    name: Pre-Calibration - Default Target
     description: The OpenVPCal Pre Calibrated native Output
     from_scene_reference: !<BuiltinTransform> {style: UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD}
 
   - !<ViewTransform>
-    name: OpenVPCal Wall1 - REDWideGamutRGB
-    description: OpenVPCal sRGB REDWideGamutRGB
+    name: Calibrated Wall1 - sRGB - REDWideGamutRGB - EOTF_CS
+    description: Calibrated Output - OpenVPCal sRGB REDWideGamutRGB - EOTF_CS
     from_scene_reference: !<GroupTransform>
       children:
-        - !<ColorSpaceTransform> {src: ACES2065-1, dst: Calibration Wall1 - REDWideGamutRGB}
+        - !<ColorSpaceTransform> {src: ACES2065-1, dst: Calibration CSC - Wall1 - REDWideGamutRGB - EOTF_CS}
         - !<BuiltinTransform> {style: UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD}
 
 display_colorspaces:
@@ -1115,7 +1115,7 @@ colorspaces:
 
   - !<ColorSpace>
     name: OpenVPCal_sRGB - Curve
-    family: OpenVPCal
+    family: OpenVPCal/Utility
     equalitygroup: ""
     bitdepth: 32f
     description: OpenVPCal EOTF Only
@@ -1128,7 +1128,7 @@ colorspaces:
 
   - !<ColorSpace>
     name: sRGB - sRGB
-    family: OpenVPCal
+    family: OpenVPCal/Input
     equalitygroup: ""
     bitdepth: 32f
     description: OpenVPCal Target Gamut and EOTF
@@ -1137,23 +1137,23 @@ colorspaces:
     allocation: uniform
     from_scene_reference: !<GroupTransform>
       children:
-        - !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364663, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961932, 0, 0, 0, 0, 1]}
+        - !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364662, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961931, 0, 0, 0, 0, 1]}
         - !<ExponentWithLinearTransform> {gamma: [2.4, 2.4, 2.4, 2.4], offset: [0.055, 0.055, 0.055, 0.055], direction: inverse}
 
   - !<ColorSpace>
-    name: Linear sRGB
-    family: OpenVPCal
+    name: sRGB - Linear
+    family: OpenVPCal/Input
     equalitygroup: ""
     bitdepth: 32f
     description: OpenVPCal Target Gamut In Linear Space
     isdata: false
     encoding: scene-linear
     allocation: uniform
-    from_scene_reference: !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364663, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961932, 0, 0, 0, 0, 1]}
+    from_scene_reference: !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364662, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961931, 0, 0, 0, 0, 1]}
 
   - !<ColorSpace>
-    name: Calibration Wall1 - REDWideGamutRGB
-    family: OpenVPCal
+    name: Calibration CSC - Wall1 - REDWideGamutRGB - EOTF_CS
+    family: OpenVPCal/Utility
     equalitygroup: ""
     bitdepth: 32f
     description: |
@@ -1171,19 +1171,19 @@ colorspaces:
     allocation: uniform
     from_scene_reference: !<GroupTransform>
       children:
-        - !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364663, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961932, 0, 0, 0, 0, 1]}
-        - !<MatrixTransform> {matrix: [0.886511984328331, 0.152522237816829, -0.0390342221451603, 0, -0.0403707809641341, 0.905575709485391, -0.0246834996238503, 0, -0.0531436547305335, -0.314852285248976, 1.10047580869565, 0, 0, 0, 0, 1]}
+        - !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364662, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961931, 0, 0, 0, 0, 1]}
+        - !<MatrixTransform> {matrix: [0.886511984328331, 0.152522237816829, -0.0390342221451602, 0, -0.0403707809641338, 0.905575709485389, -0.0246834996238501, 0, -0.0531436547305332, -0.314852285248974, 1.10047580869564, 0, 0, 0, 0, 1]}
         - !<GroupTransform>
           children:
             - !<BuiltinTransform> {style: CURVE - LINEAR_to_ST-2084}
-            - !<FileTransform> {src: Calibration Wall1 - REDWideGamutRGB_EOTF_CS.clf, direction: inverse}
+            - !<FileTransform> {src: EOTF Correction 1D - Wall1 - REDWideGamutRGB - EOTF_CS.clf, direction: inverse}
             - !<BuiltinTransform> {style: CURVE - ST-2084_to_LINEAR}
         - !<GroupTransform>
           children:
             - !<BuiltinTransform> {style: ACEScg_to_ACES2065-1}
             - !<FixedFunctionTransform> {style: ACES_GamutComp13, params: [1.03547031369224, 1.04553890040722, 1.34768190218783, 0.9, 0.9, 0.9, 4]}
             - !<BuiltinTransform> {style: ACEScg_to_ACES2065-1, direction: inverse}
-        - !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364663, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961932, 0, 0, 0, 0, 1], direction: inverse}
+        - !<MatrixTransform> {matrix: [2.52140088857822, -1.13399574938275, -0.387561856768867, 0, -0.276214061561748, 1.37259556630409, -0.0962823557364662, 0, -0.0153202000774786, -0.152992561800699, 1.16838719961931, 0, 0, 0, 0, 1], direction: inverse}
 
 named_transforms:
   - !<NamedTransform>

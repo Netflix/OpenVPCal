@@ -332,6 +332,21 @@ class PatchGeneration:
             Oiio.FLOAT)
         )
 
+        self.draw_crosshair(scaled_img, 20, 20, 5, 2, [1.0, 1.0, 1.0])
+        self.draw_crosshair(scaled_img, 20, 650, 5, 2, [1.0, 1.0, 1.0])
+        self.draw_crosshair(scaled_img, 980, 650, 5, 2, [1.0, 1.0, 1.0])
+        self.draw_crosshair(scaled_img, 980, 20, 5, 2, [1.0, 1.0, 1.0])
+
+        text = f"Macbeth Chart - OpenVPCal"
+        Oiio.ImageBufAlgo.render_text(
+            scaled_img, 40, 20, text,
+            fontname=ResourceLoader.bold_font(),
+            fontsize=12,
+            textcolor=[1, 1, 1]
+        )
+
+        Oiio.ImageBufAlgo.fill(outer_image_buf, [0.1, 0.1, 0.1])
+
         outer_image_buf = imaging_utils.insert_resized_image(scaled_img, outer_image_buf, 20)
 
         return [outer_image_buf]
@@ -931,7 +946,7 @@ class PatchGeneration:
         """
         patch_roi = Oiio.ROI(start_x, start_x + patch_width, start_y, start_y + patch_height)
         inner_edge_roi = self.reduce_roi(patch_roi, 1)
-        inner_patch_roi = self.reduce_roi(inner_edge_roi, 1)
+        inner_patch_roi = self.reduce_roi(inner_edge_roi, 0.5)
         Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum), roi=patch_roi)
         Oiio.ImageBufAlgo.fill(patch, (0.0, 0.0, 0.0), roi=inner_edge_roi)
         Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum),
@@ -1064,11 +1079,14 @@ class PatchGeneration:
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        folder_path = os.path.join(folder_path, self.base_name, self.led_wall.project_settings.file_format)
+        folder_path = os.path.join(
+            folder_path, self.base_name,
+            self.led_wall.project_settings.file_format.replace(".", "")
+        )
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        file_path = os.path.join(folder_path, f"{patch_name}.{self.led_wall.project_settings.file_format}")
+        file_path = os.path.join(folder_path, f"{patch_name}{self.led_wall.project_settings.file_format}")
 
         bit_depth = 10
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_EXR:

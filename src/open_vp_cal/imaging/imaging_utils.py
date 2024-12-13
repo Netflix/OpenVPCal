@@ -933,3 +933,56 @@ def is_within_range(value: float, target: float, x: float) -> bool:
         bool: True if value is within x units of target, False otherwise.
     """
     return abs(value - target) <= x
+
+
+def calculate_white_balance_matrix_from_img_buf(
+        image_buf: Oiio.ImageBuf, remove_percent: float = 0.20) -> np.array:
+    """ Takes a given image buffer and removes 20% of the pixels around the image,
+        returning a white balance matrix based on the average RGB values
+        of the center section
+
+    Args:
+        image_buf: The image buffer to calculate the white balance matrix from
+        remove_percent: The percentage of pixels to remove from the image
+
+    Returns:
+        np.array: The white balance matrix
+
+    """
+    image_np_array = image_buf_to_np_array(image_buf)
+    height, width, _ = image_np_array.shape
+    remove_height = int(height * remove_percent)
+    remove_width = int(width * remove_percent)
+
+    # Slice the array to remove 20% from each side
+    center_section = image_np_array[
+                     remove_height:height - remove_height,
+                     remove_width:width - remove_width
+                     ]
+
+    average_rgb = np.mean(center_section, axis=(0, 1))
+    red_mult_val = average_rgb[1] / average_rgb[0]
+    blue_mult_val = average_rgb[1] / average_rgb[2]
+    white_balance_matrix = np.asarray(
+        [[red_mult_val, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, blue_mult_val]], dtype=np.float32)
+    return white_balance_matrix
+
+
+def apply_matrix_to_img_buf(
+        image_buf: Oiio.ImageBuf, matrix: np.array) -> Oiio.ImageBuf:
+    """ Applies the given matrix to the image buffer, for instance a white balancing
+        matrix
+
+    Args:
+        image_buf: The image buffer to apply the matrix to
+        matrix: The matrix to apply to the image buffer
+
+    Returns:
+        Oiio.ImageBuf: The image buffer with the matrix applied
+
+    """
+    frame_np_array = image_buf_to_np_array(image_buf)
+    image_reshaped = frame_np_array.reshape((-1, 3))
+    white_balanced_image = image_reshaped @ matrix
+    white_balanced_image = white_balanced_image.reshape(frame_np_array.shape)
+    return img_buf_from_numpy_array(white_balanced_image)

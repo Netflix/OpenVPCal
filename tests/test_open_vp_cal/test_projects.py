@@ -405,3 +405,14 @@ class Test_Sample_Project13_Custom_Camera_Gamut(BaseTestProjectPlateReuse):
             self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
+
+class TestSample_Project15_Input_Plate_CS_Conversion(BaseTestProjectPlateReuse):
+    project_name = "Sample_Project15_Input_Plate_CS_Conversion"
+
+    def test_project9(self):
+        results = self.run_cli(self.project_settings)
+        for led_wall_name, led_wall in results.items():
+            if led_wall.is_verification_wall:
+                continue
+
+            self.check_separation_frame(led_wall, 11, 21)

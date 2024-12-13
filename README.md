@@ -720,25 +720,27 @@ The OCIO config will have a group of transforms called OpenVPCal, which will off
 
 3. A linear Color Space 
 
-As the EXRs are in Linear Color Space (e.g. Linear ROE_GAMUT, or Linear Rec2020), this is the Color space you should be selecting as Input color space in the OCIO configuration panel. 
+As the EXRs are in Linear Color Space (e.g. Linear ROE_GAMUT, or Linear Rec2020), this is the Color space you should be selecting as Input color space in the OCIO configuration panel.
+(Note If You Are Using formats other than EXR you will need to selecxt the colour space + EOTF as the data in those files is not linear)
 
 
-<img src="docs/source/images/image28.png" alt="image_tooltip" width="30%" height="50%">
+<img src="docs/source/images/image28.png" alt="image_tooltip" width="70%" height="50%">
 
 
-Likewise, the OCIO config also offer an OpenVpCal group in the Display Color space called OpenVPCal PreCalibration. This will be your output color space in the OCIO configuration panel.
+Likewise, the OCIO config also offer an OpenVpCal group in the Display Views with options for the  Pre-Calibration Output. (used before calibration)
+And a Post-Calibration Output (used after calibration) used after the calibration process.
+
+This will be your output in the OCIO configuration panel.
 
 
-<img src="docs/source/images/image9.png" alt="image_tooltip" width="40%" height="50%">
+
+<img src="docs/source/images/image9.png" alt="image_tooltip" width="70%" height="50%">
 
 
 Here’s an example of how the OCIO configuration panel will look like with the transforms selected above. 
 
+<img src="docs/source/images/image11.png" alt="image_tooltip" width="100%" height="100%">
 
-<img src="docs/source/images/image11.png" alt="image_tooltip" width="60%" height="50%">
-
-
-In case you have exported any other format than EXR, the Input and Output color space selected for your OCIO config should be identical=bypass.
 
 In case your Media Playback cannot play each patch for a determined and consistent number of frames, set the “Frames per patch” option which will export the necessary frames to playback directly at your shooting FPS.
 
@@ -1488,23 +1490,180 @@ These patterns should be judged via the camera output primarily however some pat
 The default sequence will contain the following patterns:
 
 
-* **Frame Syc Count** - When filmed through the camera lens, should display whole numbers on each frame of the recording
-if any ghosting/blending of numbers is present there is a sync or playback issue. 
+### **SPG - Frame Sync Count** 
 
-* **Checkerboard** - A simple checkerboard pattern to check for any scaling or aspect ratio issues.
-* **Linear Steps** - A series of linear steps in absolute brightness in nits, when working in PQ (ST2084). There should be clearly visible bands up to the peak luminance of the wall, and no further visible walls.
-If there are more or less bands either above or below the peak of the wall there is a configuration issue.
-* **Exposure Stops** - A series of exposure stops, when displayed on the calibrated wall, by exposing the camera using the false color of the 
+When filmed through the camera lens, should display whole numbers on each frame of the recording
+if any ghosting/blending of numbers is present there is a sync or playback issue. If there are numbers missing then similarly there is a mismatch. 
+It is important to check all walls especially when driven via multiple processors as some sections of the wall
+may be in sync while other sections may not.
+
+**Expected Frame Example**
+
+<img src="docs/source/images/spg/spg.000001.png" alt="image_tooltip" width="50%" height="50%">
+
+**Frame Rate/Sync Issue - Ghosting/Blending**
+
+<img src="docs/source/images/spg/frame_count_sync_issue_1.png" alt="image_tooltip" width="50%" height="50%">
+
+**Frame Rate/Sync Issue - Partial Wall Issue**
+
+<img src="docs/source/images/spg/frame_count_sync_issue_2.png" alt="image_tooltip" width="50%" height="50%">
+
+### **SPG - Checkerboard**
+A simple set of checkerboard patterns at different sizes to check for any scaling or aspect ratio issues.
+When mapped 1:1 with the led wall the squares should un distorted.
+
+<img src="docs/source/images/spg/spg.000048.png" alt="image_tooltip" width="50%" height="50%">
+<img src="docs/source/images/spg/spg.000049.png" alt="image_tooltip" width="50%" height="50%">
+<img src="docs/source/images/spg/spg.000050.png" alt="image_tooltip" width="50%" height="50%">
+
+
+### **SPG - Linear Steps**
+A series of linear steps in absolute brightness (nits), when working in PQ (ST2084). 
+There should be clearly visible bands up to the peak luminance of the wall, and no further 
+visible bands beyond the walls peak.
+Patches are generated in bands of 100 nits with a 1000 nit range per image, eg 0-1000, 1000-2000, 2000-3000 etc
+These cover the whole range of 0 to 10,000 nits, the entire range of PQ (ST2084).
+There is an additional more granular set of steps from 1500 nits to 2000 nits in 50 nit increments to identify closer the more common range of peak values for in camera walls.
+With correctly calibrated led wall, a light meter should read the same value as the nits depicted on the band.
+
+If there are more or less bands either above or below the peak of the wall there is a configuration issue with the imaging chain
+
+**Expected Frame Example @ 1000 nits**
+
+<img src="docs/source/images/spg/spg.000052.png" alt="image_tooltip" width="50%" height="50%">
+
+**Correctly Displaying Bands To Example @ 1650 nits**
+
+<img src="docs/source/images/spg/Clipping1650.png" alt="image_tooltip" width="50%" height="50%">
+
+**Incorrectly Displaying No Bands Should Go To 1650 nits**
+
+<img src="docs/source/images/spg/Clipping_Wrong.png" alt="image_tooltip" width="50%" height="50%">
+
+
+### **SPG - Exposure Stops**
+
+A series of exposure stops, when displayed on the calibrated wall, by exposing the camera using the false color of the 
 camera, moving up and down a stop of exposure either of the content of the media server or via the camera itself, will highlight each exposure stop on the wall confirming a linear lighting response
-* **Data Range (legal/extended)** - Ensures that the imaging chain is extended range not being limited by a legal range. 
-* **Bit Depth** - A grey ramp denoting every code value from 0-1023 in 10 bit, any banding indicates the imaging chain is not 10 bit. 
-* **Color Steps** - A series of color steps to indicate any color clipping issues, similar to the Linear Steps 
-there should be nice even steps with no black bands or indistinguishable bands 
-* **Real Black Level** - Displays the bottom 18% of code values displayable on the LED panel, different this helps determine where 
-the minimal black level the LED panels are capable of before multiplexing issues are introduced to the camera.
-* **Alignment** - A series of grids and cross patterns which ensures there are no mis alignments in physical 
-construction or mapping of content to the led wall 
+between the camera and the wall.
 
+
+<img src="docs/source/images/spg/spg.000061.png" alt="image_tooltip" width="50%" height="50%">
+
+**False Colour Check + 1 Stop**
+
+<img src="docs/source/images/spg/exposure_1Stops.png" alt="image_tooltip" width="50%" height="50%">
+
+**False Colour Check + 2 Stops**
+
+<img src="docs/source/images/spg/exposure_2Stops.png" alt="image_tooltip" width="50%" height="50%">
+
+**False Colour Check + 3 Stops**
+
+<img src="docs/source/images/spg/exposure_3Stops.png" alt="image_tooltip" width="50%" height="50%">
+
+
+### **SPG - Data Range (legal/extended)**
+
+Ensures that the imaging chain is in extended (full) range and not being limited by a legal range. 
+When viewed on the led wall the inner squares should be visible (note the black inner should be very feint look closely! )
+
+<img src="docs/source/images/spg/spg.000062.png" alt="image_tooltip" width="50%" height="50%">
+
+### **SPG - Bit Depth**
+A grey ramp moving from left to right, denoting every code value from 0-1023 in 10 bit, 
+any vertical banding indicates the imaging chain is not 10 bit.
+
+**Expected Frame**
+
+<img src="docs/source/images/spg/spg.000063.png" alt="image_tooltip" width="50%" height="50%">
+
+**Imaging Chain 8 Bit Vertical Bands**
+
+<img src="docs/source/images/spg/8_bit.png" alt="image_tooltip" width="50%" height="50%">
+
+**Same Image 10 Bit No Vertical Bands**
+
+<img src="docs/source/images/spg/10_bit.png" alt="image_tooltip" width="50%" height="50%">
+
+
+### **SPG - Color Steps**
+A series of color steps to indicate any color clipping issues, similar to the Linear Steps 
+there should be nice even steps with no black bands or indistinguishable bands. 
+This occurs when calibrated correctly to use the custom achievable primaries of the led wall.
+
+**Expected Frame - Identifiable Steps No Black Clips**
+
+<img src="docs/source/images/spg/spg.000064.png" alt="image_tooltip" width="50%" height="50%">
+
+
+### **SPG - Real Black Level**
+LEDs to not brighter and dimmer leds simply turn on and off faster and slower, as the wall gets darker leds turn off
+for longer and longer until they become off. At some point the leds are off for long enough to become visible in camera, regardless
+of sync. This is the true real black level of the LED panel, the darkest it can go before this multiplexing issue becomes visible in camera.
+This patch displays the bottom 18% of code values displayable on the LED panel, this helps determine where
+the minimal black level the LED panels are capable of before multiplexing issues are introduced to the camera.
+
+
+Tilting the camera up and down on this patch will show multiplexing issues at some point, likely close to the top of the wall, where the patch is driving
+the leds at their slowest rate, is where we will see this issue.
+
+The lower the black level of the panels, the higher up the patch the multiplexing will appear.
+
+<img src="docs/source/images/spg/spg.000065.png" alt="image_tooltip" width="50%" height="50%">
+
+**Example Minimal Black Level - Multiplexing starting before we hit actual black**
+
+<img src="docs/source/images/spg/real_black_issue_2.png" alt="image_tooltip" width="50%" height="50%">
+
+
+### **SPG - Alignment**
+A series of grids and cross patterns helpful to ensures there are no mis alignments in physical 
+construction or mapping of content to the led wall.
+
+**Example Alignment**
+
+<img src="docs/source/images/spg/spg.000066.png" alt="image_tooltip" width="50%" height="50%">
+
+**Digital Mapping + Physical Construction not aligning** 
+
+<img src="docs/source/images/spg/alignment_issue.png" alt="image_tooltip" width="50%" height="50%">
+
+
+
+## CLI
+OpenVPCal also provides a cli interface to generate calibration patterns, generate SPG test patterns, and to run the calibration itself.
+This requires the project settings file to be completed
+
+### Generate SPG Patterns
+#### OSX & Linux
+```shell
+OpenVPCal --ui false --generate_spg_patterns true --project_settings /tmp/output_folder/project_settings.json --output_folder /tmp/output_folder
+```
+#### Windows
+```cmd
+OpenVPCal.exe --ui=false --generate_spg_patterns=true --project_settings=/tmp/output_folder/project_settings.json --output_folder=/tmp/output_folder
+```
+
+### Generate OpenVPCal Patterns
+#### OSX & Linux
+```shell
+OpenVPCal --ui false --generate_patterns true --project_settings /tmp/output_folder/project_settings.json --output_folder /tmp/output_folder
+```
+#### Windows
+```cmd
+OpenVPCal.exe --ui=false --generate_patterns=true --project_settings=/tmp/output_folder/project_settings.json --output_folder=/tmp/output_folder
+```
+### Run Calibration
+#### OSX & Linux
+```shell
+OpenVPCal --ui false --project_settings /tmp/output_folder/project_settings.json --output_folder /tmp/output_folder
+```
+#### Windows
+```cmd
+OpenVPCal.exe --ui=false --project_settings=/tmp/output_folder/project_settings.json --output_folder=/tmp/output_folder
+```
 
 ## Developer Guide
 Below we outline the core usage of the python module, which is the backbone of the OpenVPCal application.
@@ -1646,6 +1805,205 @@ if not status:
     error_messages = "\n".join(open_vp_cal_base.error_messages())
     warning_messages = "\n".join(open_vp_cal_base.warning_messages())
     raise ValueError(f"Export Failed\nWarning Messages:\n{warning_messages}\nError Messages:\n{error_messages}\n")
+```
+
+## OpenVPCal Project Schema
+Whilst the python modules allow for the creation of projects, the schema for the project can be implemented in other languages or libraries.
+Below is the schema for the OpenVPCal project settings file.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "openvp_cal_version": {
+      "type": "string"
+    },
+    "project_settings": {
+      "type": "object",
+      "properties": {
+        "file_format": {
+          "type": "string"
+        },
+        "resolution_width": {
+          "type": "integer"
+        },
+        "resolution_height": {
+          "type": "integer"
+        },
+        "output_folder": {
+          "type": "string"
+        },
+        "ocio_config_path": {
+          "type": ["string", "null"]
+        },
+        "custom_logo_path": {
+          "type": "string"
+        },
+        "frames_per_patch": {
+          "type": "integer"
+        },
+        "led_walls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "enable_eotf_correction": {
+                "type": "boolean"
+              },
+              "enable_gamut_compression": {
+                "type": "boolean"
+              },
+              "auto_wb_source": {
+                "type": "boolean"
+              },
+              "input_sequence_folder": {
+                "type": "string"
+              },
+              "num_grey_patches": {
+                "type": "integer"
+              },
+              "primaries_saturation": {
+                "type": "number"
+              },
+              "calculation_order": {
+                "type": "string"
+              },
+              "input_plate_gamut": {
+                "type": "string"
+              },
+              "native_camera_gamut": {
+                "type": "string"
+              },
+              "reference_to_target_cat": {
+                "type": "string"
+              },
+              "roi": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "shadow_rolloff": {
+                "type": "number"
+              },
+              "target_max_lum_nits": {
+                "type": "integer"
+              },
+              "target_gamut": {
+                "type": "string"
+              },
+              "target_eotf": {
+                "type": "string"
+              },
+              "target_to_screen_cat": {
+                "type": "string"
+              },
+              "match_reference_wall": {
+                "type": "boolean"
+              },
+              "reference_wall": {
+                "type": "string"
+              },
+              "use_white_point_offset": {
+                "type": "boolean"
+              },
+              "white_point_offset_source": {
+                "type": "string"
+              },
+              "is_verification_wall": {
+                "type": "boolean"
+              },
+              "verification_wall": {
+                "type": "string"
+              },
+              "avoid_clipping": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "enable_eotf_correction",
+              "enable_gamut_compression",
+              "auto_wb_source",
+              "input_sequence_folder",
+              "num_grey_patches",
+              "primaries_saturation",
+              "calculation_order",
+              "input_plate_gamut",
+              "native_camera_gamut",
+              "reference_to_target_cat",
+              "roi",
+              "shadow_rolloff",
+              "target_max_lum_nits",
+              "target_gamut",
+              "target_eotf",
+              "target_to_screen_cat",
+              "match_reference_wall",
+              "reference_wall",
+              "use_white_point_offset",
+              "white_point_offset_source",
+              "is_verification_wall",
+              "verification_wall",
+              "avoid_clipping"
+            ]
+          }
+        },
+        "project_custom_primaries": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "additionalProperties": false
+        },
+        "reference_gamut": {
+          "type": "string"
+        },
+        "frame_rate": {
+          "type": "integer"
+        },
+        "export_lut_for_aces_cct": {
+          "type": "boolean"
+        },
+        "export_lut_for_aces_cct_in_target_out": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file_format",
+        "resolution_width",
+        "resolution_height",
+        "output_folder",
+        "ocio_config_path",
+        "custom_logo_path",
+        "frames_per_patch",
+        "led_walls",
+        "project_custom_primaries",
+        "reference_gamut",
+        "frame_rate",
+        "export_lut_for_aces_cct",
+        "export_lut_for_aces_cct_in_target_out"
+      ]
+    }
+  },
+  "required": ["openvp_cal_version", "project_settings"]
+}
 ```
 
 ## Acknowledgements

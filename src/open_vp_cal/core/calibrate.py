@@ -27,6 +27,7 @@ from colour.models import eotf_inverse_BT2100_PQ
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import ColourSpace, Measurements, Results, CAT, EOTF, CalculationOrder
 from open_vp_cal.core import utils
+from open_vp_cal.core.structures import OpenVPCalException
 
 
 def saturate_RGB(samples, factor):
@@ -111,7 +112,7 @@ def eotf_correction_calculation(
 
     grey_ramp_screen = np.maximum(0, grey_ramp_screen)
 
-    lut_r, lut_g, lut_b = [[0.0, 0.0]], [[0.0, 0.0]], [[0.0, 0.0]]
+    lut_r, lut_g, lut_b = [], [], []
 
     for idx, grey_ramp_screen_value in enumerate(grey_ramp_screen):
         if deltaE_grey_ramp[idx] > deltaE_threshold:
@@ -121,13 +122,20 @@ def eotf_correction_calculation(
         lut_g.append([grey_ramp_screen_value[1], grey_signal_value_rgb[idx][1]])
         lut_b.append([grey_ramp_screen_value[2], grey_signal_value_rgb[idx][2]])
 
+    # The first value should be black we know if the wall is a mess then the black level is a mess
+    # so we hard pin the first step in the ramp to 0,0
+    lut_r[0] = [0.0, 0.0]
+    lut_g[0] = [0.0, 0.0]
+    lut_b[0] = [0.0, 0.0]
+
     lut_r = np.array(lut_r)
     lut_g = np.array(lut_g)
     lut_b = np.array(lut_b)
 
+
     if avoid_clipping:
         if not peak_lum:
-            raise ValueError("Peak luminance must be provided if avoid_clipping is True")
+            raise OpenVPCalException("Peak luminance must be provided if avoid_clipping is True")
 
         max_r = np.max(np.max(lut_r[:, 0]))
         max_g = np.max(np.max(lut_g[:, 0]))
@@ -349,7 +357,7 @@ def apply_luts(
 
 def get_ocio_reference_to_target_matrix(
         input_plate_cs: RGB_Colourspace,
-        target_cs: RGB_Colourspace, cs_cat: str = None, ocio_reference_cs: RGB_Colourspace = None):
+        target_cs: RGB_Colourspace, ocio_reference_cs: str, cs_cat: str = None):
     """ Get a matrix which goes from the reference space of ocio config, to the target space provided.
         If not ocio reference cs is provided, it defaults to ACES2065-1
         If no cat is provided, it defaults to Bradford
@@ -357,16 +365,15 @@ def get_ocio_reference_to_target_matrix(
     Args:
         input_plate_cs: the input plate colourspace
         target_cs: the target colourspace we want to convert to
-        cs_cat: the chromatic adaptation transform we want to use
         ocio_reference_cs: the reference colourspace of the ocio config
+        cs_cat: the chromatic adaptation transform we want to use
 
     Returns:
         ocio_reference_to_target_matrix: the matrix which goes from the ocio reference space to the target space
         ocio_reference_cs: the reference colourspace of the ocio config
 
     """
-    if ocio_reference_cs is None:
-        ocio_reference_cs = colour.RGB_COLOURSPACES[ColourSpace.CS_ACES]
+    ocio_reference_cs = colour.RGB_COLOURSPACES[ocio_reference_cs]
 
     if cs_cat is None:
         cs_cat = CAT.CAT_BRADFORD
@@ -443,6 +450,13 @@ def deltaE_ICtCp(
     eotf_ramp_reference_samples_native_camera_gamut = colour.RGB_to_RGB(
         eotf_ramp_reference_samples, target_cs, native_camera_gamut_cs, None)
 
+
+    # Because the white balance could be extremely off when we calculate the delta_e for the eotf ramp
+    # we use the single green channel value to calculate the linearity
+    eotf_ramp_camera_native_gamut = [
+        [g, g, g] for r, g, b in eotf_ramp_camera_native_gamut
+    ]
+
     rgbw_samples_ICtCp = colour.RGB_to_ICtCp(rgbw_measurements_camera_native_gamut, 'Dolby 2016')
     eotf_ramp_samples_ICtCp = colour.RGB_to_ICtCp(eotf_ramp_camera_native_gamut, 'Dolby 2016')
     macbeth_samples_ICtCp = colour.RGB_to_ICtCp(macbeth_measurements_camera_native_gamut, 'Dolby 2016')
@@ -513,6 +527,45 @@ def create_decoupling_white_balance_matrix(
     return decoupling_white_balance_matrix
 
 
+def check_eotf_max_values(measured_samples):
+    """ If the playback or capture setup of the media server, camera, processor is incorrect,
+        such as mis matching playback and capture rates, genlock issues, or sync issues,
+        or a media server which is incorrectly interpolating the calibration patches,
+        or is "struggling" to playback the frames with a consistent separation.
+
+        The sampling of the eotf ramp later in the sequence can "miss" the last patch and sample the end slate.
+
+        Firstly, this is a major issue of the playback setup on stage and needs to be corrected, but laterly the last frame of the eotf ramp
+        is used to calculate the delta between the actual peak luminance and the expected peak luminance.
+
+        If the last frame is the end slate, the measured peak lum is dramatically lower
+        than the expected peak lum, which will cause the calibration to fail.
+
+    Args:
+        measured_samples: The measured samples
+
+    Raises:
+        OpenVPCalException: If the last frame of the EOTF ramp is sampled as the end slate
+
+    """
+    eotf_ramp_check = measured_samples[constants.Measurements.EOTF_RAMP]
+    eotf_ramp_check_last = eotf_ramp_check[-1]
+    eotf_ramp_check_next_to_last = eotf_ramp_check[-2]
+    eotf_last_mean = sum(eotf_ramp_check_last) / len(eotf_ramp_check_last)
+    eotf_next_to_last_mean = sum(eotf_ramp_check_next_to_last) / len(
+        eotf_ramp_check_next_to_last)
+    last_frame_delta = abs(eotf_next_to_last_mean - eotf_last_mean)
+
+    # If we see a huge delta in the last frame of the EOTF ramp, we likely have a genlock, frame rate, sync issue
+    # which has caused us to sample the end slate frame vs the EOTF ramp frame
+    if last_frame_delta > 0.6:
+        raise OpenVPCalException(
+            "\nThe EOTF Ramp Samples Show A Large Difference Between The Last "
+            "Two Patches.\nMost Likely Due Sampling The End Slate Instead Of The Last EOTF Ramp."
+            "\nThis Is Likely Due To A Genlock, Frame Rate Mismatch, Sync Issue, "
+            "Or Inconsistent Playback Rates."
+            "Ensure You Playback & Capture Setup Is Correct")
+
 def run(
         measured_samples: Dict,
         reference_samples: Dict,
@@ -530,14 +583,18 @@ def run(
         gamut_compression_shadow_rolloff: float = constants.GAMUT_COMPRESSION_SHADOW_ROLLOFF,
         reference_wall_external_white_balance_matrix: Union[None, List] = None,
         decoupled_lens_white_samples: Union[None, List] = None,
-        avoid_clipping: bool = True):
+        avoid_clipping: bool = True,
+        reference_gamut = constants.ColourSpace.CS_ACES
+    ):
     """ Run the entire calibration process.
 
     Args:
         measured_samples: a dictionary containing the measured values sampled from the input plate
         reference_samples: a dictionary containing the reference values for the calibration process displayed on
         the led wall
-        input_plate_gamut: The colour space of the input plate we measured the samples from
+        input_plate_gamut: The colour space of the input plate we measured the samples from, this should be ACES2065-1,
+            the samples and the plate are preprocessed in the framework into ACES before being passed in.
+            If using directly ensure your samples are pre processed correctly
         native_camera_gamut: The native colour space of the camera, used to capture the input plate
         target_gamut: The colour space we want to target for the calibration
         target_to_screen_cat: The chromatic adaptation transform method for target to screen calibration matrix
@@ -606,12 +663,31 @@ def run(
         decoupled_lens_white_samples is not None].count(True)
 
     if configuration_check > 1:
-        raise ValueError("Only one of auto white balance, external white balance, "
+        raise OpenVPCalException("Only one of auto white balance, external white balance, "
                          "or decoupled lens white balance is allowed")
 
+    # 0) Validate that the EOTF ramp for the last frame is not accidentally the
+    # end slate due to infra structure issues
+    check_eotf_max_values(measured_samples)
+
     # 1) First We Get Our Colour Spaces
-    input_plate_cs, native_camera_gamut_cs, target_cs = get_calibration_colour_spaces(
-        input_plate_gamut, native_camera_gamut, target_gamut)
+    input_plate_cs, native_camera_gamut_cs, target_cs, reference_cs = get_calibration_colour_spaces(
+        input_plate_gamut, native_camera_gamut, target_gamut, reference_gamut)
+
+    # 1a) If our input plate gamut is different to our native camera gamut,
+    # we convert the samples to reference gamut, if samples are coming from the framework
+    # samples will already be in reference gamut and we skip this step
+    if input_plate_gamut != reference_gamut:
+        for key in measured_samples:
+            if key not in [constants.Measurements.EOTF_RAMP_SIGNAL, constants.Measurements.PRIMARIES_SATURATION]:
+                measured_samples[key] = colour.RGB_to_RGB(
+                    measured_samples[key], input_plate_cs, reference_cs,
+                    None
+                ).tolist()
+
+        # Now we convert our samples from input to reference out input_plate_cs is now
+        # the reference_cs
+        input_plate_cs = reference_cs
 
     # 2) Once we have our camera native colour space we decide on the cat we want to use to convert to camera space
     camera_conversion_cat = utils.get_cat_for_camera_conversion(native_camera_gamut_cs.name)
@@ -659,11 +735,10 @@ def run(
         target_to_XYZ_matrix, reference_to_XYZ_matrix,
         reference_to_input_matrix
     ) = get_ocio_reference_to_target_matrix(
-        input_plate_cs, target_cs, cs_cat=reference_to_target_cat
+        input_plate_cs, target_cs, reference_gamut, cs_cat=reference_to_target_cat
     )
 
-    # 7) We Get The Green Value From The 18% Grey Patch, Scale This So It Equals 18% Of Peak Luminance
-    # Apply This Scaling To RGBW & Grey Ramp Samples
+    # 7) We Get The Max Green Value Of The EOTF Ramp And We Scale So It Hits Peak Lum
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
     grey_measurements_white_balanced_native_gamut_green = grey_measurements_white_balanced_native_gamut[1]
 
@@ -1094,8 +1169,9 @@ def convert_samples_to_required_cs(
 def get_calibration_colour_spaces(
         input_plate_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
         native_camera_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
-        target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
-) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
+        target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
+        reference_gamut: Union[str, RGB_Colourspace, constants.ColourSpace]
+) -> Tuple[colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace, colour.RGB_Colourspace]:
     """ Get the colour spaces needed for the calibration process
 
     Args:
@@ -1115,7 +1191,10 @@ def get_calibration_colour_spaces(
     target_cs = (
         colour.RGB_COLOURSPACES[target_gamut] if isinstance(target_gamut, str) else target_gamut
     )
-    return input_plate_cs, native_camera_gamut_cs, target_cs
+    reference_cs = (
+        colour.RGB_COLOURSPACES[reference_gamut] if isinstance(reference_gamut, str) else reference_gamut
+    )
+    return input_plate_cs, native_camera_gamut_cs, target_cs, reference_cs
 
 
 def read_results_from_json(filename):

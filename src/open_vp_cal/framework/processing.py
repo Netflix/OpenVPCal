@@ -29,7 +29,7 @@ from open_vp_cal.core import calibrate, constants, utils, ocio_utils, ocio_confi
 from open_vp_cal.imaging import macbeth, imaging_utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME, Results
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.core.structures import ProcessingResults
+from open_vp_cal.core.structures import ProcessingResults, OpenVPCalException
 from open_vp_cal.framework.generation import PatchGeneration
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.identify_separation import IdentifySeparation, SeparationResults
@@ -44,7 +44,6 @@ class SeparationException(Exception):
     """
     def __init__(self, message):
         super().__init__(message)
-
 
 class Processing:
     """
@@ -123,18 +122,29 @@ class Processing:
                 "\nIf the region of interest is correct there is likely a sync or multiplexing issue within "
                 "the recording")
 
+        # We get the last slate frame and calculate what it should be based on the
+        # separation.
         end_slate_sampler = BaseSamplePatch(
             self.led_wall, self.led_wall.separation_results, constants.PATCHES.END_SLATE)
         _, last_frame = end_slate_sampler.calculate_first_and_last_patch_frame()
+
+        # If our calculated last frame is greater than the length of the sequence
+        # we remove the end slate frames (1 x separation) to account for someone not
+        # exporting the sequence fully
         if last_frame > self.led_wall.sequence_loader.end_frame:
-            raise ValueError(f"Separation Calculation was not successful\n"
+            last_frame -= self.led_wall.separation_results.separation
+
+        # If the last frame is still greater than the end frame of the sequence
+        # then we have to raise an error as someone made a critical mistake
+        if last_frame > self.led_wall.sequence_loader.end_frame:
+            raise OpenVPCalException(f"Separation Calculation was not successful\n"
                              f"Separation Frames: {self.led_wall.separation_results.separation}\n"
                              f"First Red Frame: {self.led_wall.separation_results.first_red_frame.frame_num}\n"
                              f"First Green Frame: {self.led_wall.separation_results.first_green_frame.frame_num}\n"
                              f"Last Frame Of Sequence: {self.led_wall.sequence_loader.end_frame}\n"
                              f"Calculated End Slate Last Frame: {last_frame}\n"
                              f"Separation result will lead to out of frame range result\n\n"
-                             f"Ensure Plate Was Exported Correctly Into Linear EXR {self.led_wall.input_plate_gamut}")
+                             f"Ensure Plate Is In Correct Format {self.led_wall.input_plate_gamut}")
 
         self.auto_detect_roi(self.led_wall.separation_results)
 
@@ -163,13 +173,13 @@ class Processing:
 
         reference_wall_external_white_balance_matrix = None
         if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
-            raise ValueError("Cannot use white point offset and a reference wall")
+            raise OpenVPCalException("Cannot use white point offset and a reference wall")
 
         if self.led_wall.match_reference_wall:
             if self.led_wall.reference_wall_as_wall:
                 reference_wall_processing_results = self.led_wall.reference_wall_as_wall.processing_results
                 if not reference_wall_processing_results:
-                    raise ValueError("Reference wall has not been analysed yet")
+                    raise OpenVPCalException("Reference wall has not been analysed yet")
                 reference_wall_external_white_balance_matrix = reference_wall_processing_results.pre_calibration_results[
                     Results.WHITE_BALANCE_MATRIX]
 
@@ -180,10 +190,15 @@ class Processing:
 
         default_wall = LedWallSettings("default")
 
+        # In our framework and sampling our samples have already been converted from
+        # the input_plate gamut to the working colour space, this is to ensure things
+        # like the mac beth detection work as expected, from the framework this means
+        # we now set our input_plate_gamut to reference as this is now the colour space
+        # the samples are now in
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
-            input_plate_gamut=self.led_wall.input_plate_gamut,
+            input_plate_gamut=self.led_wall.project_settings.reference_gamut,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=default_wall.reference_to_target_cat,
@@ -195,7 +210,8 @@ class Processing:
             gamut_compression_shadow_rolloff=default_wall.shadow_rolloff,
             reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
             decoupled_lens_white_samples=decoupled_lens_white_samples,
-            avoid_clipping=self.led_wall.avoid_clipping
+            avoid_clipping=self.led_wall.avoid_clipping,
+            reference_gamut=self.led_wall.project_settings.reference_gamut
         )
 
         self.led_wall.processing_results.pre_calibration_results = calibration_results
@@ -228,13 +244,13 @@ class Processing:
 
         reference_wall_external_white_balance_matrix = None
         if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
-            raise ValueError("Cannot use white point offset and a reference wall")
+            raise OpenVPCalException("Cannot use white point offset and a reference wall")
 
         if self.led_wall.match_reference_wall:
             if self.led_wall.reference_wall_as_wall:
                 reference_wall_processing_results = self.led_wall.reference_wall_as_wall.processing_results
                 if not reference_wall_processing_results:
-                    raise ValueError("Reference wall has not been analysed yet")
+                    raise OpenVPCalException("Reference wall has not been analysed yet")
                 reference_wall_external_white_balance_matrix = reference_wall_processing_results.calibration_results[
                     Results.WHITE_BALANCE_MATRIX]
 
@@ -243,10 +259,15 @@ class Processing:
             decoupled_lens_white_samples = imaging_utils.get_decoupled_white_samples_from_file(
                 self.led_wall.white_point_offset_source)
 
+        # In our framework and sampling our samples have already been converted from
+        # the input_plate gamut to the working colour space, this is to ensure things
+        # like the mac beth detection work as expected, from the framework this means
+        # we now set our input_plate_gamut to reference as this is now the colour space
+        # the samples are now in
         calibration_results = calibrate.run(
             measured_samples=self.led_wall.processing_results.samples,
             reference_samples=self.led_wall.processing_results.reference_samples,
-            input_plate_gamut=self.led_wall.input_plate_gamut,
+            input_plate_gamut=self.led_wall.project_settings.reference_gamut,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
             reference_to_target_cat=self.led_wall.reference_to_target_cat,
@@ -259,7 +280,8 @@ class Processing:
             gamut_compression_shadow_rolloff=self.led_wall.shadow_rolloff,
             reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
             decoupled_lens_white_samples=decoupled_lens_white_samples,
-            avoid_clipping=self.led_wall.avoid_clipping
+            avoid_clipping=self.led_wall.avoid_clipping,
+            reference_gamut=self.led_wall.project_settings.reference_gamut
         )
 
         self.led_wall.processing_results.calibration_results = calibration_results
@@ -350,8 +372,9 @@ class Processing:
             if export_lut_for_aces_cct_in_target_out:
                 aces_cct_desc = "_ACES_CCT_IN_TARGET_OUT"
 
-            lut_name = (f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}_"
-                        f"{led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName()}_"
+
+            lut_name = (f"{led_wall.name}_{led_wall.native_camera_gamut}_"
+                        f"{led_wall.target_gamut}_{led_wall.target_eotf}_"
                         f"{calc_order_string}{aces_cct_desc}.cube")
 
             lut_output_file = os.path.join(
@@ -362,7 +385,7 @@ class Processing:
                 ocio_utils.bake_3d_lut(
                     led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
-                    led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
+                    ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
                     ocio_config_output_file, lut_output_file
                 )
 
@@ -370,7 +393,7 @@ class Processing:
                 ocio_utils.bake_3d_lut(
                     constants.CameraColourSpace.CS_ACES_CCT,
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
-                    led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
+                    ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
                     ocio_config_output_file, lut_output_file
                 )
 
@@ -418,7 +441,7 @@ class Processing:
         if not self.led_wall.roi:
             results = AutoROI(self.led_wall, separation_results).run()
             if not results.is_valid:
-                raise ValueError("Auto ROI detection failed, no ROI detected")
+                raise OpenVPCalException("Auto ROI detection failed, no ROI detected")
             self.led_wall.roi = results.roi
             return results
         return None
@@ -555,9 +578,6 @@ class Processing:
         Returns: Tuple of sample swatch, and reference swatch
 
         """
-        input_gamut = self.led_wall.input_plate_gamut
-        working_gamut = constants.ColourSpace.CS_ACES
-
         if not os.path.exists(self.led_wall.project_settings.export_folder):
             os.makedirs(self.led_wall.project_settings.export_folder)
 
@@ -572,18 +592,20 @@ class Processing:
 
         converted_sample_buffers = []
         for img_buf in self.led_wall.processing_results.sample_buffers:
-            output_img_buf = imaging_utils.apply_color_conversion(
-                img_buf, str(input_gamut), working_gamut,
-                color_config=generation_ocio_config_path
-            )
-            converted_sample_buffers.append(output_img_buf)
+            # output_img_buf = imaging_utils.apply_color_conversion(
+            #     img_buf,
+            #     str(self.led_wall.reference_gamut),
+            #     str(self.led_wall.reference_gamut),
+            #     color_config=generation_ocio_config_path
+            # )
+            converted_sample_buffers.append(img_buf)
 
         converted_reference_buffers = []
 
         target_gamut_only_cs_name, _ = ocio_config_writer.target_gamut_only_cs_metadata(self.led_wall)
         for img_buf in self.led_wall.processing_results.sample_reference_buffers:
             output_img_buf = imaging_utils.apply_color_conversion(
-                img_buf, target_gamut_only_cs_name, working_gamut,
+                img_buf, target_gamut_only_cs_name, str(self.led_wall.project_settings.reference_gamut),
                 color_config=generation_ocio_config_path)
             converted_reference_buffers.append(output_img_buf)
 
@@ -639,7 +661,7 @@ class Processing:
             # If we can not detect the roi automatically, we resort back to the whole image ROI
             if not auto_roi_results or not auto_roi_results.is_valid:
                 led_wall_settings.roi = roi
-        except ValueError:
+        except OpenVPCalException:
             led_wall_settings.roi = roi
             auto_roi_results = None
         return sep_results, auto_roi_results

@@ -1,7 +1,7 @@
 {
     "openvp_cal_version": "1.0.0-rc.1",
     "project_settings": {
-        "file_format": "exr",
+        "file_format": ".exr",
         "resolution_width": 3839,
         "resolution_height": 2160,
         "output_folder": "/Users/adamdavis/Downloads/OpenVP_UnitTest_Projects/Sample_Project2_ROE_Wall1_CS_EOTF",
@@ -9,6 +9,7 @@
         "custom_logo_path": "",
         "frames_per_patch": 1,
         "frame_rate": 24.0,
+        "reference_gamut": "ACES2065-1",
         "export_lut_for_aces_cct": false,
         "export_lut_for_aces_cct_in_target_out": false,
         "led_walls": [

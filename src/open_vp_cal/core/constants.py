@@ -48,6 +48,9 @@ VERSION = "openvp_cal_version"
 
 TARGET_MAX_LUM_NITS_NONE_PQ = 100
 
+DEFAULT_RESOLUTION_WIDTH = 1920
+DEFAULT_RESOLUTION_HEIGHT = 1080
+
 DEFAULT_OCIO_CONFIG = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1"
 
 
@@ -92,6 +95,7 @@ class ProjectSettingsKeys:
     OCIO_CONFIG_PATH = "ocio_config_path"
     CUSTOM_LOGO_PATH = "custom_logo_path"
     FRAMES_PER_PATCH = "frames_per_patch"
+    REFERENCE_GAMUT = 'reference_gamut'
     LED_WALLS = "led_walls"
     PROJECT_CUSTOM_PRIMARIES = "project_custom_primaries"
     PROJECT_SETTINGS = "project_settings"
@@ -99,7 +103,7 @@ class ProjectSettingsKeys:
     EXPORT_LUT_FOR_ACES_CCT = "export_lut_for_aces_cct"
     EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT = "export_lut_for_aces_cct_in_target_out"
     ALL = [FILE_FORMAT, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, OUTPUT_FOLDER, OCIO_CONFIG_PATH, CUSTOM_LOGO_PATH,
-           FRAMES_PER_PATCH, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT,
+           FRAMES_PER_PATCH, REFERENCE_GAMUT, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT,
            EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT]
 
 
@@ -357,10 +361,12 @@ class FileFormats:
     """
     Class to hold the constants to describe the file formats we can use
     """
-    FF_EXR = "exr"
-    FF_DPX = "dpx"
-    FF_TIF = "tif"
-    FF_ALL = [FF_EXR, FF_DPX, FF_TIF]
+    FF_EXR = ".exr"
+    FF_DPX = ".dpx"
+    FF_TIF = ".tif"
+    FF_PNG = ".png"
+    FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
+    FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
     FF_DEFAULT = FF_EXR
 
 

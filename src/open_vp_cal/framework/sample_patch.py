@@ -17,9 +17,10 @@ Module that contains classes who are responsible for sampling and analysing the 
 """
 import threading
 import numpy as np
-from colour_checker_detection.detection.segmentation import \
-    detect_colour_checkers_segmentation
+from colour_checker_detection.detection.segmentation import (
+    detect_colour_checkers_segmentation)
 
+from open_vp_cal.core.utils import find_factors_pairs
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.core.structures import SamplePatchResults
 from open_vp_cal.framework.identify_separation import SeparationResults
@@ -81,6 +82,27 @@ class BaseSamplePatch:
             self.trim_frames = trim_frames
         return first_patch_frame, last_patch_frame
 
+    def get_white_balance_matrix_from_slate(self) -> np.ndarray:
+        """ Get the white balance matrix from the slate frame
+
+        Returns:
+            np.ndarray: The white balance matrix
+
+        """
+        slate_frame_plate_gamut = self.led_wall.sequence_loader.get_frame(
+            self.led_wall.sequence_loader.start_frame
+        )
+
+        # Ensure the slate frame is in reference gamut (ACES2065-1)
+        slate_frame = imaging_utils.apply_color_conversion(
+            slate_frame_plate_gamut.image_buf,
+            str(self.led_wall.input_plate_gamut),
+            str(self.led_wall.project_settings.reference_gamut)
+        )
+        white_balance_matrix = imaging_utils.calculate_white_balance_matrix_from_img_buf(
+            slate_frame)
+        return white_balance_matrix
+
 
 class SamplePatch(BaseSamplePatch):
     """
@@ -141,8 +163,16 @@ class SamplePatch(BaseSamplePatch):
         for frame_num in range(first_patch_frame + self.trim_frames,
                                (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
-            section = frame.extract_roi(self.led_wall.roi)
-            mean_color = imaging_utils.sample_image(section)
+            section_input = frame.extract_roi(self.led_wall.roi)
+
+            # Convert the patch from into reference gamut from the input plate gamut
+            # so all samples are sampled as reference space (ACES2065-1)
+            section_aces = imaging_utils.apply_color_conversion(
+                section_input,
+                str(self.led_wall.input_plate_gamut),
+                str(self.led_wall.project_settings.reference_gamut)
+            )
+            mean_color = imaging_utils.sample_image(section_aces)
 
             samples.append(mean_color)
             sample_results.frames.append(frame)
@@ -239,21 +269,68 @@ class MacBethSample(BaseSamplePatch):
         # We trim a number of frames off either side of the patch to ensure we remove multiplexing
         sample_results = SamplePatchResults()
         samples = []
+        white_balance_matrix = self.get_white_balance_matrix_from_slate()
         for frame_num in range(first_patch_frame + self.trim_frames,
                                (last_patch_frame - self.trim_frames) + 1):
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
-            section = frame.extract_roi(self.led_wall.roi)
             sample_results.frames.append(frame)
-            section_np_array = imaging_utils.image_buf_to_np_array(section)
-            for colour_checker_swatches_data in detect_colour_checkers_segmentation(
-                    section_np_array, additional_data=True):
-                swatch_colours, _, _ = (
-                    colour_checker_swatches_data.values)
 
+            # Extract our region
+            section_orig = frame.extract_roi(self.led_wall.roi)
+
+            # White balance the images so we increase the detection likelihood of
+            # success
+            section_orig = imaging_utils.apply_matrix_to_img_buf(
+                section_orig, white_balance_matrix
+            )
+
+            section_display_np_array = imaging_utils.image_buf_to_np_array(section_orig)
+            imaging_utils.apply_color_converstion_to_np_array(
+                section_display_np_array,
+                str(self.led_wall.input_plate_gamut),
+                "ACEScct",
+            )
+
+            # Run the detections
+            detections = detect_colour_checkers_segmentation(
+                section_display_np_array, additional_data=True)
+
+            for colour_checker_swatches_data in detections:
+                # Get the swatch colours
+                swatch_colours, _, _ = colour_checker_swatches_data.values
+                swatch_colours = np.array(swatch_colours, dtype=np.float32)
+
+                # Reshape the number of swatches from a 24, 3 array to an x, y, 3 array
+                num_swatches = swatch_colours.shape[0]
+                factor_pairs = find_factors_pairs(num_swatches)
+                x, y = factor_pairs[0]
+                array_x_y_3 = swatch_colours.reshape(x, y, 3)
+
+                # Convert the colours back to the input plate gamut
+                imaging_utils.apply_color_converstion_to_np_array(
+                    array_x_y_3,
+                    "ACEScct",
+                    str(self.led_wall.input_plate_gamut))
+
+                # Inverse the white balance back to the original values
+                inv_wb_matrix = np.linalg.inv(white_balance_matrix)
+                array_x_y_3 = array_x_y_3 @ inv_wb_matrix
+
+
+                # Convert From Input To reference gamut So all our samples are in ACES
+                imaging_utils.apply_color_converstion_to_np_array(
+                    array_x_y_3,
+                    str(self.led_wall.input_plate_gamut),
+                    str(self.led_wall.project_settings.reference_gamut)
+                )
+
+                # Reshape the array back to a 24, 3 array
+                swatch_colours = array_x_y_3.reshape(num_swatches, 3)
                 samples.append(swatch_colours)
 
-        # Compute the mean for each tuple index across all tuples, if the detection fails and we get nans, then we
-        # replace the nans with black patches as these are not used in the calibration directly
+        # Compute the mean for each tuple index across all tuples, if the
+        # detection fails, and we get nans, then we replace the nans with black patches
+        # as these are not used in the calibration directly
         averaged_tuple = np.mean(np.array(samples), axis=0)
         if not np.isnan(averaged_tuple).any():
             sample_results.samples = averaged_tuple.tolist()

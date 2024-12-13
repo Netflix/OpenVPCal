@@ -156,21 +156,31 @@ class SequenceLoader:
         # Return the length from the first sequence of digits found
         return len(matches[0])
 
-    def load_sequence(self, folder_path: str, file_type: str = constants.FileFormats.FF_EXR) -> None:
+    def load_sequence(self, folder_path: str) -> None:
         """
         Loads the image sequence from the provided folder path.
 
         Parameters:
         folder_path (str): The directory path containing the image sequence.
-        file_type (str): The file extension of the image sequence. Defaults to "exr".
 
         """
         self.cache = OrderedDict()
         self.folder_path = folder_path
-        self.file_type = file_type
-        files = [f for f in os.listdir(folder_path) if f.endswith(file_type)]
+        files = [f for f in os.listdir(folder_path) if not f.startswith(".")]
         files.sort()
+        file_extensions = list(set([os.path.splitext(f)[1] for f in files]))
 
+        if len(file_extensions) > 1:
+            raise IOError("More Than One File Extension Found In Sequence Folder")
+
+        for ext in file_extensions:
+            if ext not in constants.FileFormats.FF_ALL_READ:
+                raise IOError(f"File Extension: .{ext}, not supported")
+
+        if not files:
+            raise IOError("Sequence Folder Does Not Contain Any Files")
+
+        self.file_type = file_extensions[0]
         self.padding = self.detect_padding(files[0])
         self.file_name = files[0].split('.')[0]
 
@@ -237,7 +247,7 @@ class SequenceLoader:
         Returns:
             Frame: The loaded frame.
         """
-        full_file_name = f"{self.file_name}.{str(frame_num).zfill(self.padding)}.{self.file_type}"
+        full_file_name = f"{self.file_name}.{str(frame_num).zfill(self.padding)}{self.file_type}"
         full_file_path = os.path.join(self.folder_path, full_file_name)
         if not os.path.exists(full_file_path):
             raise IOError(f"File {full_file_path} does not exist.")

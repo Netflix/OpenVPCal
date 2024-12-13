@@ -23,8 +23,9 @@ from pathlib import Path
 from typing import Dict, List
 
 import open_vp_cal
-from open_vp_cal.core import constants
+from open_vp_cal.core import constants, ocio_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
+from open_vp_cal.core.resource_loader import ResourceLoader
 
 
 class ProjectSettings:
@@ -33,14 +34,15 @@ class ProjectSettings:
         """Initialize an empty ProjectSettings object."""
         self._default_project_settings = {
             constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.FF_DEFAULT,
-            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
-            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: constants.DEFAULT_RESOLUTION_WIDTH,
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: constants.DEFAULT_RESOLUTION_HEIGHT,
             constants.ProjectSettingsKeys.OUTPUT_FOLDER: os.path.join(str(Path.home()), "OpenVPCal_output"),
             constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "",
             constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
+            constants.ProjectSettingsKeys.REFERENCE_GAMUT: constants.ColourSpace.CS_ACES,
             constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False
@@ -238,6 +240,26 @@ class ProjectSettings:
             value (int): The resolution height
         """
         self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
+
+    @property
+    def reference_gamut(self) -> constants.ColourSpace:
+        """ Returns the reference colorspace of the working space
+
+        Returns:
+            constants.ColourSpace: Returns the reference colorspace of the working space
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.REFERENCE_GAMUT]
+
+    @reference_gamut.setter
+    def reference_gamut(self, value: constants.ColourSpace):
+        """ Set the reference colorspace of the working space, defaults to ACES2065-1
+            should only be set with extreme care, as other working spaces
+            not fully supported
+
+        Args:
+            value (constants.ColourSpace): The colour space we want to set the input too for the plate
+        """
+        self._project_settings[constants.ProjectSettingsKeys.REFERENCE_GAMUT] = value
 
     @property
     def frame_rate(self) -> float:
@@ -514,3 +536,15 @@ class ProjectSettings:
         led_wall.verification_wall = ""
         led_wall.reset_defaults()
         led_wall.verification_wall = verification_wall
+
+    def get_ocio_colorspace_names(self)-> list[str]:
+        """ Gets the colour space names from either the project ocio config, or the
+            default config
+
+        Returns:
+            Returns a list of strings for the names of the available colour configs
+        """
+        config_path = self.ocio_config_path
+        if not config_path:
+            config_path = ResourceLoader.ocio_config_path()
+        return ocio_utils.get_colorspace_names(config_path)

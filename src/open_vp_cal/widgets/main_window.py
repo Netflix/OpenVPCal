@@ -322,6 +322,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.timeline_model.sequence_loaded.connect(self.sequence_loaded)
         self.timeline_model.sequence_loaded.connect(self.project_settings_controller.on_sequence_loaded)
 
+        self.project_settings_model.input_plate_gamut_changed.connect(self.timeline_model.on_input_plate_gamut_changed)
+
     def _setup_execution_widget(self) -> None:
         """ Sets up the execution widget and connects it to all the other widgets it needs to interact
         """

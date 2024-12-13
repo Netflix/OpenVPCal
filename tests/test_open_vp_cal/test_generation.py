@@ -36,7 +36,7 @@ class TestGeneration(TestBase):
             constants.ProjectFolders.EXPORT,
             constants.ProjectFolders.PATCHES,
             "OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084",
-            self.project_settings.file_format,
+            self.project_settings.file_format.replace(".", ""),
         )
         reference_root_folder = os.path.join(
             self.get_test_resources_folder(),

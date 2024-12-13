@@ -62,6 +62,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
     led_wall_removed = Signal(object)
     error_occurred = Signal(str)
     register_custom_gamut_from_load = Signal(str)
+    input_plate_gamut_changed = Signal()
 
     def __init__(self, parent=None, led_wall_class=None):
         """
@@ -98,7 +99,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.OPTIONS: constants.EOTF.EOTF_ALL, constants.DEFAULT: default_led_wall.target_eotf
             },
             constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: {
-                constants.OPTIONS: constants.ColourSpace.CS_ALL, constants.DEFAULT: default_led_wall.input_plate_gamut
+                constants.OPTIONS: self.get_ocio_colorspace_names(), constants.DEFAULT: default_led_wall.input_plate_gamut
             },
             constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: {
                 constants.OPTIONS: constants.CameraColourSpace.CS_ALL,
@@ -139,10 +140,12 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.DEFAULT: default_led_wall.num_grey_patches, "min": 0, "max": 100, "step": 1},
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: {
                 constants.DEFAULT: self.frames_per_patch, "min": 0, "max": 100, "step": 1},
-            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
-            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: constants.DEFAULT_RESOLUTION_WIDTH, "min": 0, "max": 7680, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: constants.DEFAULT_RESOLUTION_HEIGHT, "min": 0, "max": 4320, "step": 1},
+            constants.ProjectSettingsKeys.REFERENCE_GAMUT: {
+                constants.OPTIONS: [constants.ColourSpace.CS_ACES], constants.DEFAULT: constants.ColourSpace.CS_ACES},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
-                constants.OPTIONS: constants.FileFormats.FF_ALL, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
+                constants.OPTIONS: constants.FileFormats.FF_ALL_WRITE, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
             constants.LedWallSettingsKeys.CALCULATION_ORDER: {
                 constants.OPTIONS: constants.CalculationOrder.CO_ALL,
                 constants.DEFAULT: default_led_wall.calculation_order
@@ -190,6 +193,11 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             if key == constants.LedWallSettingsKeys.TARGET_EOTF or constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS:
                 self.data_changed.emit(
                     constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, self.current_wall.target_max_lum_nits)
+
+        # If the input plate gamut changes then we emit a signal so we can update the
+        # preview in the correct colour space
+        if key == constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT:
+            self.input_plate_gamut_changed.emit()
 
     def get_data(self, key: str):
         """
@@ -613,6 +621,7 @@ class ProjectSettingsView(LockableWidget):
         self.frame_rate = None
         self.export_lut_for_aces_cct_in_target_out = None
         self.export_lut_for_aces_cct = None
+        self.reference_gamut = None
         self.init_ui()
 
     def init_ui(self):
@@ -656,6 +665,11 @@ class ProjectSettingsView(LockableWidget):
                                self.export_lut_for_aces_cct_in_target_out)
         main_layout.addLayout(aces_cct_layout)
 
+        self.reference_gamut = QComboBox()
+        reference_gamut_layout = QFormLayout()
+        reference_gamut_layout.addRow(QLabel("Reference Gamut:"), self.reference_gamut)
+        main_layout.addLayout(reference_gamut_layout)
+
         self.file_format = QComboBox()
         self.resolution_width = QSpinBox()
         self.resolution_height = QSpinBox()
@@ -686,6 +700,7 @@ class PlateSettingsView(LockableWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.shoot_cam_label = None
         self.master_layout = None
         self.input_plate_gamut = QComboBox()
         self.native_camera_gamut = QComboBox()
@@ -710,7 +725,12 @@ class PlateSettingsView(LockableWidget):
         plate_settings_group = QGroupBox("Plate Settings")
         plate_settings_layout = QFormLayout()
         plate_settings_layout.addRow(QLabel("Input Plate Gamut:"), self.input_plate_gamut)
-        plate_settings_layout.addRow(QLabel("Native Camera Gamut:"), self.native_camera_gamut)
+        self.shoot_cam_label = QLabel("Shooting Camera Gamut:")
+        self.shoot_cam_label.setToolTip("The colour space of the camera used on the led "
+                                        "stage to shoot the production, and which "
+                                        "you are ALSO using to record the calibration."
+                                        "patches")
+        plate_settings_layout.addRow(self.shoot_cam_label, self.native_camera_gamut)
         plate_settings_layout.addRow(QLabel("Auto WB Source:"), self.auto_wb_source)
         plate_settings_group.setLayout(plate_settings_layout)
         main_layout.addWidget(plate_settings_group)
@@ -857,6 +877,8 @@ class CalibrationSettingsView(LockableWidget):
         self.reference_to_target_cat = None
         self.target_to_screen_cat = None
         self.avoid_clipping = None
+        self.export_lut_for_aces_cct = None
+        self.export_lut_for_aces_cct_in_target_out = None
 
         self.init_ui()
 
@@ -901,6 +923,17 @@ class CalibrationSettingsView(LockableWidget):
         patch_analysis_layout.addRow(QLabel("Avoid Clipping:"), self.avoid_clipping)
         patch_analysis_group.setLayout(patch_analysis_layout)
         main_layout.addWidget(patch_analysis_group)
+
+        self.export_lut_for_aces_cct = QCheckBox()
+        self.export_lut_for_aces_cct_in_target_out = QCheckBox()
+        export_options_group = QGroupBox("Export Options")
+        aces_cct_layout = QFormLayout()
+        aces_cct_layout.addRow(QLabel("Export LUT For ACEScct:"),
+                               self.export_lut_for_aces_cct)
+        aces_cct_layout.addRow(QLabel("Export LUT For ACEScct In/Target Out:"),
+                               self.export_lut_for_aces_cct_in_target_out)
+        export_options_group.setLayout(aces_cct_layout)
+        main_layout.addWidget(export_options_group)
 
 
 class ProjectSettingsController(QObject):
@@ -986,6 +1019,16 @@ class ProjectSettingsController(QObject):
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT,
                 self.project_settings_view.export_lut_for_aces_cct_in_target_out.isChecked())
+        )
+        self.led_analysis_settings_view.export_lut_for_aces_cct.stateChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT,
+                self.led_analysis_settings_view.export_lut_for_aces_cct.isChecked())
+        )
+        self.led_analysis_settings_view.export_lut_for_aces_cct_in_target_out.stateChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT,
+                self.led_analysis_settings_view.export_lut_for_aces_cct_in_target_out.isChecked())
         )
         self.project_settings_view.output_folder.textChanged.connect(
             lambda: self.model.set_data(
@@ -1184,6 +1227,7 @@ class ProjectSettingsController(QObject):
             self.model.add_custom_primary(gamut_name, primaries)
             self.add_custom_gamut_to_ui(gamut_name)
 
+
     def open_custom_gamut_from_matrix_dialog(self) -> None:
         """
         Opens a dialogue to select custom gamut values, and sets the values in the model
@@ -1207,6 +1251,7 @@ class ProjectSettingsController(QObject):
         """
         self.led_settings_view.target_gamut.addItem(gamut_name)
         self.plate_settings_view.native_camera_gamut.addItem(gamut_name)
+        self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
 
     # pylint: disable=W0613
     def on_led_wall_removed(self, removed_wall: str) -> None:

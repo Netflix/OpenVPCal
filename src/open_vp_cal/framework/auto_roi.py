@@ -19,10 +19,12 @@ The Module has classes dedicated to identifying the region of interest within th
 import sys
 from typing import List
 
+from docutils.nodes import image
+
 from open_vp_cal.core.utils import clamp
 from open_vp_cal.led_wall_settings import LedWallSettings
 
-
+from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.framework.sample_patch import BaseSamplePatch
 from open_vp_cal.framework.identify_separation import SeparationResults
 from open_vp_cal.core import constants
@@ -32,6 +34,7 @@ class AutoROIResults:
     """
     Class to store the results of the roi detection
     """
+
     def __init__(self):
         """
         Initialize an instance of AutoROIResults.
@@ -144,14 +147,17 @@ class AutoROI(BaseSamplePatch):
     The main class which deals with identifying the region of interest within the image sequence which we want to
     extract
     """
-    def __init__(self, led_wall_settings: LedWallSettings, separation_results: SeparationResults):
+
+    def __init__(self, led_wall_settings: LedWallSettings,
+                 separation_results: SeparationResults):
         """ Initialize an instance of AutoROI
 
         Args:
             led_wall_settings: The LED wall we want to detect the roi for
             separation_results: The results of the separation detection for the LED wall sequence
         """
-        super().__init__(led_wall_settings, separation_results, constants.PATCHES.DISTORT_AND_ROI)
+        super().__init__(led_wall_settings, separation_results,
+                         constants.PATCHES.DISTORT_AND_ROI)
 
     def run(self) -> AutoROIResults:
         """
@@ -166,12 +172,30 @@ class AutoROI(BaseSamplePatch):
         if first_patch_frame > self.led_wall.sequence_loader.end_frame:
             return results
 
-        frame = self.led_wall.sequence_loader.get_frame(first_patch_frame + self.trim_frames)
+        frame = self.led_wall.sequence_loader.get_frame(
+            first_patch_frame + self.trim_frames)
+
+        image_plate_gamut = frame.image_buf
         pixel_buffer = 5
         detection_threshold = 1.7
-        for y_pos in range(frame.image_buf.spec().height):
-            for x_pos in range(frame.image_buf.spec().width):
-                pixel = frame.image_buf.getpixel(x_pos, y_pos)
+
+        # Create the white balance matrix
+        white_balance_matrix = self.get_white_balance_matrix_from_slate()
+
+        # Ensure the image is in reference space (ACES2065-1)
+        frame_image = imaging_utils.apply_color_conversion(
+            image_plate_gamut,
+            str(self.led_wall.input_plate_gamut),
+            str(self.led_wall.project_settings.reference_gamut)
+        )
+
+        # Apply the white balance matrix to the frame
+        balanced_image = imaging_utils.apply_matrix_to_img_buf(
+            frame_image, white_balance_matrix
+        )
+        for y_pos in range(balanced_image.spec().height):
+            for x_pos in range(balanced_image.spec().width):
+                pixel = balanced_image.getpixel(x_pos, y_pos)
                 red = clamp(pixel[0], 0, sys.float_info.max)
                 green = clamp(pixel[1], 0, sys.float_info.max)
                 blue = clamp(pixel[2], 0, sys.float_info.max)
@@ -183,12 +207,14 @@ class AutoROI(BaseSamplePatch):
 
                 if green > results.green_value:
                     if green > max(red, blue) * detection_threshold:
-                        results.green_pixel = (x_pos - pixel_buffer, y_pos + pixel_buffer)
+                        results.green_pixel = (
+                        x_pos - pixel_buffer, y_pos + pixel_buffer)
                         results.green_value = green
 
                 if blue > results.blue_value:
                     if blue > max(red, green) * detection_threshold:
-                        results.blue_pixel = (x_pos + pixel_buffer, y_pos - pixel_buffer)
+                        results.blue_pixel = (
+                        x_pos + pixel_buffer, y_pos - pixel_buffer)
                         results.blue_value = blue
 
                 white = (red + green + blue) / 3
