@@ -720,25 +720,27 @@ The OCIO config will have a group of transforms called OpenVPCal, which will off
 
 3. A linear Color Space 
 
-As the EXRs are in Linear Color Space (e.g. Linear ROE_GAMUT, or Linear Rec2020), this is the Color space you should be selecting as Input color space in the OCIO configuration panel. 
+As the EXRs are in Linear Color Space (e.g. Linear ROE_GAMUT, or Linear Rec2020), this is the Color space you should be selecting as Input color space in the OCIO configuration panel.
+(Note If You Are Using formats other than EXR you will need to selecxt the colour space + EOTF as the data in those files is not linear)
 
 
-<img src="docs/source/images/image28.png" alt="image_tooltip" width="30%" height="50%">
+<img src="docs/source/images/image28.png" alt="image_tooltip" width="70%" height="50%">
 
 
-Likewise, the OCIO config also offer an OpenVpCal group in the Display Color space called OpenVPCal PreCalibration. This will be your output color space in the OCIO configuration panel.
+Likewise, the OCIO config also offer an OpenVpCal group in the Display Views with options for the  Pre-Calibration Output. (used before calibration)
+And a Post-Calibration Output (used after calibration) used after the calibration process.
+
+This will be your output in the OCIO configuration panel.
 
 
-<img src="docs/source/images/image9.png" alt="image_tooltip" width="40%" height="50%">
+
+<img src="docs/source/images/image9.png" alt="image_tooltip" width="70%" height="50%">
 
 
 Here’s an example of how the OCIO configuration panel will look like with the transforms selected above. 
 
+<img src="docs/source/images/image11.png" alt="image_tooltip" width="100%" height="100%">
 
-<img src="docs/source/images/image11.png" alt="image_tooltip" width="60%" height="50%">
-
-
-In case you have exported any other format than EXR, the Input and Output color space selected for your OCIO config should be identical=bypass.
 
 In case your Media Playback cannot play each patch for a determined and consistent number of frames, set the “Frames per patch” option which will export the necessary frames to playback directly at your shooting FPS.
 
@@ -1596,7 +1598,7 @@ This occurs when calibrated correctly to use the custom achievable primaries of 
 <img src="docs/source/images/spg/spg.000064.png" alt="image_tooltip" width="50%" height="50%">
 
 
-### **SPGReal Black Level**
+### **SPG - Real Black Level**
 LEDs to not brighter and dimmer leds simply turn on and off faster and slower, as the wall gets darker leds turn off
 for longer and longer until they become off. At some point the leds are off for long enough to become visible in camera, regardless
 of sync. This is the true real black level of the LED panel, the darkest it can go before this multiplexing issue becomes visible in camera.
@@ -1616,7 +1618,7 @@ The lower the black level of the panels, the higher up the patch the multiplexin
 <img src="docs/source/images/spg/real_black_issue_2.png" alt="image_tooltip" width="50%" height="50%">
 
 
-### **Alignment**
+### **SPG - Alignment**
 A series of grids and cross patterns helpful to ensures there are no mis alignments in physical 
 construction or mapping of content to the led wall.
 
