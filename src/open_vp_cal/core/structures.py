@@ -71,6 +71,7 @@ class LedWallColourSpaces:
     """
     Simple class to store all the colour spaces for a led wall
     """
+    led_wall_settings = None
     calibration_cs = None
     calibration_preview_cs = None
     target_with_inv_eotf_cs = None
@@ -82,3 +83,19 @@ class LedWallColourSpaces:
     aces_cct_view_transform = None
     aces_cct_calibration_view_transform = None
     aces_cct_display_colour_space_cs = None
+
+
+class OpenVPCalException(Exception):
+    """
+    A Simple exception to raise handled exceptions specific to OpenVPCal
+    """
+    def __init__(self, message):
+        super().__init__(message)
+
+class OpenVPCalWarning(Exception):
+    """
+    A Simple exception to raise handled exceptions specific to OpenVPCal that should
+    be treated as warnings
+    """
+    def __init__(self, message):
+        super().__init__(message)

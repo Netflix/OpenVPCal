@@ -169,6 +169,7 @@ class SequenceLoader:
         files = [f for f in os.listdir(folder_path) if not f.startswith(".")]
         files.sort()
         file_extensions = list(set([os.path.splitext(f)[1] for f in files]))
+
         if len(file_extensions) > 1:
             raise IOError("More Than One File Extension Found In Sequence Folder")
 

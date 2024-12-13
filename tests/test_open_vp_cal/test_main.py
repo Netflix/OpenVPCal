@@ -15,14 +15,16 @@ limitations under the License.
 """
 
 import shutil
+from pathlib import Path
 from argparse import ArgumentTypeError
 import json
 import os
 import tempfile
 from json import JSONDecodeError
 
-from open_vp_cal.core import constants
-from open_vp_cal.main import validate_file_path, validate_folder_path, validate_project_settings, generate_patterns
+from open_vp_cal.core import constants, ocio_config
+from open_vp_cal.main import validate_file_path, validate_folder_path, \
+    validate_project_settings, generate_patterns, generate_spg_patterns
 from test_open_vp_cal.test_utils import TestBase, TestProject
 
 
@@ -184,7 +186,44 @@ class TestCLIGeneratePatterns(TestProject):
                 self.project_settings.file_format.replace(".", "")
             )
         )
-        self.assertTrue(len(images), 45)
+        self.assertEqual(len(images), 45)
         self.assertTrue(os.path.exists(result))
         shutil.rmtree(patches_folder)
         os.remove(result)
+
+    def test_cli_spg_pattern_generation(self):
+        temp_project_settings = tempfile.NamedTemporaryFile(suffix=".json", mode='w', delete=False).name
+        self.project_settings.to_json(temp_project_settings)
+        generate_spg_patterns(
+            temp_project_settings,
+            self.project_settings.output_folder
+        )
+        os.remove(temp_project_settings)
+
+        patches_folder = os.path.join(
+            self.project_settings.output_folder, constants.ProjectFolders.EXPORT, constants.ProjectFolders.SPG)
+
+        raster_folder = os.path.join(patches_folder, "RasterMaps")
+        self.assertTrue(os.path.exists(raster_folder))
+
+        walls = os.listdir(raster_folder)
+        self.assertTrue(len(walls), 1)
+        images = os.listdir(
+            os.path.join(
+                raster_folder, walls[0]
+            )
+        )
+        self.assertEqual(len(images), 67)
+        shutil.rmtree(patches_folder)
+
+    def test_cli_force_error_log(self):
+        error_log = Path(os.path.join(self.get_test_output_folder(),'filename.txt'))
+        error_log.touch()
+        self.project_settings.led_walls[0].input_sequence_folder = ""
+        with self.assertRaises(IOError):
+            self.run_cli(self.project_settings, force=True, error_log=str(error_log))
+
+        with open(str(error_log), 'r') as f:
+            result = json.load(f)
+
+        self.assertEqual(len(result["errors"]), 1)

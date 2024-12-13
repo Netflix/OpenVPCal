@@ -29,7 +29,7 @@ from open_vp_cal.core import calibrate, constants, utils, ocio_utils, ocio_confi
 from open_vp_cal.imaging import macbeth, imaging_utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME, Results
 from open_vp_cal.core.resource_loader import ResourceLoader
-from open_vp_cal.core.structures import ProcessingResults
+from open_vp_cal.core.structures import ProcessingResults, OpenVPCalException
 from open_vp_cal.framework.generation import PatchGeneration
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.identify_separation import IdentifySeparation, SeparationResults
@@ -44,7 +44,6 @@ class SeparationException(Exception):
     """
     def __init__(self, message):
         super().__init__(message)
-
 
 class Processing:
     """
@@ -138,7 +137,7 @@ class Processing:
         # If the last frame is still greater than the end frame of the sequence
         # then we have to raise an error as someone made a critical mistake
         if last_frame > self.led_wall.sequence_loader.end_frame:
-            raise ValueError(f"Separation Calculation was not successful\n"
+            raise OpenVPCalException(f"Separation Calculation was not successful\n"
                              f"Separation Frames: {self.led_wall.separation_results.separation}\n"
                              f"First Red Frame: {self.led_wall.separation_results.first_red_frame.frame_num}\n"
                              f"First Green Frame: {self.led_wall.separation_results.first_green_frame.frame_num}\n"
@@ -174,13 +173,13 @@ class Processing:
 
         reference_wall_external_white_balance_matrix = None
         if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
-            raise ValueError("Cannot use white point offset and a reference wall")
+            raise OpenVPCalException("Cannot use white point offset and a reference wall")
 
         if self.led_wall.match_reference_wall:
             if self.led_wall.reference_wall_as_wall:
                 reference_wall_processing_results = self.led_wall.reference_wall_as_wall.processing_results
                 if not reference_wall_processing_results:
-                    raise ValueError("Reference wall has not been analysed yet")
+                    raise OpenVPCalException("Reference wall has not been analysed yet")
                 reference_wall_external_white_balance_matrix = reference_wall_processing_results.pre_calibration_results[
                     Results.WHITE_BALANCE_MATRIX]
 
@@ -245,13 +244,13 @@ class Processing:
 
         reference_wall_external_white_balance_matrix = None
         if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
-            raise ValueError("Cannot use white point offset and a reference wall")
+            raise OpenVPCalException("Cannot use white point offset and a reference wall")
 
         if self.led_wall.match_reference_wall:
             if self.led_wall.reference_wall_as_wall:
                 reference_wall_processing_results = self.led_wall.reference_wall_as_wall.processing_results
                 if not reference_wall_processing_results:
-                    raise ValueError("Reference wall has not been analysed yet")
+                    raise OpenVPCalException("Reference wall has not been analysed yet")
                 reference_wall_external_white_balance_matrix = reference_wall_processing_results.calibration_results[
                     Results.WHITE_BALANCE_MATRIX]
 
@@ -373,8 +372,9 @@ class Processing:
             if export_lut_for_aces_cct_in_target_out:
                 aces_cct_desc = "_ACES_CCT_IN_TARGET_OUT"
 
-            lut_name = (f"{led_wall.processing_results.led_wall_colour_spaces.calibration_cs.getName()}_"
-                        f"{led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName()}_"
+
+            lut_name = (f"{led_wall.name}_{led_wall.native_camera_gamut}_"
+                        f"{led_wall.target_gamut}_{led_wall.target_eotf}_"
                         f"{calc_order_string}{aces_cct_desc}.cube")
 
             lut_output_file = os.path.join(
@@ -385,7 +385,7 @@ class Processing:
                 ocio_utils.bake_3d_lut(
                     led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
-                    led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
+                    ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
                     ocio_config_output_file, lut_output_file
                 )
 
@@ -393,7 +393,7 @@ class Processing:
                 ocio_utils.bake_3d_lut(
                     constants.CameraColourSpace.CS_ACES_CCT,
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
-                    led_wall.processing_results.led_wall_colour_spaces.view_transform.getName(),
+                    ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
                     ocio_config_output_file, lut_output_file
                 )
 
@@ -441,7 +441,7 @@ class Processing:
         if not self.led_wall.roi:
             results = AutoROI(self.led_wall, separation_results).run()
             if not results.is_valid:
-                raise ValueError("Auto ROI detection failed, no ROI detected")
+                raise OpenVPCalException("Auto ROI detection failed, no ROI detected")
             self.led_wall.roi = results.roi
             return results
         return None
@@ -661,7 +661,7 @@ class Processing:
             # If we can not detect the roi automatically, we resort back to the whole image ROI
             if not auto_roi_results or not auto_roi_results.is_valid:
                 led_wall_settings.roi = roi
-        except ValueError:
+        except OpenVPCalException:
             led_wall_settings.roi = roi
             auto_roi_results = None
         return sep_results, auto_roi_results

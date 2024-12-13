@@ -1,0 +1,69 @@
+{
+    "openvp_cal_version": "1.0.0",
+    "project_settings": {
+        "file_format": ".exr",
+        "resolution_width": 3840,
+        "resolution_height": 2160,
+        "output_folder": "/Users/adamdavis/Downloads/Test_VP_Cal_Peter",
+        "ocio_config_path": "",
+        "custom_logo_path": "",
+        "reference_gamut": "ACES2065-1",
+        "frames_per_patch": 1,
+        "led_walls": [
+            {
+                "name": "TV",
+                "avoid_clipping": true,
+                "enable_eotf_correction": true,
+                "enable_gamut_compression": true,
+                "auto_wb_source": false,
+                "input_sequence_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/OpenVPCal/tests/resources/Plates/capture",
+                "num_grey_patches": 33,
+                "primaries_saturation": 0.7,
+                "calculation_order": "EOTF > CS",
+                "input_plate_gamut": "ACES2065-1",
+                "native_camera_gamut": "V-Gamut",
+                "reference_to_target_cat": "Bradford",
+                "roi": [
+                    673,
+                    1272,
+                    263,
+                    865
+                ],
+                "shadow_rolloff": 0.008,
+                "target_max_lum_nits": 200,
+                "target_gamut": "ITU-R BT.2020",
+                "target_eotf": "ST 2084",
+                "target_to_screen_cat": "None",
+                "match_reference_wall": false,
+                "reference_wall": "",
+                "white_point_offset_source": "",
+                "use_white_point_offset": false,
+                "is_verification_wall": false,
+                "verification_wall": ""
+            }
+        ],
+        "project_custom_primaries": {
+            "Custom Rec2020": [
+                [
+                    0.708,
+                    0.292
+                ],
+                [
+                    0.17,
+                    0.797
+                ],
+                [
+                    0.131,
+                    0.046
+                ],
+                [
+                    0.3127,
+                    0.329
+                ]
+            ]
+        },
+        "frame_rate": 24,
+        "export_lut_for_aces_cct": false,
+        "export_lut_for_aces_cct_in_target_out": false
+    }
+}

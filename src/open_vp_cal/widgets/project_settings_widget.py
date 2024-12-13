@@ -140,8 +140,8 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.DEFAULT: default_led_wall.num_grey_patches, "min": 0, "max": 100, "step": 1},
             constants.ProjectSettingsKeys.FRAMES_PER_PATCH: {
                 constants.DEFAULT: self.frames_per_patch, "min": 0, "max": 100, "step": 1},
-            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: 3840, "min": 0, "max": 7680, "step": 1},
-            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: 2160, "min": 0, "max": 2160, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: {constants.DEFAULT: constants.DEFAULT_RESOLUTION_WIDTH, "min": 0, "max": 7680, "step": 1},
+            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: {constants.DEFAULT: constants.DEFAULT_RESOLUTION_HEIGHT, "min": 0, "max": 4320, "step": 1},
             constants.ProjectSettingsKeys.REFERENCE_GAMUT: {
                 constants.OPTIONS: [constants.ColourSpace.CS_ACES], constants.DEFAULT: constants.ColourSpace.CS_ACES},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
@@ -700,6 +700,7 @@ class PlateSettingsView(LockableWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.shoot_cam_label = None
         self.master_layout = None
         self.input_plate_gamut = QComboBox()
         self.native_camera_gamut = QComboBox()
@@ -724,7 +725,12 @@ class PlateSettingsView(LockableWidget):
         plate_settings_group = QGroupBox("Plate Settings")
         plate_settings_layout = QFormLayout()
         plate_settings_layout.addRow(QLabel("Input Plate Gamut:"), self.input_plate_gamut)
-        plate_settings_layout.addRow(QLabel("Native Camera Gamut:"), self.native_camera_gamut)
+        self.shoot_cam_label = QLabel("Shooting Camera Gamut:")
+        self.shoot_cam_label.setToolTip("The colour space of the camera used on the led "
+                                        "stage to shoot the production, and which "
+                                        "you are ALSO using to record the calibration."
+                                        "patches")
+        plate_settings_layout.addRow(self.shoot_cam_label, self.native_camera_gamut)
         plate_settings_layout.addRow(QLabel("Auto WB Source:"), self.auto_wb_source)
         plate_settings_group.setLayout(plate_settings_layout)
         main_layout.addWidget(plate_settings_group)
@@ -1221,6 +1227,7 @@ class ProjectSettingsController(QObject):
             self.model.add_custom_primary(gamut_name, primaries)
             self.add_custom_gamut_to_ui(gamut_name)
 
+
     def open_custom_gamut_from_matrix_dialog(self) -> None:
         """
         Opens a dialogue to select custom gamut values, and sets the values in the model
@@ -1244,6 +1251,7 @@ class ProjectSettingsController(QObject):
         """
         self.led_settings_view.target_gamut.addItem(gamut_name)
         self.plate_settings_view.native_camera_gamut.addItem(gamut_name)
+        self.model.set_data(constants.LedWallSettingsKeys.TARGET_GAMUT, gamut_name)
 
     # pylint: disable=W0613
     def on_led_wall_removed(self, removed_wall: str) -> None:

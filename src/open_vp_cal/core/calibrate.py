@@ -27,6 +27,7 @@ from colour.models import eotf_inverse_BT2100_PQ
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import ColourSpace, Measurements, Results, CAT, EOTF, CalculationOrder
 from open_vp_cal.core import utils
+from open_vp_cal.core.structures import OpenVPCalException
 
 
 def saturate_RGB(samples, factor):
@@ -111,7 +112,7 @@ def eotf_correction_calculation(
 
     grey_ramp_screen = np.maximum(0, grey_ramp_screen)
 
-    lut_r, lut_g, lut_b = [[0.0, 0.0]], [[0.0, 0.0]], [[0.0, 0.0]]
+    lut_r, lut_g, lut_b = [], [], []
 
     for idx, grey_ramp_screen_value in enumerate(grey_ramp_screen):
         if deltaE_grey_ramp[idx] > deltaE_threshold:
@@ -121,13 +122,20 @@ def eotf_correction_calculation(
         lut_g.append([grey_ramp_screen_value[1], grey_signal_value_rgb[idx][1]])
         lut_b.append([grey_ramp_screen_value[2], grey_signal_value_rgb[idx][2]])
 
+    # The first value should be black we know if the wall is a mess then the black level is a mess
+    # so we hard pin the first step in the ramp to 0,0
+    lut_r[0] = [0.0, 0.0]
+    lut_g[0] = [0.0, 0.0]
+    lut_b[0] = [0.0, 0.0]
+
     lut_r = np.array(lut_r)
     lut_g = np.array(lut_g)
     lut_b = np.array(lut_b)
 
+
     if avoid_clipping:
         if not peak_lum:
-            raise ValueError("Peak luminance must be provided if avoid_clipping is True")
+            raise OpenVPCalException("Peak luminance must be provided if avoid_clipping is True")
 
         max_r = np.max(np.max(lut_r[:, 0]))
         max_g = np.max(np.max(lut_g[:, 0]))
@@ -537,7 +545,7 @@ def check_eotf_max_values(measured_samples):
         measured_samples: The measured samples
 
     Raises:
-        ValueError: If the last frame of the EOTF ramp is sampled as the end slate
+        OpenVPCalException: If the last frame of the EOTF ramp is sampled as the end slate
 
     """
     eotf_ramp_check = measured_samples[constants.Measurements.EOTF_RAMP]
@@ -551,7 +559,7 @@ def check_eotf_max_values(measured_samples):
     # If we see a huge delta in the last frame of the EOTF ramp, we likely have a genlock, frame rate, sync issue
     # which has caused us to sample the end slate frame vs the EOTF ramp frame
     if last_frame_delta > 0.6:
-        raise ValueError(
+        raise OpenVPCalException(
             "\nThe EOTF Ramp Samples Show A Large Difference Between The Last "
             "Two Patches.\nMost Likely Due Sampling The End Slate Instead Of The Last EOTF Ramp."
             "\nThis Is Likely Due To A Genlock, Frame Rate Mismatch, Sync Issue, "
@@ -655,7 +663,7 @@ def run(
         decoupled_lens_white_samples is not None].count(True)
 
     if configuration_check > 1:
-        raise ValueError("Only one of auto white balance, external white balance, "
+        raise OpenVPCalException("Only one of auto white balance, external white balance, "
                          "or decoupled lens white balance is allowed")
 
     # 0) Validate that the EOTF ramp for the last frame is not accidentally the
