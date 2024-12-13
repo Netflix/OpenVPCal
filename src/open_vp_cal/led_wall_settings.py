@@ -99,7 +99,12 @@ class LedWallSettings:
         """
         if not self.is_verification_wall:
             return self._led_settings[field_name]
-        return self.verification_wall_as_wall._led_settings[field_name]
+        wall = self.verification_wall_as_wall
+
+        if wall is not None:
+            return wall._led_settings[field_name]
+
+        raise ValueError("The Wall is a verification wall, but the parent wall was removed")
 
 
     @property
