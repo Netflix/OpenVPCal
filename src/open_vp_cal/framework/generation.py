@@ -95,7 +95,7 @@ class PatchGeneration:
                     self.led_wall.target_max_lum_nits, self.led_wall.num_grey_patches)
             ),
             constants.PATCHES.SATURATION_RAMP: (self.generate_saturation_ramp, 10),
-            constants.PATCHES.END_SLATE: (self.generate_reference_image, ResourceLoader.open_vp_cal_logo()),
+            constants.PATCHES.END_SLATE: (self.generate_end_slate, ResourceLoader.open_vp_cal_logo()),
         }
 
     def calc_constants(self) -> None:
@@ -621,6 +621,15 @@ class PatchGeneration:
 
         return [patch]
 
+    def generate_end_slate(self, file_path: str) -> list[Oiio.ImageBuf]:
+        patch_width, patch_height = self.patch_size
+        start_x, start_y = self.get_patch_start_positions()
+        patch = Oiio.ImageBuf(Oiio.ImageSpec(self._generation_width, self._generation_height, 3, Oiio.FLOAT))
+        logo_patches = self.generate_reference_image(file_path)
+        self.insert_image_buffers(patch, logo_patches, start_x + patch_width // 2, start_y + patch_height //2)
+        self._add_major_config_settings_text(patch, start_x, start_y + patch_height //2, bold=True)
+        return [patch]
+
     def _add_17_and_19_percent_patches(self, patch: Oiio.ImageBuf) -> Oiio.ImageBuf:
         """ Add a small 17 % and 19% of peak luminance patches to the slate as a guide for the exposure using the false
             colour. There is some error in most cameras, so this helps guide us to being as close to 18% as possible.
@@ -954,13 +963,23 @@ class PatchGeneration:
 
         title = "Open VP Cal - LED Calibration Tool"
         self._add_slate_text(patch, title, (start_x + 40, start_y - 90), 60, bold=True)
+        self._add_major_config_settings_text(patch, start_x, start_y)
+
+    def _add_major_config_settings_text(self, patch, start_x, start_y, bold=False):
+        """ Adds text which describes the configuration settings for the calibration
+            this is added to the slate and also the end frame so in the recording we can
+            see the settings being used
+
+        """
         major_settings = f"v{open_vp_cal.__version__} {self.led_wall.target_gamut} " \
                          f"{self.led_wall.target_eotf} " \
                          f"{self.led_wall.target_max_lum_nits} Nits " \
                          f"GS {self.led_wall.num_grey_patches} " \
                          f"SAT {self.led_wall.primaries_saturation} "
-
-        self._add_slate_text(patch, major_settings, (start_x + 20, start_y - 30), 40, bold=False)
+        self._add_slate_text(
+            patch, major_settings, (start_x + 20, start_y - 30), 40,
+            bold=bold
+        )
 
     def generate_solid_patch(self, patch_values: tuple[float, float, float]) -> list[Oiio.ImageBuf]:
         """ Generates a full saturation patch with the given values.
