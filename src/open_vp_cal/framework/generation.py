@@ -622,6 +622,15 @@ class PatchGeneration:
         return [patch]
 
     def generate_end_slate(self, file_path: str) -> list[Oiio.ImageBuf]:
+        """
+        Generates the end slate patch and writes the version number and settings to the
+        image
+
+        Args:
+            file_path: The path to the reference image
+
+        Returns: A list of image buffers
+        """
         patch_width, patch_height = self.patch_size
         start_x, start_y = self.get_patch_start_positions()
         patch = Oiio.ImageBuf(Oiio.ImageSpec(self._generation_width, self._generation_height, 3, Oiio.FLOAT))
