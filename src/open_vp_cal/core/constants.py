@@ -245,10 +245,10 @@ class Results:
     TARGET_TO_XYZ_MATRIX = "target_to_XYZ_matrix"
     REFERENCE_TO_XYZ_MATRIX = "reference_to_XYZ_matrix"
     REFERENCE_TO_INPUT_MATRIX = "reference_to_input_matrix"
-    E_TO_D65_MATRIX = "E_to_D65_matrix"
     MAX_WHITE_DELTA = "max_white_delta"
     EOTF_LINEARITY = "eotf_linearity"
     AVOID_CLIPPING = "avoid_clipping"
+    CAMERA_WHITE_BALANCE_MATRIX = "camera_white_balance_matrix"
 
 
 class CAT:
