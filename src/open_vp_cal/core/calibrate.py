@@ -114,19 +114,37 @@ def eotf_correction_calculation(
 
     lut_r, lut_g, lut_b = [], [], []
 
+    tossed_samples = 0
     for idx, grey_ramp_screen_value in enumerate(grey_ramp_screen):
+        if idx + 1 < len(grey_ramp_screen):
+            if np.all(np.abs(grey_ramp_screen_value - grey_ramp_screen[idx + 1]) < 0.001):
+                tossed_samples += 1
+                continue
+
         if deltaE_grey_ramp[idx] > deltaE_threshold:
+            tossed_samples += 1
             continue
 
         lut_r.append([grey_ramp_screen_value[0], grey_signal_value_rgb[idx][0]])
         lut_g.append([grey_ramp_screen_value[1], grey_signal_value_rgb[idx][1]])
         lut_b.append([grey_ramp_screen_value[2], grey_signal_value_rgb[idx][2]])
 
+    limit_of_removed_samples = math.floor(num_steps * 0.20)
+    if tossed_samples >= limit_of_removed_samples:
+        raise OpenVPCalException(
+            "Too many samples were removed from the eotf grey ramp something is majorly wrong with the linearity of the led wall"
+        )
+
     # The first value should be black we know if the wall is a mess then the black level is a mess
     # so we hard pin the first step in the ramp to 0,0
-    lut_r[0] = [0.0, 0.0]
-    lut_g[0] = [0.0, 0.0]
-    lut_b[0] = [0.0, 0.0]
+    if tossed_samples > 0:
+        lut_r.insert(0, [0.0, 0.0])
+        lut_g.insert(0, [0.0, 0.0])
+        lut_b.insert(0, [0.0, 0.0])
+    else:
+        lut_r[0] = [0.0, 0.0]
+        lut_g[0] = [0.0, 0.0]
+        lut_b[0] = [0.0, 0.0]
 
     lut_r = np.array(lut_r)
     lut_g = np.array(lut_g)
