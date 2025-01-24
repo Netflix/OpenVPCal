@@ -211,7 +211,8 @@ class Processing:
             reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
             decoupled_lens_white_samples=decoupled_lens_white_samples,
             avoid_clipping=self.led_wall.avoid_clipping,
-            reference_gamut=self.led_wall.project_settings.reference_gamut
+            reference_gamut=self.led_wall.project_settings.reference_gamut,
+            analyse=True
         )
 
         self.led_wall.processing_results.pre_calibration_results = calibration_results
@@ -281,7 +282,8 @@ class Processing:
             reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
             decoupled_lens_white_samples=decoupled_lens_white_samples,
             avoid_clipping=self.led_wall.avoid_clipping,
-            reference_gamut=self.led_wall.project_settings.reference_gamut
+            reference_gamut=self.led_wall.project_settings.reference_gamut,
+            analyse = False
         )
 
         self.led_wall.processing_results.calibration_results = calibration_results

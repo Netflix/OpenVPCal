@@ -579,9 +579,28 @@ class OcioConfigWriter:
         calibration_cs, clf_name = self.get_calibration_cs(led_wall_settings, results)
         group = ocio.GroupTransform()
         group.appendTransform(self.get_reference_to_target_matrix(led_wall_settings))
+        group.appendTransform(
+            ocio.MatrixTransform(
+                numpy_matrix_to_ocio_matrix(
+                    results[constants.Results.CAMERA_WHITE_BALANCE_MATRIX]
+                )
+            )
+        )
+
         calibration_preview_cs = self.get_calibration_preview_cs(led_wall_settings)
+
         group_preview = ocio.GroupTransform()
-        group_preview.appendTransform(self.get_reference_to_target_matrix(led_wall_settings))
+        group_preview.appendTransform(
+            self.get_reference_to_target_matrix(led_wall_settings)
+        )
+
+        group_preview.appendTransform(
+            ocio.MatrixTransform(
+                numpy_matrix_to_ocio_matrix(
+                    results[constants.Results.CAMERA_WHITE_BALANCE_MATRIX])
+            ),
+        )
+
         EOTF_CS_string = CalculationOrder.CO_EOTF_CS_STRING
         CS_EOTF_string = CalculationOrder.CO_CS_EOTF_STRING
         if results[Results.CALCULATION_ORDER] == CalculationOrder.CO_EOTF_CS:

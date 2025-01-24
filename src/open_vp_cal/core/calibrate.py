@@ -15,6 +15,7 @@ limitations under the License.
 
 The main module of the core which deals with the calculation of the calibration for the LED walls
 """
+import math
 from typing import Union, List, Dict, Tuple
 
 import json
@@ -22,10 +23,9 @@ import colour
 import colour.algebra as ca
 import numpy as np
 from colour import RGB_Colourspace
-from colour.models import eotf_inverse_BT2100_PQ
 
 from open_vp_cal.core import constants
-from open_vp_cal.core.constants import ColourSpace, Measurements, Results, CAT, EOTF, CalculationOrder
+from open_vp_cal.core.constants import Measurements, Results, CAT, EOTF, CalculationOrder
 from open_vp_cal.core import utils
 from open_vp_cal.core.structures import OpenVPCalException
 
@@ -602,7 +602,8 @@ def run(
         reference_wall_external_white_balance_matrix: Union[None, List] = None,
         decoupled_lens_white_samples: Union[None, List] = None,
         avoid_clipping: bool = True,
-        reference_gamut = constants.ColourSpace.CS_ACES
+        reference_gamut = constants.ColourSpace.CS_ACES,
+        analyse: bool = True
     ):
     """ Run the entire calibration process.
 
@@ -792,6 +793,34 @@ def run(
     # 10 We calculate the difference in the linearity of the wall based on the signals and eotf ramps
     eotf_linearity = calculate_eotf_linearity(eotf_signal_values, eotf_ramp_camera_native_gamut)
 
+    # 11) We do an additional white balance in camera space as part of the calibration
+    # and store this matrix to make sure it is applied in the ocio config
+    camera_white_balance_matrix = np.identity(3)
+    if not analyse:
+        camera_white_balance_matrix = utils.create_white_balance_matrix(
+            rgbw_measurements_camera_native_gamut[3]
+        )
+
+        (
+            eotf_ramp_camera_native_gamut, grey_measurements_native_camera_gamut,
+            macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+            rgbw_measurements_camera_native_gamut
+        ) = apply_matrix_to_samples(
+            camera_white_balance_matrix, eotf_ramp_camera_native_gamut,
+            grey_measurements_native_camera_gamut,
+            macbeth_measurements_camera_native_gamut, max_white_camera_native_gamut,
+            rgbw_measurements_camera_native_gamut
+        )
+
+        camera_to_target_matrix = colour.matrix_RGB_to_RGB(
+            input_colourspace=native_camera_gamut_cs,
+            output_colourspace=target_cs,
+            chromatic_adaptation_transform=camera_conversion_cat,
+        )
+
+        matrix_a = camera_white_balance_matrix @ np.linalg.inv(camera_to_target_matrix)
+        camera_white_balance_matrix = camera_to_target_matrix @ matrix_a
+
     eotf_ramp_camera_native_gamut_calibrated = eotf_ramp_camera_native_gamut.copy()
     macbeth_measurements_camera_native_gamut_calibrated = macbeth_measurements_camera_native_gamut.copy()
     if calculation_order == CalculationOrder.CO_CS_EOTF:  # Calc 3x3 -> 1Ds, and 3x3 only
@@ -898,8 +927,9 @@ def run(
             rgbw_measurements_camera_native_gamut, native_camera_gamut_cs, target_cs, None
         )
 
-        eotf_white_balance_matrix = utils.create_white_balance_matrix(rgbw_measurements_target[3])
-        eotf_ramp_target = [ca.vector_dot(eotf_white_balance_matrix, m) for m in eotf_ramp_target]
+        # eotf_white_balance_matrix = utils.create_white_balance_matrix(rgbw_measurements_target[3])
+        # eotf_white_balance_matrix = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+        # eotf_ramp_target = [ca.vector_dot(eotf_white_balance_matrix, m) for m in eotf_ramp_target]
 
         # 1: Compute LUTs for EOTF correction
         lut_r, lut_g, lut_b, = eotf_correction_calculation(
@@ -954,9 +984,6 @@ def run(
         eotf_ramp_camera_target_calibrated = colour.RGB_to_RGB(
             eotf_ramp_camera_native_gamut_calibrated, native_camera_gamut_cs, target_cs, None
         )
-        if calculation_order == CalculationOrder.CO_EOTF_CS:
-            eotf_ramp_camera_target_calibrated = [
-                ca.vector_dot(target_to_screen_matrix, m) for m in eotf_ramp_camera_target_calibrated]
 
         eotf_ramp_camera_target_calibrated = apply_luts(
             eotf_ramp_camera_target_calibrated,
@@ -965,6 +992,11 @@ def run(
             lut_b,
             inverse=False
         )
+
+        if calculation_order == CalculationOrder.CO_EOTF_CS:
+            eotf_ramp_camera_target_calibrated = [
+                ca.vector_dot(target_to_screen_matrix, m) for m in eotf_ramp_camera_target_calibrated]
+
         eotf_ramp_camera_native_gamut_calibrated = colour.RGB_to_RGB(
             eotf_ramp_camera_target_calibrated, target_cs, native_camera_gamut_cs, None
         )
@@ -1036,7 +1068,8 @@ def run(
         Results.REFERENCE_TO_INPUT_MATRIX: reference_to_input_matrix.tolist(),
         Results.MAX_WHITE_DELTA: max_white_delta,
         Results.EOTF_LINEARITY: eotf_linearity,
-        Results.AVOID_CLIPPING: avoid_clipping
+        Results.AVOID_CLIPPING: avoid_clipping,
+        Results.CAMERA_WHITE_BALANCE_MATRIX: camera_white_balance_matrix.tolist()
     }
 
 
