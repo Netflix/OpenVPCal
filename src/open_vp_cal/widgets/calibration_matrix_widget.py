@@ -57,7 +57,7 @@ class MatrixView(QWidget):
         self.matrix_option_combo.addItem(constants.Results.REFERENCE_TO_SCREEN_MATRIX)
         self.matrix_option_combo.addItem(constants.Results.REFERENCE_TO_INPUT_MATRIX)
         self.matrix_option_combo.addItem(constants.Results.REFERENCE_TO_XYZ_MATRIX)
-        self.matrix_option_combo.addItem(constants.Results.E_TO_D65_MATRIX)
+        self.matrix_option_combo.addItem(constants.Results.CAMERA_WHITE_BALANCE_MATRIX)
 
         self.main_layout.addWidget(self.matrix_option_combo)
         self.grid_layout = QGridLayout()
