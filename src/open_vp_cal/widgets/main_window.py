@@ -152,6 +152,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.stage_model = None
         self.stage_view = None
         self.swatch_analysis_view = None
+        self.title = title
         self.timeline_model = None
         self.timeline_view = None
         self.white_point_controller = None
@@ -592,6 +593,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
             self.project_settings_model.output_folder = folder
             self.project_settings_model.set_data(constants.ProjectSettingsKeys.OUTPUT_FOLDER, folder)
             self.save_project_settings(inform_completion=False)
+            self.setWindowTitle(
+                self.title + f" - {self.project_settings_model.project_id}")
         self.load_project_layout()
 
     def clear_project_settings(self) -> None:
@@ -1091,6 +1094,9 @@ class MainWindow(QMainWindow, OpenVPCalBase):
                     else:
                         Processing.get_separation_results(led_wall)
         self.load_project_layout()
+        self.setWindowTitle(
+            self.title + f" - {self.project_settings_model.project_id}"
+        )
 
     def on_save_layout(self):
         """Save the current layout to a file based on a File Dialog selected file name"""

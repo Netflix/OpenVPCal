@@ -35,8 +35,8 @@ class OcioConfigWriter:
     """
     Class to write the OCIO configuration files for OpenVPCal
     """
-    pre_calibration_config_name = "Pre_Calibration_OpenVPCal.ocio"
-    post_calibration_config_name = "Post_Calibration_OpenVPCal.ocio"
+    pre_calibration_config_name = "Pre_Calibration_OpenVPCal_{project_id}.ocio"
+    post_calibration_config_name = "Post_Calibration_OpenVPCal_{project_id}.ocio"
     family_open_vp_cal = "OpenVPCal"
     family_display = "Display"
     family_open_vp_cal_input = "OpenVPCal/Input"
@@ -809,11 +809,16 @@ class OcioConfigWriter:
         Returns: The file path to the ocio config we write out
 
         """
+        if not led_walls:
+            raise ValueError("No LED walls found to generate OCIO config")
+
+        project_id = led_walls[0].project_settings.project_id
+
         if not output_file:
             output_file = os.path.join(
                 self._output_folder,
                 constants.ProjectFolders.CALIBRATION,
-                self.pre_calibration_config_name
+                self.pre_calibration_config_name.format(project_id=project_id)
             )
 
         return self._generate_ocio_config(
@@ -837,10 +842,16 @@ class OcioConfigWriter:
         Returns: The file path to the ocio config we write out
 
         """
+
+        if not led_walls:
+            raise ValueError("No LED walls found to generate OCIO config")
+
+        project_id = led_walls[0].project_settings.project_id
+
         if not output_file:
             output_file = os.path.join(
                 self._output_folder,
-                self.post_calibration_config_name
+                self.post_calibration_config_name.format(project_id=project_id)
             )
 
         return self._generate_ocio_config(

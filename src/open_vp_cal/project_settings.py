@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import open_vp_cal
-from open_vp_cal.core import constants, ocio_utils
+from open_vp_cal.core import constants, ocio_utils, utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.core.resource_loader import ResourceLoader
 
@@ -45,7 +45,8 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.REFERENCE_GAMUT: constants.ColourSpace.CS_ACES,
             constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
-            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False
+            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False,
+            constants.ProjectSettingsKeys.PROJECT_ID: utils.generate_truncated_hash()
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -104,6 +105,24 @@ class ProjectSettings:
             raise ValueError(f'Custom primary {name} already exists')
 
         self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES][name] = primaries
+
+    @property
+    def project_id(self) -> str:
+        """Get the project id for the current project
+
+        Returns:
+            str: The project id for the current project
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.PROJECT_ID]
+
+    @project_id.setter
+    def project_id(self, value: str):
+        """Set the project id to the given value
+
+        Args:
+            value (str): The project id we want to set
+        """
+        self._project_settings[constants.ProjectSettingsKeys.PROJECT_ID] = value
 
     @property
     def file_format(self) -> constants.FileFormats:

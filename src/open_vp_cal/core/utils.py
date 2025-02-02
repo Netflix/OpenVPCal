@@ -15,7 +15,9 @@ limitations under the License.
 
 Utility functions for open_vp_cal
 """
+import hashlib
 import re
+import uuid
 from typing import Tuple, Union, List
 import numpy as np
 
@@ -499,3 +501,26 @@ def get_cat_for_camera_conversion(camera_colour_space_name: str) -> CAT:
     if camera_colour_space_name == CameraColourSpace.RED_WIDE_GAMUT:
         camera_conversion_cat = CAT.CAT_BRADFORD
     return camera_conversion_cat
+
+
+def generate_truncated_hash(length: int = 6) -> str:
+    """
+    Generate a truncated SHA-256 hash from a UUID.
+
+    Args:
+        length: The length of the truncated hash, by default 4.
+
+    Returns:
+        str: The truncated hexadecimal hash.
+    """
+    # Generate a UUID
+    unique_id = uuid.uuid4()
+
+    # Hash the UUID using SHA-256
+    hash_object = hashlib.sha256(str(unique_id).encode())
+
+    # Convert the hash to a hexadecimal string
+    hash_hex = hash_object.hexdigest()
+
+    # Truncate the hash to the desired length
+    return hash_hex[:length]
