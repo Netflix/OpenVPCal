@@ -938,6 +938,11 @@ class PatchGeneration:
         )
 
         self._add_slate_text(
+            patch, f"PR_ID: {self.led_wall.project_settings.project_id}", (400, 1850), 40,
+            bold=False
+        )
+
+        self._add_slate_text(
             patch, f"Authors: {' / '.join(open_vp_cal.__authors__)}", (130, 1885), 25,
             bold=False
         )
@@ -987,6 +992,12 @@ class PatchGeneration:
                          f"SAT {self.led_wall.primaries_saturation} "
         self._add_slate_text(
             patch, major_settings, (start_x + 20, start_y - 30), 40,
+            bold=bold
+        )
+
+        self._add_slate_text(
+            patch, f"PR_ID {self.led_wall.project_settings.project_id} ",
+            (start_x + 20, start_y + 10), 40,
             bold=bold
         )
 
