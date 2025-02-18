@@ -218,7 +218,6 @@ class TestCLIGeneratePatterns(TestProject):
 
     def test_cli_force_error_log(self):
         error_log = Path(os.path.join(self.get_test_output_folder(),'filename.txt'))
-        error_log.touch()
         self.project_settings.led_walls[0].input_sequence_folder = ""
         with self.assertRaises(IOError):
             self.run_cli(self.project_settings, force=True, error_log=str(error_log))

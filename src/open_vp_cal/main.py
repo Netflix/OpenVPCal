@@ -189,21 +189,25 @@ def add_error_to_log(error_log: str, error: str) -> None:
     Args:
         error_log: The error log file path
         error: The error to add to the log file
-
     """
     if not error_log:
         return
 
     data = {"errors": []}
-    with open(error_log, 'r') as handle:
-        try:
-            data = json.load(handle)
-        except json.JSONDecodeError:
-            pass
+
+    # Ensure the file exists before attempting to read
+    if os.path.exists(error_log):
+        with open(error_log, 'r') as handle:
+            try:
+                data = json.load(handle)
+            except json.JSONDecodeError:
+                pass  # Ignore decoding errors and use default empty structure
 
     data["errors"].append(error)
-    with open(error_log, 'a') as handle:
-        handle.write(json.dumps(data))
+
+    # Open the file in write mode to properly save the updated data
+    with open(error_log, 'w') as handle:
+        json.dump(data, handle, indent=4)
 
 def run_cli(
         project_settings_file_path: str,
@@ -364,8 +368,7 @@ def parse_args() -> argparse.Namespace:
                         required=False, help='Path to OCIO config file')
     parser.add_argument('--ignore_errors', type=str2bool, default=False,
                         help='CLI flag to ignore any errors produced during the calibration process and logging them in the provided error log file')
-    parser.add_argument('--error_log', type=validate_is_file,
-                        required=False, help='Path to project settings JSON file')
+    parser.add_argument('--error_log', required=False, help='A file path to store any errors in a json file, the file is created if it does not already exist')
     args = parser.parse_args(sys.argv[1:])
 
     if not args.ui:
