@@ -1359,7 +1359,7 @@ In this use case, we ask to perform an auto white-balance in the camera on the f
   <tr>
    <td><code>Pros</code>
    </td>
-   <td>Simple, more solid with lens color shits
+   <td>Simple, more solid with lens color shifts
    </td>
   </tr>
   <tr>
