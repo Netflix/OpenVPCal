@@ -13,18 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-import json
+import os
 import tempfile
 
-from open_vp_cal.core import constants, utils
+from open_vp_cal.core import constants
 from open_vp_cal.main import run_cli
-from open_vp_cal.project_settings import ProjectSettings
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 
-import os
-
-import open_vp_cal.core.calibrate as calibrate
 
 import open_vp_cal.core.ocio_utils as ocio_utils
 import open_vp_cal.core.ocio_config as ocio_config

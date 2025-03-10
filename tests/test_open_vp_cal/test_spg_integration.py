@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 from open_vp_cal.widgets.main_window import MainWindow
 
 

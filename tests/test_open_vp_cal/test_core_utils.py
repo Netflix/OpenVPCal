@@ -22,7 +22,7 @@ import OpenImageIO as Oiio
 import open_vp_cal.imaging.imaging_utils
 from open_vp_cal.core import utils
 from open_vp_cal.led_wall_settings import LedWallSettings
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 
 class TestConversionFunctions(TestBase):

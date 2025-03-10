@@ -16,7 +16,7 @@ limitations under the License.
 import os
 
 from open_vp_cal.core import constants
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 from open_vp_cal.core.ocio_config import OcioConfigWriter
 
 

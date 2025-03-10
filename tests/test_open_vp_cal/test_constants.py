@@ -16,7 +16,7 @@ limitations under the License.
 import colour
 
 from open_vp_cal.core import constants
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 
 class TestConstants(TestBase):

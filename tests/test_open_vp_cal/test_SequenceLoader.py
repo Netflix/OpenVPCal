@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from test_open_vp_cal.test_utils import TestProcessorBase
+from test_utils import TestProcessorBase
 
 from open_vp_cal.framework.sequence_loader import FrameRangeException
 

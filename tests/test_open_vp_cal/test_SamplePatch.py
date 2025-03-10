@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import os
-from test_open_vp_cal.test_utils import TestProcessorBase
+from test_utils import TestProcessorBase
 
 
 from open_vp_cal.framework.identify_separation import SeparationResults

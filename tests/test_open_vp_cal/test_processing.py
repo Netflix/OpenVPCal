@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from open_vp_cal.framework.processing import Processing
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 
 
 class Test_Processing(TestProject):

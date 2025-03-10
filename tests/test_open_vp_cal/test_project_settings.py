@@ -22,7 +22,7 @@ import open_vp_cal
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.core import constants
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 
 class TestProjectSettings(TestBase):

@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import os
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 import open_vp_cal
 from open_vp_cal.framework.generation import PatchGeneration

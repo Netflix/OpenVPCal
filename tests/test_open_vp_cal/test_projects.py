@@ -20,7 +20,7 @@ import json
 
 from open_vp_cal.core import constants, ocio_config
 from open_vp_cal.project_settings import ProjectSettings
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 
 
 class BaseTestProjectPlateReuse(TestProject):

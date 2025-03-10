@@ -25,7 +25,7 @@ from json import JSONDecodeError
 from open_vp_cal.core import constants, ocio_config
 from open_vp_cal.main import validate_file_path, validate_folder_path, \
     validate_project_settings, generate_patterns, generate_spg_patterns
-from test_open_vp_cal.test_utils import TestBase, TestProject
+from test_utils import TestBase, TestProject
 
 
 class TestArgparseFunctions(TestBase):
