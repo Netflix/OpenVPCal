@@ -28,6 +28,8 @@ class TestGeneration(TestBase):
         # We force the version so that the slate always gets the same version to bake into the image
         # else the hash will change and the test will fail
         open_vp_cal.__version__ = "0.1.0a"
+        project_id = "123456"
+        self.project_settings.project_id = project_id
 
         patch_generator = PatchGeneration(self.led_wall)
         file_paths = patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
