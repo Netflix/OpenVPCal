@@ -4,6 +4,10 @@ version = "1.3.0"
 description = "OpenVPCal is an open-source calibration tool for In-Camera Visual Effects pipelines."
 readme = "README.md"
 requires-python = "==3.11.*"
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+license = { file = "LICENSE.md" }
 dependencies = [
     "colour-checker-detection>=0.2.1",
     "colour-science>=0.4.6",
@@ -13,10 +17,19 @@ dependencies = [
     "packaging>=24.2",
     "pyinstaller>=6.12.0",
     "pyqtgraph>=0.13.7",
-    "pyside6>=6.8.2.1",
+    "pyside6>=6.8.2.1"
+]
+
+[project.optional-dependencies]
+dev = [
     "pytest",
     "ruff"
 ]
+
+[project.urls]
+Homepage = "https://github.com/Netflix/OpenVPCal"
+Documentation = "https://github.com/Netflix/OpenVPCal"
+Source = "https://github.com/Netflix/OpenVPCal"
 
 [tool.ruff]
 src = ["src"]
@@ -26,3 +39,7 @@ target-version = "py311"  # Set your Python version
 [tool.ruff.lint]
 select = ["E", "F", "W"]
 ignore = ["E501"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

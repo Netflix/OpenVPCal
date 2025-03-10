@@ -252,7 +252,7 @@ wheels = [
 [[package]]
 name = "openvpcal"
 version = "1.3.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "colour-checker-detection" },
     { name = "colour-science" },
@@ -263,6 +263,10 @@ dependencies = [
     { name = "pyinstaller" },
     { name = "pyqtgraph" },
     { name = "pyside6" },
+]
+
+[package.optional-dependencies]
+dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -278,9 +282,10 @@ requires-dist = [
     { name = "pyinstaller", specifier = ">=6.12.0" },
     { name = "pyqtgraph", specifier = ">=0.13.7" },
     { name = "pyside6", specifier = ">=6.8.2.1" },
-    { name = "pytest" },
-    { name = "ruff" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "packaging"
