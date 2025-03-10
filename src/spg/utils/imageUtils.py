@@ -216,18 +216,20 @@ def apply_color_conversion(image, input_transform, output_transform, ocio_config
     :param ocio_config_path: the filepath to the ocio color config we want to use
     :return: returns the image with the new color correction
     """
-
     if not os.path.exists(ocio_config_path):
         raise IOError("File Path Does Not Exist: " + ocio_config_path)
 
     ocio_config = ocio.Config.CreateFromFile(ocio_config_path)
 
-    if input_transform is None:
+    if not input_transform:
         input_transform = get_role_from_config(ocio_config_path, ocio_config, "scene_linear")
 
     ics = get_transform_or_colorspace(ocio_config, input_transform)
     if ics is None:
         raise ValueError("Input Transform Not Found In Config: " + input_transform)
+
+    if not output_transform:
+        output_transform = get_role_from_config(ocio_config_path, ocio_config,"scene_linear")
 
     ocs = get_transform_or_colorspace(ocio_config, output_transform)
     if ocs is None:
