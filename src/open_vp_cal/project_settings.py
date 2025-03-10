@@ -113,6 +113,9 @@ class ProjectSettings:
         Returns:
             str: The project id for the current project
         """
+        # If we are loading an old project, we need to generate a new project id
+        if constants.ProjectSettingsKeys.PROJECT_ID not in self._project_settings:
+            self.project_id = utils.generate_truncated_hash()
         return self._project_settings[constants.ProjectSettingsKeys.PROJECT_ID]
 
     @project_id.setter
