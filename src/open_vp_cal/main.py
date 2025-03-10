@@ -27,7 +27,6 @@ import traceback
 
 import open_vp_cal
 from open_vp_cal.application_base import OpenVPCalBase
-from open_vp_cal.core import constants
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.framework.utils import generate_patterns_for_led_walls, \
     generate_spg_patterns_for_led_walls
