@@ -32,7 +32,12 @@ Documentation = "https://github.com/Netflix/OpenVPCal"
 Source = "https://github.com/Netflix/OpenVPCal"
 
 [tool.ruff]
-src = ["src"]
+src = [
+    "packages/open_vp_cal/src",
+    "packages/spg/src",
+    "packages/spg_icvfxpatterns/src",
+    "packages/stageassets/src"
+]
 line-length = 88  # Match Black's default
 target-version = "py311"  # Set your Python version
 
