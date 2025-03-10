@@ -977,9 +977,9 @@ class PatchGeneration:
 
         title = "Open VP Cal - LED Calibration Tool"
         self._add_slate_text(patch, title, (start_x + 40, start_y - 90), 60, bold=True)
-        self._add_major_config_settings_text(patch, start_x, start_y)
+        self._add_major_config_settings_text(patch, start_x, start_y, include_project_id=False)
 
-    def _add_major_config_settings_text(self, patch, start_x, start_y, bold=False):
+    def _add_major_config_settings_text(self, patch, start_x, start_y, bold=False, include_project_id=True):
         """ Adds text which describes the configuration settings for the calibration
             this is added to the slate and also the end frame so in the recording we can
             see the settings being used
@@ -995,11 +995,12 @@ class PatchGeneration:
             bold=bold
         )
 
-        self._add_slate_text(
-            patch, f"PR_ID {self.led_wall.project_settings.project_id} ",
-            (start_x + 20, start_y + 10), 40,
-            bold=bold
-        )
+        if include_project_id:
+            self._add_slate_text(
+                patch, f"PR_ID {self.led_wall.project_settings.project_id} ",
+                (start_x + 20, start_y + 10), 40,
+                bold=bold
+            )
 
     def generate_solid_patch(self, patch_values: tuple[float, float, float]) -> list[Oiio.ImageBuf]:
         """ Generates a full saturation patch with the given values.
