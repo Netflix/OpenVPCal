@@ -379,7 +379,7 @@ def main() -> int:
             print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
-        return_code = build_windows_installer(manual_paths, version)
+        return_code = build_windows_installer([], version)
 
     print('Return code:', return_code)
     return return_code
