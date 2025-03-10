@@ -1264,5 +1264,22 @@
             1.0009625214656988
         ]
     ],
-    "avoid_clipping": true
+    "avoid_clipping": true,
+    "camera_white_balance_matrix": [
+        [
+            1.0,
+            0.0,
+            0.0
+        ],
+        [
+            0.0,
+            1.0,
+            0.0
+        ],
+        [
+            0.0,
+            0.0,
+            1.0
+        ]
+    ]
 }

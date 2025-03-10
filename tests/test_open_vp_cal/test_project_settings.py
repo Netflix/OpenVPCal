@@ -36,6 +36,7 @@ class TestProjectSettings(TestBase):
             constants.VERSION: open_vp_cal.__version__,
             "project_settings":
                 {
+                    constants.ProjectSettingsKeys.PROJECT_ID: "123456",
                     constants.ProjectSettingsKeys.FILE_FORMAT: "exr",
                     constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
                     constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,

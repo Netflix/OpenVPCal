@@ -1,6 +1,7 @@
 {
-    "openvp_cal_version": "0.1.0a",
+    "openvp_cal_version": "1.3.0",
     "project_settings": {
+        "project_id": "123456",
         "file_format": "exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
