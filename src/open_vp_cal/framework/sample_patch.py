@@ -297,7 +297,8 @@ class MacBethSample(BaseSamplePatch):
 
             for colour_checker_swatches_data in detections:
                 # Get the swatch colours
-                swatch_colours, _, _ = colour_checker_swatches_data.values
+                a = colour_checker_swatches_data.values
+                swatch_colours, _, _, _ = colour_checker_swatches_data.values
                 swatch_colours = np.array(swatch_colours, dtype=np.float32)
 
                 # Reshape the number of swatches from a 24, 3 array to an x, y, 3 array
