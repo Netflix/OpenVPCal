@@ -19,8 +19,6 @@ The Module has classes dedicated to identifying the region of interest within th
 import sys
 from typing import List
 
-from docutils.nodes import image
-
 from open_vp_cal.core.utils import clamp
 from open_vp_cal.led_wall_settings import LedWallSettings
 
