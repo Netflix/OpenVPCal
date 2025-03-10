@@ -90,6 +90,7 @@ Ensure the following dependencies are installed on your system:
     autoconf
     automake
     autoconf-archive
+    graphviz
 
 OpenVPCal provides a system for building the following dependencies using vcpkg, however can be picked up from your existing studio
 production or development environment.

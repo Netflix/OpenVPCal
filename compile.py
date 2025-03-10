@@ -328,10 +328,6 @@ def main() -> int:
     """
     check_dependencies()
 
-    vcpkg_folder = get_vcpkg_root()
-
-    setup_and_install_vcpkgs(vcpkg_folder)
-
     debug = False
     app_name = "OpenVPCal"
     version = get_version_from_python_package()
@@ -367,11 +363,6 @@ def main() -> int:
     for add_data in additional_data:
         cmds.append("--add-data")
         cmds.append(add_data)
-
-    manual_paths = get_additional_library_paths(vcpkg_folder)
-    for manual_path in manual_paths:
-        cmds.append("--add-data")
-        cmds.append(f"{manual_path}{platform_sep}.")
 
     cmds.append(entry_script)
     process = subprocess.Popen(cmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
