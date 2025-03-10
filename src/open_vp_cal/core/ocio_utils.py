@@ -19,7 +19,8 @@ import os
 from typing import Any
 
 import PyOpenColorIO as ocio
-import pkg_resources
+from importlib.metadata import version
+from packaging.version import Version
 import numpy as np
 
 from colour.models import eotf_ST2084, eotf_inverse_ST2084
@@ -28,9 +29,9 @@ from open_vp_cal.core import constants, utils
 from open_vp_cal.core.calibrate import resample_lut
 
 # Currently we have a hard requirement on OCIO 2.1+ to support gamut compression
-if not pkg_resources.parse_version(ocio.__version__) >= pkg_resources.parse_version(
-        "2.1"
-):
+ocio_version = Version(version("opencolorio"))
+required_version = Version("2.1")
+if not ocio_version >= required_version:
     raise ImportError("Requires OCIO v2.1 or greater.")
 
 
