@@ -19,12 +19,10 @@ loader, and processing the analysis of the images and producing the resulting oc
 import json
 import os
 import tempfile
-import threading
 from typing import Union, Tuple, List, Dict, Optional
 
 from colour import RGB_Colourspace
 
-import open_vp_cal.framework.utils as framework_utils
 from open_vp_cal.core import calibrate, constants, utils, ocio_utils, ocio_config
 from open_vp_cal.imaging import macbeth, imaging_utils
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME, Results

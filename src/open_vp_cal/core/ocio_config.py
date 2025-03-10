@@ -232,7 +232,7 @@ class OcioConfigWriter:
         Returns: The OCIO view transform for pre-calibration
 
         """
-        pre_calibration_view_transform_name = f"Pre-Calibration - Default Target"
+        pre_calibration_view_transform_name = "Pre-Calibration - Default Target"
         pre_calibration_view_transform_description = "The OpenVPCal Pre Calibrated native Output"
         pre_calibration_view_transform = self._get_view_transform(
             pre_calibration_view_transform_name,

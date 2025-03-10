@@ -337,7 +337,7 @@ class PatchGeneration:
         self.draw_crosshair(scaled_img, 980, 650, 5, 2, [1.0, 1.0, 1.0])
         self.draw_crosshair(scaled_img, 980, 20, 5, 2, [1.0, 1.0, 1.0])
 
-        text = f"Macbeth Chart - OpenVPCal"
+        text = "Macbeth Chart - OpenVPCal"
         Oiio.ImageBufAlgo.render_text(
             scaled_img, 40, 20, text,
             fontname=ResourceLoader.bold_font(),

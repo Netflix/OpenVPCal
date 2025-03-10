@@ -25,7 +25,6 @@ from open_vp_cal.framework.sequence_loader import SequenceLoader, FrameRangeExce
 from open_vp_cal.framework.frame import Frame
 from open_vp_cal.imaging.imaging_utils import load_image_buffer_to_qpixmap
 from open_vp_cal.widgets import utils
-from open_vp_cal.core import constants
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.widgets.project_settings_widget import ProjectSettingsModel
 from open_vp_cal.widgets.utils import LockableWidget

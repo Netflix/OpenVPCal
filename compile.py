@@ -416,7 +416,7 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
     lib_files = os.listdir(library_root)
     for lib_file in lib_files:
         manual_paths.append(f"{library_root}/{lib_file}")
-    
+
     for lib_file in os.listdir(python_oiio_lib_folder):
         if lib_file == "__init__.py":
             continue
@@ -444,11 +444,11 @@ def build_windows_installer(manual_paths, version) -> int:
             os.path.basename(manual_path)
         )
         shutil.copy(manual_path, target_file)
-    
+
     iss_file_name = os.path.join(current_script_directory, "OpenVPCal.iss")
-    
+
     update_iscc_app_version(iss_file_name, version)
-    
+
     return_code = create_windows_installer(
         iss_file_name
     )

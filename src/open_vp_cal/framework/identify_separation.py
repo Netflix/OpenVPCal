@@ -21,7 +21,6 @@ from typing import List
 import numpy as np
 from scipy.signal import find_peaks
 
-from open_vp_cal.core import constants
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 

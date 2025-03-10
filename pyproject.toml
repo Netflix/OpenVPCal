@@ -14,5 +14,17 @@ dependencies = [
     "pyinstaller>=6.12.0",
     "pyqtgraph>=0.13.7",
     "pyside6>=6.8.2.1",
-    "pytest"
+    "pytest",
+    "ruff"
 ]
+
+[tool.ruff]
+src = ["src"]
+line-length = 88  # Match Black's default
+target-version = "py311"  # Set your Python version
+
+# Enable all default checks
+select = ["E", "F", "W"]  # Errors, Flake8 warnings, style issues
+
+# Ignore specific rules if needed
+ignore = ["E501"]  # Example: Ignore line length warnings
