@@ -164,7 +164,7 @@ def write_image(image, filename, bit_depth, channel_mapping=None):
         return filename
 
     if image.has_error:
-        raise IOError("Error writing", filename, ":", image.geterror())
+        raise IOError("Error writing", filename, ": " + image.geterror())
 
 
 def open_image(file_path):

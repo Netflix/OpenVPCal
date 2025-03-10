@@ -297,7 +297,6 @@ class MacBethSample(BaseSamplePatch):
 
             for colour_checker_swatches_data in detections:
                 # Get the swatch colours
-                a = colour_checker_swatches_data.values
                 swatch_colours, _, _, _ = colour_checker_swatches_data.values
                 swatch_colours = np.array(swatch_colours, dtype=np.float32)
 

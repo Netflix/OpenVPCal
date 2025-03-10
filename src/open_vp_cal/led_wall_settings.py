@@ -19,10 +19,16 @@ setting
 import copy
 import json
 from typing import List, Union, Any
+from typing import TYPE_CHECKING
+
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.structures import ProcessingResults
 from open_vp_cal.framework.sequence_loader import SequenceLoader
+
+if TYPE_CHECKING:
+    from open_vp_cal.project_settings import ProjectSettings
+
 
 
 class LedWallSettings:

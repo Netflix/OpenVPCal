@@ -191,7 +191,6 @@ class MatrixController(QObject):
     def on_matrix_combo_changed(self, matrix_key: str) -> None:
         """ If the selected matrix we want to view changes and we have calibration results, we update the view
             with the relevant matrix
-        
         Args:
             matrix_key: The name of the matrix we want to view
 

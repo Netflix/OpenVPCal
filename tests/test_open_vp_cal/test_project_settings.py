@@ -216,7 +216,7 @@ class TestProjectSettings(TestBase):
     def test_verification_wall(self):
         """Test adding a verification wall to the project settings."""
         new_wall = self.settings.add_led_wall("AnotherWall")
-        verification_wall = self.settings.add_verification_wall(new_wall.name)
+        self.settings.add_verification_wall(new_wall.name)
         temp_json = tempfile.NamedTemporaryFile(suffix=".json", delete=False).name
         self.settings.to_json(temp_json)
 

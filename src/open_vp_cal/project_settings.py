@@ -470,8 +470,7 @@ class ProjectSettings:
         """ Adds a new LED wall to the project settings which mirrors all the settings from the existing wall,
             and whose settings cannot be changed directly, only via the parent
 
-            The verification wall is prefixed with Verify and is used to verify that when the calibration sequence is 
-            recorded with the calibration applied, the results match closely to the expected calibration.
+            The verification wall is prefixed with Verify and is used to verify that when the calibration sequence is recorded with the calibration applied, the results match closely to the expected calibration.
 
             The original wall and verification wall are linked together, and marked which is the verification wall
             and which is not

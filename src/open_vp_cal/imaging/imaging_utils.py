@@ -15,7 +15,7 @@ limitations under the License.
 
 The module contains functions for manipulating images using the OpemImageIO library
 """
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, TYPE_CHECKING
 
 import os
 import os.path
@@ -35,6 +35,9 @@ from open_vp_cal.core.constants import OIIO_COMPRESSION_ATTRIBUTE, \
     OIIO_COMPRESSION_NONE, OIIO_BITS_PER_SAMPLE
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.core import utils
+
+if TYPE_CHECKING:
+    from open_vp_cal.project_settings import ProjectSettings
 
 
 def image_buf_to_np_array(image_buf: Oiio.ImageBuf) -> np.array:

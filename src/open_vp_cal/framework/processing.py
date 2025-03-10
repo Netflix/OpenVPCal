@@ -19,7 +19,7 @@ loader, and processing the analysis of the images and producing the resulting oc
 import json
 import os
 import tempfile
-from typing import Union, Tuple, List, Dict, Optional
+from typing import Union, Tuple, List, Dict, Optional, TYPE_CHECKING
 
 from colour import RGB_Colourspace
 
@@ -34,6 +34,9 @@ from open_vp_cal.framework.identify_separation import IdentifySeparation, Separa
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.framework.sample_patch import SamplePatch, SampleRampPatches, MacBethSample, BaseSamplePatch
 from open_vp_cal.framework.auto_roi import AutoROI, AutoROIResults
+
+if TYPE_CHECKING:
+    from OpenImageIO import ImageBuf
 
 
 class SeparationException(Exception):

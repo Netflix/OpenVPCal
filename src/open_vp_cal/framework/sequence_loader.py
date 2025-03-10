@@ -19,12 +19,16 @@ for iterating over the frames in the cache
 import re
 import os
 import threading
+from typing import TYPE_CHECKING
 
 from collections import OrderedDict
 
 from open_vp_cal.core import constants
 from open_vp_cal.framework.frame import Frame
 from open_vp_cal.imaging import imaging_utils
+
+if TYPE_CHECKING:
+    from open_vp_cal.led_wall_settings import LedWallSettings
 
 
 class FrameRangeException(IOError):

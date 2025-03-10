@@ -335,12 +335,6 @@ class Test_Sample_Project10_SRGB_EOTF(BaseTestProjectPlateReuse):
             if led_wall.is_verification_wall:
                 continue
 
-            expected_ocio_file = os.path.join(
-                self.get_sample_project_folder(),
-                constants.ProjectFolders.EXPORT,
-                constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
-
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
@@ -362,12 +356,6 @@ class Test_Sample_Project11_SRGB_EOTF(BaseTestProjectPlateReuse):
             if led_wall.is_verification_wall:
                 continue
 
-            expected_ocio_file = os.path.join(
-                self.get_sample_project_folder(),
-                constants.ProjectFolders.EXPORT,
-                constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
-
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
@@ -385,15 +373,9 @@ class Test_Sample_Project13_Custom_Camera_Gamut(BaseTestProjectPlateReuse):
 
     def test_project13(self):
         results = self.run_cli(self.project_settings)
-        for led_wall_name, led_wall in results.items():
+        for _, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
-
-            expected_ocio_file = os.path.join(
-                self.get_sample_project_folder(),
-                constants.ProjectFolders.EXPORT,
-                constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
 
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:

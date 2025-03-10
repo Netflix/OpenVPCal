@@ -157,8 +157,9 @@ def get_rgb_references_for_color_checker(colour_space, illuminant=None):
 
 def get_color_checker_reference_in_xyY() -> Tuple:
     """ Gets the colour checker reference in xyY, and the colour checker reference
-    
-    Returns: The colour checker reference in xyY, and the colour checker reference
+
+    Returns:
+        The colour checker reference in xyY, and the colour checker reference
 
     """
     colour_checker_reference = colour.CCS_COLOURCHECKERS[

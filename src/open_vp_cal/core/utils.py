@@ -18,7 +18,7 @@ Utility functions for open_vp_cal
 import hashlib
 import re
 import uuid
-from typing import Tuple, Union, List
+from typing import Tuple, Union, List, TYPE_CHECKING
 import numpy as np
 
 import colour
@@ -26,6 +26,9 @@ from colour import SpectralShape
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import PQ, CAT, CameraColourSpace
+
+if TYPE_CHECKING:
+    from open_vp_cal.led_wall_settings import LedWallSettings
 
 
 def nits_to_pq(nits: int) -> float:

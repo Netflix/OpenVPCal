@@ -60,7 +60,7 @@ class TestCalibrate(TestProject):
         with tempfile.TemporaryDirectory() as tmp_dir:
             filename = os.path.join(tmp_dir, "openvpcal_test_alt_order.ocio")
 
-            led_wall_new = self.project_settings.copy_led_wall(self.led_wall.name, "new_copy")
+            self.project_settings.copy_led_wall(self.led_wall.name, "new_copy")
             for led_wall in self.project_settings.led_walls:
                 led_wall.processing_results.calibration_results = self.get_results(self.led_wall).copy()
                 led_wall.processing_results.calibration_results[Results.CALCULATION_ORDER] = CalculationOrder.CO_EOTF_CS

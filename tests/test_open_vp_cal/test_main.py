@@ -63,7 +63,7 @@ class TestArgparseFunctions(TestBase):
     def test_validate_project_settings_invalid(self):
         fd, path = tempfile.mkstemp(suffix=".json")
         try:
-            with open(path, 'w+') as temp:
+            with open(path, 'w+'):
                 with self.assertRaises(JSONDecodeError):
                     validate_project_settings(path)
         finally:

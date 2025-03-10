@@ -15,9 +15,13 @@ limitations under the License.
 
 Module that contains the Frame class which is used to represent a frame within the sequence loader
 """
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from open_vp_cal.imaging import imaging_utils
+
+if TYPE_CHECKING:
+    from OpenImageIO import ImageBuf
+    from open_vp_cal.project_settings import ProjectSettings
 
 
 class Frame:
@@ -75,7 +79,7 @@ class Frame:
         self._file_name = value
 
     @property
-    def image_buf(self) -> "Oiio.ImageBuf":
+    def image_buf(self) -> "ImageBuf":
         """
         Property for _image_buf.
 
@@ -90,7 +94,7 @@ class Frame:
         Setter for _image_buf.
 
         Parameters:
-            value (Oiio.ImageBuf): The new image buffer to set.
+            value (ImageBuf): The new image buffer to set.
         """
         self._image_buf = value
 
@@ -108,7 +112,7 @@ class Frame:
         }
         return str(result)
 
-    def extract_roi(self, roi: List) -> "Oiio.ImageBuf":
+    def extract_roi(self, roi: List) -> "ImageBuf":
         """
         Extracts a region of interest from the image buffer of this frame.
 
@@ -116,6 +120,6 @@ class Frame:
             roi (Oiio.ROI): The region of interest to extract from the image buffer.
 
         Returns:
-            Oiio.ImageBuf: The extracted region of interest.
+            ImageBuf: The extracted region of interest.
         """
         return imaging_utils.extract_roi(self._image_buf, roi)
