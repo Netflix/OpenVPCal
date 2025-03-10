@@ -121,7 +121,8 @@ def eotf_correction_calculation(
                 tossed_samples += 1
                 continue
 
-        if deltaE_grey_ramp[idx] > deltaE_threshold:
+        delta_e_value = deltaE_grey_ramp[idx]
+        if delta_e_value > deltaE_threshold:
             tossed_samples += 1
             continue
 
@@ -130,7 +131,7 @@ def eotf_correction_calculation(
         lut_b.append([grey_ramp_screen_value[2], grey_signal_value_rgb[idx][2]])
 
     limit_of_removed_samples = math.floor(num_steps * 0.20)
-    if tossed_samples >= limit_of_removed_samples:
+    if tossed_samples > limit_of_removed_samples:
         raise OpenVPCalException(
             "Too many samples were removed from the eotf grey ramp something is majorly wrong with the linearity of the led wall"
         )
