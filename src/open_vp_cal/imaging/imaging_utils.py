@@ -25,30 +25,8 @@ from PySide6 import QtGui
 from PySide6.QtGui import QImage, QPixmap
 import PyOpenColorIO as ocio
 
-try:
-    import OpenImageIO as Oiio
-except ImportError:
-    print("OpenImageIO not found, please make sure it is available on the python path")
 
-
-    class MissingModuleError(Exception):
-        """
-        An exception raised when a module is missing
-        """
-
-
-    class MockModule:
-        """
-        A mock module that raises an exception when any attribute is accessed
-        """
-
-        def __getattr__(self, name):
-            raise MissingModuleError(
-                f"'OpenImageIO' module is missing. Can't access '{name}'.")
-
-
-    Oiio = MockModule()
-
+import OpenImageIO as Oiio
 import colour
 from colour.models import RGB_COLOURSPACE_ACES2065_1
 import numpy as np
