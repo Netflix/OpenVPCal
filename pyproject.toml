@@ -9,19 +9,11 @@ authors = [
 ]
 license = { file = "LICENSE.md" }
 dependencies = [
-    "colour-checker-detection>=0.2.1",
-    "colour-science>=0.4.6",
-    "matplotlib>=3.10.1",
-    "opencolorio>=2.4.1",
-    "openimageio==3.0.4.0",
-    "packaging>=24.2",
+    "open-vp-cal-spg @ file:///${PROJECT_ROOT}/packages/spg",
+    "open-vp-cal-spg-icvfxpatterns @ file:///${PROJECT_ROOT}/packages/spg_icvfxpatterns",
+    "open-vp-cal-stageassets @ file:///${PROJECT_ROOT}/packages/stageassets",
+    "open-vp-cal @ file:///${PROJECT_ROOT}/packages/open_vp_cal",
     "pyinstaller>=6.12.0",
-    "pyqtgraph>=0.13.7",
-    "pyside6>=6.8.2.1"
-]
-
-[project.optional-dependencies]
-dev = [
     "pytest",
     "ruff"
 ]

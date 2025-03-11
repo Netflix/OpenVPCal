@@ -12,7 +12,7 @@ echo "Cleanup complete."
 # Remove existing uv environment directory (if applicable)
 # ---------------------------
 echo "Removing existing uv environment..."
-rm -rf .uv  # or the specific directory uv uses
+rm -rf .uv .venv  # or the specific directory uv uses
 
 # ---------------------------
 # Build Environment with uv

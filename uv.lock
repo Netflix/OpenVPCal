@@ -205,6 +205,96 @@ wheels = [
 ]
 
 [[package]]
+name = "open-vp-cal"
+version = "1.3.0"
+source = { directory = "packages/open_vp_cal" }
+dependencies = [
+    { name = "colour-checker-detection" },
+    { name = "colour-science" },
+    { name = "matplotlib" },
+    { name = "opencolorio" },
+    { name = "openimageio" },
+    { name = "packaging" },
+    { name = "pyqtgraph" },
+    { name = "pyside6" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "colour-checker-detection", specifier = ">=0.2.1" },
+    { name = "colour-science", specifier = ">=0.4.6" },
+    { name = "matplotlib", specifier = ">=3.10.1" },
+    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "openimageio", specifier = "==3.0.4.0" },
+    { name = "packaging", specifier = ">=24.2" },
+    { name = "pyqtgraph", specifier = ">=0.13.7" },
+    { name = "pyside6", specifier = ">=6.8.2.1" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "open-vp-cal-spg"
+version = "1.3.0"
+source = { directory = "packages/spg" }
+dependencies = [
+    { name = "opencolorio" },
+    { name = "openimageio" },
+    { name = "packaging" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "openimageio", specifier = "==3.0.4.0" },
+    { name = "packaging", specifier = ">=24.2" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "open-vp-cal-spg-icvfxpatterns"
+version = "1.3.0"
+source = { directory = "packages/spg_icvfxpatterns" }
+dependencies = [
+    { name = "opencolorio" },
+    { name = "openimageio" },
+    { name = "packaging" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "openimageio", specifier = "==3.0.4.0" },
+    { name = "packaging", specifier = ">=24.2" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "open-vp-cal-stageassets"
+version = "1.3.0"
+source = { directory = "packages/stageassets" }
+dependencies = [
+    { name = "opencolorio" },
+    { name = "openimageio" },
+    { name = "packaging" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "openimageio", specifier = "==3.0.4.0" },
+    { name = "packaging", specifier = ">=24.2" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
+
+[[package]]
 name = "opencolorio"
 version = "2.4.1"
 source = { registry = "https://pypi.netflix.net/simple" }
@@ -254,38 +344,25 @@ name = "openvpcal"
 version = "1.3.0"
 source = { editable = "." }
 dependencies = [
-    { name = "colour-checker-detection" },
-    { name = "colour-science" },
-    { name = "matplotlib" },
-    { name = "opencolorio" },
-    { name = "openimageio" },
-    { name = "packaging" },
+    { name = "open-vp-cal" },
+    { name = "open-vp-cal-spg" },
+    { name = "open-vp-cal-spg-icvfxpatterns" },
+    { name = "open-vp-cal-stageassets" },
     { name = "pyinstaller" },
-    { name = "pyqtgraph" },
-    { name = "pyside6" },
-]
-
-[package.optional-dependencies]
-dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "colour-checker-detection", specifier = ">=0.2.1" },
-    { name = "colour-science", specifier = ">=0.4.6" },
-    { name = "matplotlib", specifier = ">=3.10.1" },
-    { name = "opencolorio", specifier = ">=2.4.1" },
-    { name = "openimageio", specifier = "==3.0.4.0" },
-    { name = "packaging", specifier = ">=24.2" },
+    { name = "open-vp-cal", directory = "packages/open_vp_cal" },
+    { name = "open-vp-cal-spg", directory = "packages/spg" },
+    { name = "open-vp-cal-spg-icvfxpatterns", directory = "packages/spg_icvfxpatterns" },
+    { name = "open-vp-cal-stageassets", directory = "packages/stageassets" },
     { name = "pyinstaller", specifier = ">=6.12.0" },
-    { name = "pyqtgraph", specifier = ">=0.13.7" },
-    { name = "pyside6", specifier = ">=6.8.2.1" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
+    { name = "pytest" },
+    { name = "ruff" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "packaging"

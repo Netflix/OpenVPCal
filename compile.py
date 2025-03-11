@@ -36,13 +36,13 @@ def get_current_folder() -> str:
     return os.path.dirname(os.path.realpath(__file__))
 
 
-def get_src_folder() -> str:
+def get_packages_folder() -> str:
     """ Get the src folder of this project
 
     Returns: The src folder of this project
 
     """
-    return os.path.join(get_current_folder(), "src")
+    return os.path.join(get_current_folder(), "packages")
 
 
 def get_python_package_folder() -> str:
@@ -51,7 +51,7 @@ def get_python_package_folder() -> str:
     Returns: The python package folder of this project
 
     """
-    return os.path.join(get_src_folder(), "open_vp_cal")
+    return os.path.join(get_packages_folder(), "open_vp_cal", "src", "open_vp_cal")
 
 
 def import_module_from_filepath(filepath: str) -> ModuleType:
@@ -338,9 +338,9 @@ def main() -> int:
     platform_sep = get_additional_data_seperator()
 
     additional_python_modules = {
-        "spg": os.path.join(get_src_folder(), "spg"),
-        "stageassets": os.path.join(get_src_folder(), "stageassets"),
-        "spg_icvfxpatterns": os.path.join(get_src_folder(), "spg_icvfxpatterns")
+        "spg": os.path.join(get_packages_folder(), "spg", "src", "spg"),
+        "stageassets": os.path.join(get_packages_folder(), "stageassets", "src", "stageassets"),
+        "spg_icvfxpatterns": os.path.join(get_packages_folder(), "spg_icvfxpatterns", "src", "spg_icvfxpatterns"),
     }
 
     if debug:
