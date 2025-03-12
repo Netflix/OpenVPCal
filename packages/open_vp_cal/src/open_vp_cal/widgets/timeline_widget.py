@@ -16,14 +16,17 @@ limitations under the License.
 Module describes the class which is responsible for the timeline widget.
 """
 import os
+from pathlib import Path
 
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QSlider, QLabel, QPushButton, QSpinBox
 from PySide6.QtCore import QObject, Signal, Slot, Qt, QEvent
 
+from open_vp_cal.core.constants import SourceSelect
 from open_vp_cal.framework.sequence_loader import SequenceLoader, FrameRangeException
 from open_vp_cal.framework.frame import Frame
 from open_vp_cal.imaging.imaging_utils import load_image_buffer_to_qpixmap
+from open_vp_cal.imaging.preprocessing import PreProcessConvert
 from open_vp_cal.widgets import utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.widgets.project_settings_widget import ProjectSettingsModel
@@ -131,6 +134,21 @@ class TimelineModel(QObject):
         # We cant keep the current frame as sequences could be different frame numbers
         self.set_current_frame(self.project_settings.current_wall.sequence_loader.start_frame)
         self.sequence_changed = False
+
+    def pre_process_input_to_aces_sequence(self, file_path) -> str:
+        """ For the given input file for instance this could be an .R3D file
+            we use the command line applications to pre extract this to EXR files
+            in ACES for the user
+
+        Args:
+            file_path - The file path to the raw input file which we want to
+                convert to image sequences
+
+        """
+        ppo = PreProcessConvert(self.project_settings)
+        folder_path = ppo.convert_raw_to_aces(file_path)
+        folder_path = folder_path.as_posix()
+        return folder_path
 
     def load_sequence(self, folder_path: str) -> None:
         """ Loads a sequence into the sequence loader and stores the folder path in the LED wall we have set as the
@@ -376,6 +394,14 @@ class TimelineWidget(LockableWidget):
         """
         return utils.select_folder()
 
+    @staticmethod
+    def select_file() -> Path:
+        """ returns the file path to the selected folder if one was selected
+
+        :return: returns the file path to the selected folder if one was selected
+        """
+        return utils.select_file()
+
     def _set_active_state(self, value: bool):
         """
         Either enables or disables all the UI components
@@ -390,13 +416,23 @@ class TimelineWidget(LockableWidget):
     def load_sequence(self):
         """ Loads an image sequence into the model
         """
-
-        folder_path = self.select_folder()
-        if not folder_path:
+        result = utils.ask_file_type()
+        if result == SourceSelect.CANCEL:
             return
 
-        if not os.path.exists(folder_path):
-            return
+        if result == SourceSelect.SEQUENCE:
+            folder_path = self.select_folder()
+            if not folder_path:
+                return
+
+            if not os.path.exists(folder_path):
+                return
+        else:
+            file_path = self.select_file()
+            if not file_path:
+                return
+
+            folder_path = self.model.pre_process_input_to_aces_sequence(file_path)
 
         self.model.load_sequence(folder_path)
         frame = self.model.current_frame

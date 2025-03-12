@@ -15,10 +15,13 @@ limitations under the License.
 
 A module to hold ui-specific utility functions
 """
+from pathlib import Path
+
 import numpy as np
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide6.QtWidgets import QFileDialog, QWidget, QMessageBox
 
+from open_vp_cal.core.constants import FileFormats, SourceSelect
 from open_vp_cal.core.utils import stack_numpy_array
 
 
@@ -43,6 +46,47 @@ def select_folder() -> str:
 
     # If we get here, no folder was selected
     return ""
+
+
+def select_file() -> Path | None:
+    """
+    Opens a QFileDialog to select a single file with specified extensions.
+
+    Returns:
+        str: The path to the selected file. Empty string if no file was selected.
+    """
+    dialog = QFileDialog()
+    dialog.setFileMode(QFileDialog.ExistingFile)  # Allow selection of only existing files
+    # Combine all extensions into a single filter
+    all_extensions = " ".join(f"*{ext}" for ext in FileFormats.FF_ALL_CONVERT)
+    dialog.setNameFilter(f"Supported Files ({all_extensions})")
+
+    if dialog.exec_() == QFileDialog.Accepted:
+        selected_files = dialog.selectedFiles()
+        if selected_files:
+            return Path(selected_files[0])  # Return the first selected file
+
+    return None
+
+
+def ask_file_type() -> SourceSelect:
+    """
+    Asks the user whether they are loading from a file sequence or a single file.
+
+    Returns:
+        str: "file_sequence", "single_file", or "cancel" based on user choice.
+    """
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle("File Selection")
+    msg_box.setText("Are you loading from a file sequence or a single file?")
+    msg_box.addButton("File Sequence", QMessageBox.YesRole)
+    msg_box.addButton("Single File", QMessageBox.NoRole)
+    cancel_button = msg_box.addButton("Cancel", QMessageBox.RejectRole)
+
+    choice = msg_box.exec_()
+    if msg_box.clickedButton() == cancel_button:
+        return SourceSelect.CANCEL
+    return SourceSelect.SEQUENCE if choice == 0 else SourceSelect.SINGLE
 
 
 class LockableWidget(QWidget):

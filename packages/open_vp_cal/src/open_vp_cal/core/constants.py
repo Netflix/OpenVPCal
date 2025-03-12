@@ -15,6 +15,8 @@ limitations under the License.
 
 This file contains constants used throughout the openvpcal calibration process
 """
+from enum import Enum
+
 COLOR_WIDGET_GRAPH_SCALE = 1000
 
 OIIO_COMPRESSION_ATTRIBUTE = "compression"
@@ -52,6 +54,7 @@ DEFAULT_RESOLUTION_WIDTH = 1920
 DEFAULT_RESOLUTION_HEIGHT = 1080
 
 DEFAULT_OCIO_CONFIG = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1"
+ARC_CONFIG = "arc_config.xml"
 
 
 class UILayouts:
@@ -357,6 +360,10 @@ class PQ:
     PQ_C2 = 18.8515625
     PQ_C3 = 18.6875
 
+class SourceSelect(Enum):
+    SINGLE = "Single"
+    SEQUENCE = "Sequence"
+    CANCEL = "Cancel"
 
 class FileFormats:
     """
@@ -366,8 +373,12 @@ class FileFormats:
     FF_DPX = ".dpx"
     FF_TIF = ".tif"
     FF_PNG = ".png"
+    FF_R3D = ".R3D"
+    FF_MXF = ".mxf"
+    FF_MOV = ".mov"
     FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
     FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
+    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV]
     FF_DEFAULT = FF_EXR
 
 
@@ -385,6 +396,7 @@ class ProjectFolders:
     Constants used to describe the folder names within the project
     """
     PATCHES = "patches"
+    PLATES = "plates"
     EXPORT = "export"
     PLOTS = "plots"
     RESULTS = "results"
