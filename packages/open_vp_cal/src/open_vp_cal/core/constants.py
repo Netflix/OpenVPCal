@@ -376,9 +376,11 @@ class FileFormats:
     FF_R3D = ".R3D"
     FF_MXF = ".mxf"
     FF_MOV = ".mov"
+    FF_ARI = ".ari"
+    FF_ARX = ".arx"
     FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
     FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
-    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV]
+    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV, FF_ARI]
     FF_DEFAULT = FF_EXR
 
 
@@ -403,3 +405,15 @@ class ProjectFolders:
     SWATCHES = "swatches"
     CALIBRATION = "calibration"
     SPG = "spg"
+
+
+class InputSelectSources:
+    """
+
+    """
+    RED = "RED"
+    SONY = "SONY"
+    ARRI = "ARRI"
+    RBG_SEQUENCE = "RGB_Sequence"
+    MOV = "MOV"
+

@@ -22,7 +22,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QSlider, QLabel, QPushButton, QSpinBox
 from PySide6.QtCore import QObject, Signal, Slot, Qt, QEvent
 
-from open_vp_cal.core.constants import SourceSelect
+from open_vp_cal.core.constants import SourceSelect, InputSelectSources
 from open_vp_cal.framework.sequence_loader import SequenceLoader, FrameRangeException
 from open_vp_cal.framework.frame import Frame
 from open_vp_cal.imaging.imaging_utils import load_image_buffer_to_qpixmap
@@ -135,18 +135,19 @@ class TimelineModel(QObject):
         self.set_current_frame(self.project_settings.current_wall.sequence_loader.start_frame)
         self.sequence_changed = False
 
-    def pre_process_input_to_aces_sequence(self, file_path) -> str:
+    def pre_process_input_to_aces_sequence(self, input_source, file_path) -> str:
         """ For the given input file for instance this could be an .R3D file
             we use the command line applications to pre extract this to EXR files
             in ACES for the user
 
         Args:
+            input_source: The input source to convert from
             file_path - The file path to the raw input file which we want to
                 convert to image sequences
 
         """
         ppo = PreProcessConvert(self.project_settings)
-        folder_path = ppo.convert_raw_to_aces(file_path)
+        folder_path = ppo.convert_raw_to_aces(input_source, file_path)
         folder_path = folder_path.as_posix()
         return folder_path
 
@@ -416,23 +417,35 @@ class TimelineWidget(LockableWidget):
     def load_sequence(self):
         """ Loads an image sequence into the model
         """
-        result = utils.ask_file_type()
-        if result == SourceSelect.CANCEL:
+        input_source = utils.ask_input_source()
+        if input_source == SourceSelect.CANCEL:
             return
 
-        if result == SourceSelect.SEQUENCE:
+        # If we are just loading an RGB_Sequence no need to ask we know we need to
+        # select a folder
+        if input_source == InputSelectSources.RBG_SEQUENCE:
             folder_path = self.select_folder()
             if not folder_path:
                 return
-
-            if not os.path.exists(folder_path):
-                return
         else:
-            file_path = self.select_file()
-            if not file_path:
+            # If it's not we need to know if it's a single file or multiple files
+            result = utils.ask_file_type()
+            if result == SourceSelect.CANCEL:
                 return
 
-            folder_path = self.model.pre_process_input_to_aces_sequence(file_path)
+            if result == SourceSelect.SEQUENCE:
+                folder_path = self.select_folder()
+                if not folder_path:
+                    return
+
+                if not os.path.exists(folder_path):
+                    return
+            else:
+                file_path = self.select_file()
+                if not file_path:
+                    return
+
+                folder_path = self.model.pre_process_input_to_aces_sequence(input_source, file_path)
 
         self.model.load_sequence(folder_path)
         frame = self.model.current_frame

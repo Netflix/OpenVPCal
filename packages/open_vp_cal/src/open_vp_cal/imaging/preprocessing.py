@@ -82,14 +82,15 @@ def check_command_on_path(command_name: str):
         return True
     return False
 
-def get_format(extension):
-    for formats, format_data in FORMAT_MAP.items():
+def get_format(input_source, extension):
+    input_format_map = FORMAT_MAP.get(input_source, None)
+    for formats, format_data in input_format_map:
         if extension in formats:
             return format_data
 
     return None
 
-def convert_raw_to_aces(input_file, output_file, resolution_x=1920, resolution_y=1080):
+def convert_raw_to_aces(input_source, input_file, output_file, resolution_x=1920, resolution_y=1080):
     input_file = Path(input_file)
     if not input_file.exists():
         raise FileNotFoundError(f"Input file/folder {input_file} does not exist.")
@@ -98,17 +99,17 @@ def convert_raw_to_aces(input_file, output_file, resolution_x=1920, resolution_y
     output_folder = output_file.parent / output_file.stem
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    format_details = get_format(input_file.suffix)
+    format_details = get_format(input_source, input_file.suffix)
     if not format_details:
         raise Exception(f"No format details found for extensions '{input_file.suffix}'")
 
-    commandName = format_details.get("commandName", None)
-    if not commandName:
+    command_name = format_details.get("commandName", None)
+    if not command_name:
         raise Exception(f"No commandName found for format '{input_file.suffix}'")
 
-    result = check_command_on_path(commandName)
+    result = check_command_on_path(command_name)
     if not result:
-        raise Exception(f"Command {commandName} not installed on system or on $PATH")
+        raise Exception(f"Command {command_name} not installed on system or on $PATH")
 
     filename = f"{input_file.stem}_"
     output_file_name = output_folder / filename
@@ -129,9 +130,9 @@ class PreProcessConvert:
     def __init__(self, project_settings : ProjectSettings):
         self.project_settings = project_settings
 
-    def convert_raw_to_aces(self, input_file):
+    def convert_raw_to_aces(self, input_source, input_file):
         output = Path(self.project_settings.output_folder) / ProjectFolders.PLATES
         output = output /Path(input_file).name
-        output_folder = convert_raw_to_aces(input_file, output)
+        output_folder = convert_raw_to_aces(input_source, input_file, output)
         return output_folder
 
