@@ -84,7 +84,10 @@ def check_command_on_path(command_name: str):
 
 def get_format(input_source, extension):
     input_format_map = FORMAT_MAP.get(input_source, None)
-    for formats, format_data in input_format_map:
+    if not input_format_map:
+        return None
+
+    for formats, format_data in input_format_map.items():
         if extension in formats:
             return format_data
 
