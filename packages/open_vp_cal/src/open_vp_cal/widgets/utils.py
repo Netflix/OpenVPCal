@@ -88,6 +88,42 @@ def ask_file_type() -> SourceSelect:
         return SourceSelect.CANCEL
     return SourceSelect.SEQUENCE if choice == 0 else SourceSelect.SINGLE
 
+def ask_input_source() -> SourceSelect | InputSelectSources:
+    """
+    Asks the user to select an input source.
+
+    Returns:
+        str: One of the InputSelectSources options ("Red", "Sony", "Arri", "RGB_Sequence", "Mov")
+             or "cancel" if the user cancels the dialog.
+    """
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle("Input Source Selection")
+    msg_box.setText("Please select the input source:")
+
+    red_button = msg_box.addButton("Red", QMessageBox.AcceptRole)
+    sony_button = msg_box.addButton("Sony", QMessageBox.AcceptRole)
+    arri_button = msg_box.addButton("Arri", QMessageBox.AcceptRole)
+    rgb_seq_button = msg_box.addButton("RGB Sequence", QMessageBox.AcceptRole)
+    mov_button = msg_box.addButton("Mov", QMessageBox.AcceptRole)
+    cancel_button = msg_box.addButton("Cancel", QMessageBox.RejectRole)
+
+    msg_box.exec_()
+    clicked = msg_box.clickedButton()
+
+    if clicked == cancel_button:
+        return SourceSelect.CANCEL
+    elif clicked == red_button:
+        return InputSelectSources.RED
+    elif clicked == sony_button:
+        return InputSelectSources.SONY
+    elif clicked == arri_button:
+        return InputSelectSources.ARRI
+    elif clicked == rgb_seq_button:
+        return InputSelectSources.RBG_SEQUENCE
+    elif clicked == mov_button:
+        return InputSelectSources.MOV
+    return SourceSelect.CANCEL
+
 
 class LockableWidget(QWidget):
     """
