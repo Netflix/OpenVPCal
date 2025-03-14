@@ -18,10 +18,11 @@ A module to hold ui-specific utility functions
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QImage, Qt, QPixmap
 from PySide6.QtWidgets import QFileDialog, QWidget, QMessageBox
 
-from open_vp_cal.core.constants import FileFormats, SourceSelect
+from open_vp_cal.core.constants import FileFormats, SourceSelect, InputSelectSources
+from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.core.utils import stack_numpy_array
 
 
@@ -99,11 +100,14 @@ def ask_input_source() -> SourceSelect | InputSelectSources:
     msg_box = QMessageBox()
     msg_box.setWindowTitle("Input Source Selection")
     msg_box.setText("Please select the input source:")
+    logo = QPixmap(ResourceLoader.open_vp_cal_logo())
+    msg_box.setIconPixmap(
+        logo.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
+    rgb_seq_button = msg_box.addButton("RGB Sequence", QMessageBox.AcceptRole)
     red_button = msg_box.addButton("Red", QMessageBox.AcceptRole)
     sony_button = msg_box.addButton("Sony", QMessageBox.AcceptRole)
     arri_button = msg_box.addButton("Arri", QMessageBox.AcceptRole)
-    rgb_seq_button = msg_box.addButton("RGB Sequence", QMessageBox.AcceptRole)
     mov_button = msg_box.addButton("Mov", QMessageBox.AcceptRole)
     cancel_button = msg_box.addButton("Cancel", QMessageBox.RejectRole)
 
