@@ -802,8 +802,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         msg_box.setIconPixmap(self.logo.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         # Create the custom buttons
-        new_project_button = msg_box.addButton("New Project", QMessageBox.ActionRole)
-        load_existing_project_button = msg_box.addButton("Load Existing Project", QMessageBox.ActionRole)
+        new_project_button = msg_box.addButton("New Project", QMessageBox.AcceptRole)
+        load_existing_project_button = msg_box.addButton("Load Existing Project", QMessageBox.AcceptRole)
         msg_box.addButton("Exit", QMessageBox.RejectRole)
 
         # Show the message box
