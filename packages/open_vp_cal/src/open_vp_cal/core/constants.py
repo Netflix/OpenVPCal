@@ -380,7 +380,7 @@ class FileFormats:
     FF_ARX = ".arx"
     FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
     FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
-    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV, FF_ARI]
+    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV, FF_ARI, FF_ARX]
     FF_DEFAULT = FF_EXR
 
 
@@ -416,4 +416,3 @@ class InputSelectSources:
     ARRI = "ARRI"
     RBG_SEQUENCE = "RGB_Sequence"
     MOV = "MOV"
-
