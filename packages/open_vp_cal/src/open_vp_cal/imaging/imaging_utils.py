@@ -49,7 +49,7 @@ def image_buf_to_np_array(image_buf: Oiio.ImageBuf) -> np.array:
     Returns: The NumPy array representing the image
 
     """
-    # Load the image using oiio.ImageBuf
+    # Load the image using Oiio.ImageBuf
     # Get the image metadata
     spec = image_buf.spec()
 
@@ -209,10 +209,10 @@ def stitch_images_horizontally(img_buffers):
     Takes a list of ImageBuf and stitches them together horizontally.
 
     Args:
-        img_buffers (List[oiio.ImageBuf]): List of ImageBuf objects
+        img_buffers (List[Oiio.ImageBuf]): List of ImageBuf objects
 
     Returns:
-        oiio.ImageBuf: Stitched ImageBuf
+        Oiio.ImageBuf: Stitched ImageBuf
     """
     # Initialize variables to store total width and maximum height
     total_width = 0
@@ -452,12 +452,12 @@ def insert_resized_image(image_a: Oiio.ImageBuf, image_b: Oiio.ImageBuf,
     Resize imageA by the given percentage and insert it into the center of imageB.
 
     Args:
-        image_a (oiio.ImageBuf): The image to be resized and inserted.
-        image_b (oiio.ImageBuf): The target image where imageA will be inserted.
+        image_a (Oiio.ImageBuf): The image to be resized and inserted.
+        image_b (Oiio.ImageBuf): The target image where imageA will be inserted.
         resize_percent (float): The percentage by which imageA should be resized.
 
     Returns:
-        oiio.ImageBuf: The resulting image.
+        Oiio.ImageBuf: The resulting image.
     """
 
     # Resize imageA
@@ -486,12 +486,12 @@ def resize_image(image: Oiio.ImageBuf, width: int, height: int) -> Oiio.ImageBuf
     Resize the image to the specified width and height.
 
     Args:
-        image (oiio.ImageBuf): The image to be resized.
+        image (Oiio.ImageBuf): The image to be resized.
         width (int): The width of the resized image.
         height (int): The height of the resized image.
 
     Returns:
-        oiio.ImageBuf: The resized image.
+        Oiio.ImageBuf: The resized image.
     """
     resized_image = Oiio.ImageBuf()
     res = Oiio.ImageBufAlgo.resize(resized_image, image, "", 0, Oiio.ROI(
@@ -513,28 +513,111 @@ def list_to_roi(roi: list) -> Oiio.ROI:
     return Oiio.ROI(roi[0], roi[1], roi[2], roi[3])
 
 
-def extract_roi(input_image: Oiio.ImageBuf, roi_input: list) -> Oiio.ImageBuf:
-    """ Extracts a region of interest from the image buffer of this frame.
-
-
-    Parameters:
-        input_image:
-        roi_input: The region of interest to extract from the image buffer.
-
-    Returns: Oiio.ImageBuf: The extracted region of interest.
-
+def get_perspective_transform(src_points: np.ndarray,
+                              dst_points: np.ndarray) -> np.ndarray:
     """
-    roi = list_to_roi(roi_input)
-    # Create an empty ImageBuf for the cropped image
-    cropped_image = Oiio.ImageBuf()
+    Computes the perspective transform matrix M (3x3) that maps src_points (4x2) to dst_points (4x2).
 
-    # Crop the image
-    Oiio.ImageBufAlgo.cut(cropped_image, input_image, roi)
-    if cropped_image.has_error:
-        raise ValueError("Failed To Extract ROI: " + cropped_image.geterror())
+    Args:
+        src_points (np.ndarray): Array of shape (4, 2) with source coordinates.
+        dst_points (np.ndarray): Array of shape (4, 2) with destination coordinates.
 
-    # Write the cropped image to disk
-    return cropped_image
+    Returns:
+        np.ndarray: The 3x3 perspective transform matrix.
+    """
+    A = []
+    B = []
+    for i in range(4):
+        x, y = src_points[i]
+        xp, yp = dst_points[i]
+        A.append([x, y, 1, 0, 0, 0, -x * xp, -y * xp])
+        B.append(xp)
+        A.append([0, 0, 0, x, y, 1, -x * yp, -y * yp])
+        B.append(yp)
+    A = np.array(A, dtype=np.float32)
+    B = np.array(B, dtype=np.float32)
+    p = np.linalg.solve(A, B)
+    M = np.array([[p[0], p[1], p[2]],
+                  [p[3], p[4], p[5]],
+                  [p[6], p[7], 1]], dtype=np.float32)
+    return M
+
+
+def extract_roi(input_image: Oiio.ImageBuf, roi_input: list) -> Oiio.ImageBuf:
+    """
+    Extracts a quadrilateral ROI from the input image, warps it into a square output,
+    and returns the de-warped (cropped) image.
+
+    If the roi_input corresponds to the full image (i.e. all four corners of the image),
+    the original input_image is returned.
+
+    Otherwise, we first crop the image to the minimal bounding rectangle of roi_input,
+    adjust the ROI coordinates accordingly, compute the perspective transform,
+    and then warp the cropped image.
+
+    Args:
+        input_image (Oiio.ImageBuf): The input image.
+        roi_input (list): A list of four (x, y) tuples defining the ROI quadrilateral.
+                          The points are assumed to be in order:
+                          top-left, top-right, bottom-right, bottom-left.
+
+    Returns:
+        Oiio.ImageBuf: The cropped and dewarped square image.
+    """
+    spec = input_image.spec()
+    full_roi = [(0, 0), (spec.width, 0), (spec.width, spec.height), (0, spec.height)]
+    if np.allclose(np.array(roi_input, dtype=np.float32),
+                   np.array(full_roi, dtype=np.float32)):
+        return input_image
+
+    # Compute the minimal bounding box that contains the ROI.
+    xs = [pt[0] for pt in roi_input]
+    ys = [pt[1] for pt in roi_input]
+    left_box = int(min(xs))
+    right_box = int(max(xs))
+    top_box = int(min(ys))
+    bottom_box = int(max(ys))
+    crop_roi = Oiio.ROI(left_box, right_box, top_box, bottom_box)
+
+    # Crop the input image to the bounding rectangle.
+    cropped_input = Oiio.ImageBuf()
+    Oiio.ImageBufAlgo.cut(cropped_input, input_image, crop_roi)
+    if cropped_input.has_error:
+        raise ValueError("Failed to crop image: " + cropped_input.geterror())
+
+    # Adjust the ROI points relative to the cropped image.
+    adjusted_roi = [(pt[0] - left_box, pt[1] - top_box) for pt in roi_input]
+    src_points = np.array(adjusted_roi, dtype=np.float32)
+
+    # Compute edge lengths for the ROI (from the adjusted coordinates).
+    width_top = np.linalg.norm(src_points[1] - src_points[0])
+    width_bottom = np.linalg.norm(src_points[2] - src_points[3])
+    height_left = np.linalg.norm(src_points[3] - src_points[0])
+    height_right = np.linalg.norm(src_points[2] - src_points[1])
+    side = int(max(width_top, width_bottom, height_left, height_right))
+    if side < 1:
+        raise ValueError("Computed side length is zero or negative.")
+
+    # Define destination points for a square of size side x side.
+    dst_points = np.array([
+        [0, 0],
+        [side - 1, 0],
+        [side - 1, side - 1],
+        [0, side - 1]
+    ], dtype=np.float32)
+
+    # Compute the perspective transform matrix.
+    M = get_perspective_transform(src_points, dst_points)
+
+    # Create an empty ImageBuf for the warped output.
+    warped_image = Oiio.ImageBuf()
+    output_roi = Oiio.ROI(0, side, 0, side)
+    Oiio.ImageBufAlgo.warp(warped_image, cropped_input, M, roi=output_roi)
+
+    if warped_image.has_error:
+        raise ValueError("Failed to extract ROI: " + warped_image.geterror())
+
+    return warped_image
 
 
 def get_scaled_cie_spectrum_bg_image(max_scale: int) -> Oiio.ImageBuf:
@@ -546,7 +629,7 @@ def get_scaled_cie_spectrum_bg_image(max_scale: int) -> Oiio.ImageBuf:
     Returns: The scaled image
 
     """
-    # Load the image using oiio.ImageBuf
+    # Load the image using Oiio.ImageBuf
     image_buf_orig = load_image(ResourceLoader.cie_spectrum_bg())
 
     # Resize the image for the scale of the graph widget
