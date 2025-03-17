@@ -646,7 +646,8 @@ class Processing:
         # We get the current frame and calculate an ROI which would select the whole image
         current_frame = led_wall_settings.sequence_loader.current_frame
         frame = led_wall_settings.sequence_loader.get_frame(current_frame)
-        roi = [0, frame.image_buf.spec().width, 0, frame.image_buf.spec().height]
+        spec = frame.image_buf.spec()
+        roi = [(0, 0), (spec.width, 0), (spec.width, spec.height), (0, spec.height)]
 
         # We store the ROI into the project settings
         led_wall_settings.roi = roi
