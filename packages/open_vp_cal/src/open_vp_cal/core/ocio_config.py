@@ -818,12 +818,12 @@ class OcioConfigWriter:
             output_file = os.path.join(
                 self._output_folder,
                 constants.ProjectFolders.CALIBRATION,
-                self.pre_calibration_config_name.format(project_id=project_id)
+                self.pre_calibration_config_name
             )
 
         return self._generate_ocio_config(
             led_walls, self._get_ocio_config_colour_spaces_for_patch_generation,
-            output_file=output_file, base_ocio_config=base_ocio_config,
+            output_file=output_file.format(project_id=project_id), base_ocio_config=base_ocio_config,
             preview_export_filter=preview_export_filter)
 
     def generate_post_calibration_ocio_config(
@@ -851,11 +851,12 @@ class OcioConfigWriter:
         if not output_file:
             output_file = os.path.join(
                 self._output_folder,
-                self.post_calibration_config_name.format(project_id=project_id)
+                self.post_calibration_config_name
             )
 
+
         return self._generate_ocio_config(
-            led_walls, self._get_openvpcal_colour_spaces, output_file=output_file, base_ocio_config=base_ocio_config,
+            led_walls, self._get_openvpcal_colour_spaces, output_file=output_file.format(project_id=project_id), base_ocio_config=base_ocio_config,
             preview_export_filter=preview_export_filter, export_lut_for_aces_cct=export_lut_for_aces_cct
         )
 

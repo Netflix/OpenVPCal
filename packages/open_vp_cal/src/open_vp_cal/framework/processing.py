@@ -326,6 +326,9 @@ class Processing:
             calibration_folder, ocio_config.OcioConfigWriter.post_calibration_config_name
         )
 
+        project_id = led_walls[0].project_settings.project_id
+        ocio_config_output_file = ocio_config_output_file.format(project_id=project_id)
+
         ocio_config_writer = ocio_config.OcioConfigWriter(calibration_folder)
         for led_wall in led_walls:
             samples_output_folder = os.path.join(

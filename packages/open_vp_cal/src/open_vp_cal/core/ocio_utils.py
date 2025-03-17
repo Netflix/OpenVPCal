@@ -30,9 +30,9 @@ from open_vp_cal.core.calibrate import resample_lut
 
 # Currently we have a hard requirement on OCIO 2.1+ to support gamut compression
 ocio_version = Version(version("opencolorio"))
-required_version = Version("2.1")
+required_version = Version("2.4")
 if not ocio_version >= required_version:
-    raise ImportError("Requires OCIO v2.1 or greater.")
+    raise ImportError("Requires OCIO v2.4 or greater.")
 
 
 def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename) -> None:
