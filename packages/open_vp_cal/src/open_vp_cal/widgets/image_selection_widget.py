@@ -18,12 +18,23 @@ It now implements a polygon-based selection using Qt so that the user can click 
 points over the image. When four points are selected, they are ordered and the resulting
 ROI is saved to the current wall in the project settings as a list of four (x, y) tuples.
 The underlying image remains unchanged, and the polygon is drawn as an overlay.
-Additionally, control point vertices are drawn in green, and they are movable to adjust the polygon.
+Control point vertices are drawn using a color map:
+    0: red (top-left)
+    1: green (top-right)
+    2: blue (bottom-right)
+    3: white (bottom-left)
+If the ROI is inside out or if the control points do not satisfy the following criteria:
+    - Red is higher than blue and white and more left than green.
+    - Green is higher than blue and white and more right than red.
+    - White is lower than red and green and more left than blue.
+    - Blue is lower than red and green and more right than white.
+then the polygon outline is drawn in red; otherwise, it is green.
+After the initial ROI is set, subsequent left-clicks update the next corner sequentially—but only if the
+user holds Alt (or Command on macOS). Without the modifier key the click only does selection.
 The ROI is stored purely as four coordinate pairs with no UI transformation information.
 """
 
-from typing import Tuple, List
-
+from typing import List, Tuple
 import numpy as np
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -39,115 +50,225 @@ from open_vp_cal.widgets.timeline_widget import PixMapFrame
 def order_points(pts: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
     """
     Orders four points in the order: top-left, top-right, bottom-right, bottom-left.
-    This is computed using the sum and difference of coordinates.
+    Computed using the sum and difference of coordinates.
+
+    Parameters:
+        pts (List[Tuple[float, float]]): List of four (x, y) tuples.
+
+    Returns:
+        List[Tuple[float, float]]: Ordered list of points.
     """
     pts_array = np.array(pts, dtype="float32")
     s = pts_array.sum(axis=1)
     rect = [None] * 4
-    rect[0] = pts_array[np.argmin(s)]  # top-left has smallest sum
-    rect[2] = pts_array[np.argmax(s)]  # bottom-right has largest sum
-
+    rect[0] = pts_array[np.argmin(s)]  # top-left
+    rect[2] = pts_array[np.argmax(s)]  # bottom-right
     diff = np.diff(pts_array, axis=1)
-    rect[1] = pts_array[np.argmin(diff)]  # top-right has smallest difference
-    rect[3] = pts_array[np.argmax(diff)]  # bottom-left has largest difference
-
+    rect[1] = pts_array[np.argmin(diff)]  # top-right
+    rect[3] = pts_array[np.argmax(diff)]  # bottom-left
     return [tuple(pt) for pt in rect]
 
 
 class ControlPoint(QtWidgets.QGraphicsEllipseItem):
-    def __init__(self, index: int, pos: QtCore.QPointF, update_func):
-        radius = 4
+    """
+    A movable control point displayed as a small colored ellipse.
+
+    Attributes:
+        index (int): The index of the control point (0 to 3).
+        update_func (callable): Callback function called with the control point index
+                                and its new scene coordinate.
+
+    Colors are assigned as follows:
+        0: red, 1: green, 2: blue, 3: white.
+    """
+    def __init__(self, index: int, pos: QtCore.QPointF, update_func) -> None:
+        radius: int = 4
         super().__init__(-radius, -radius, 2 * radius, 2 * radius)
-        self.index = index
-        self.setBrush(QtGui.QBrush(Qt.green))
-        # Enable selection and movement.
+        self.index: int = index
+        color_map = {0: Qt.red, 1: Qt.green, 2: Qt.blue, 3: Qt.white}
+        self.setBrush(QtGui.QBrush(color_map.get(index, Qt.green)))
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges, True)
         self.update_func = update_func
         self.setPos(pos)
-        # Ensure control points appear above the polygon.
         self.setZValue(150)
 
-    def itemChange(self, change, value):
-        # Use ItemPositionHasChanged so that the final new position is reported.
+    def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value) -> object:
+        """
+        Called when the item's state changes.
+
+        Parameters:
+            change: The type of change.
+            value: The new value.
+
+        Returns:
+            The updated value.
+        """
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
             if self.update_func:
-                self.update_func(self.index, value)
+                self.update_func(self.index, self.mapToScene(0, 0))
         return super().itemChange(change, value)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        """
+        Called on mouse release to ensure the final position is reported.
+
+        Parameters:
+            event: The mouse release event.
+        """
         super().mouseReleaseEvent(event)
         if self.update_func:
-            self.update_func(self.index, self.pos())
+            self.update_func(self.index, self.mapToScene(0, 0))
 
 
 class PolygonSelectionScene(QtWidgets.QGraphicsScene):
-    def __init__(self, parent=None, selection_callback=None):
+    """
+    A QGraphicsScene for polygon-based ROI selection.
+
+    Before ROI finalization, left-clicks add points.
+    Once 4 points are set, the ROI is finalized and subsequent left-clicks update corners sequentially,
+    but only if the Alt key (or Command on macOS) is held.
+    The ROI is emitted via a callback as a list of four (x, y) tuples in scene coordinates.
+    Additionally, the polygon outline color is updated:
+      - If the polygon is inside out or the control points do not meet the expected criteria,
+        the outline is red.
+      - Otherwise, the outline is green.
+
+    Attributes:
+        selection_callback (callable): A callback function that accepts a list of four (x, y) tuples.
+    """
+    def __init__(self, parent=None, selection_callback=None) -> None:
         super().__init__(parent)
         self.selection_callback = selection_callback
-        # Internal list of control point positions (as QPoints)
         self.polygon_points: List[QtCore.QPointF] = []
-        self.selection_complete = False
-
-        # Draw the polygon with a red outline.
+        self.selection_complete: bool = False
+        self.current_update_index: int = 0
         self.polygon_item = QtWidgets.QGraphicsPolygonItem()
         pen = QtGui.QPen(Qt.red)
         pen.setWidth(2)
         self.polygon_item.setPen(pen)
         self.polygon_item.setZValue(100)
-        # Disable mouse events on the polygon so control points can receive them.
         self.polygon_item.setAcceptedMouseButtons(Qt.NoButton)
         self.addItem(self.polygon_item)
-
-        # List to hold control points (green), created after 4 points are selected.
         self.control_points: List[ControlPoint] = []
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        """
+        Handles mouse press events.
+        Before ROI finalization, left-clicks add points.
+        After finalization, left-clicks update the next corner sequentially only if the Alt or Command modifier is held.
+
+        Parameters:
+            event (QtWidgets.QGraphicsSceneMouseEvent): The mouse press event.
+        """
         if not self.selection_complete:
             if event.button() == Qt.LeftButton:
-                point = event.scenePos()
+                point: QtCore.QPointF = event.scenePos()
                 self.polygon_points.append(point)
-                poly = QtGui.QPolygonF(self.polygon_points)
-                self.polygon_item.setPolygon(poly)
+                self.polygon_item.setPolygon(QtGui.QPolygonF(self.polygon_points))
                 if len(self.polygon_points) == 4:
                     self.finalizePolygon()
-        # Always call the base implementation so control points receive events.
+        else:
+            # After ROI is finalized, only update next corner if Alt or Command is held.
+            if event.button() == Qt.LeftButton and (event.modifiers() & (Qt.AltModifier | Qt.MetaModifier)):
+                point: QtCore.QPointF = event.scenePos()
+                self.polygon_points[self.current_update_index] = point
+                self.polygon_item.setPolygon(QtGui.QPolygonF(self.polygon_points))
+                if self.control_points and self.current_update_index < len(self.control_points):
+                    self.control_points[self.current_update_index].setPos(point)
+                self._emitSelection()
+                self.current_update_index = (self.current_update_index + 1) % 4
         super().mousePressEvent(event)
 
-    def finalizePolygon(self):
-        # Order the points for consistency.
-        pts = [(p.x(), p.y()) for p in self.polygon_points]
-        ordered = order_points(pts)
+    def finalizePolygon(self) -> None:
+        """
+        Finalizes the ROI by ordering the 4 points, updating the polygon,
+        and creating control points with distinct colors.
+        """
+        pts: List[Tuple[float, float]] = [(p.x(), p.y()) for p in self.polygon_points]
+        ordered: List[Tuple[float, float]] = order_points(pts)
         self.polygon_points = [QtCore.QPointF(x, y) for (x, y) in ordered]
         self.polygon_item.setPolygon(QtGui.QPolygonF(self.polygon_points))
-        # Create a control point (green, movable) for each vertex.
         for i, pt in enumerate(self.polygon_points):
             cp = ControlPoint(i, pt, self.controlPointMoved)
             self.control_points.append(cp)
             self.addItem(cp)
         self.selection_complete = True
+        self.current_update_index = 0
         self._emitSelection()
 
-    def controlPointMoved(self, index: int, newPos: QtCore.QPointF):
+    def controlPointMoved(self, index: int, newPos: QtCore.QPointF) -> None:
         """
-        Called when a control point is moved.
-        Updates the corresponding vertex in the polygon and recomputes the ROI.
+        Called when a control point is moved; updates the corresponding vertex and emits the ROI.
+
+        Parameters:
+            index (int): The index of the control point.
+            newPos (QtCore.QPointF): The new scene coordinate.
         """
         self.polygon_points[index] = newPos
         self.polygon_item.setPolygon(QtGui.QPolygonF(self.polygon_points))
         self._emitSelection()
 
-    def _emitSelection(self):
+    def compute_signed_area(self) -> float:
         """
-        Emits the current ROI as a list of four (x, y) tuples.
-        The ROI here is the raw positions of the four control points.
+        Computes the signed area of the polygon using the shoelace formula.
+
+        Returns:
+            float: The signed area (negative if the points are ordered clockwise).
         """
-        pts = [(int(pt.x()), int(pt.y())) for pt in self.polygon_points]
+        area: float = 0.0
+        n: int = len(self.polygon_points)
+        for i in range(n):
+            x1, y1 = self.polygon_points[i].x(), self.polygon_points[i].y()
+            x2, y2 = self.polygon_points[(i + 1) % n].x(), self.polygon_points[(i + 1) % n].y()
+            area += (x1 * y2 - y1 * x2)
+        return area / 2.0
+
+    def validate_control_points(self) -> bool:
+        """
+        Validates the control point arrangement.
+
+        Conditions:
+          - Red (index 0) must be higher than blue (index 2) and white (index 3) and more left than green (index 1).
+          - Green (index 1) must be higher than blue (index 2) and white (index 3) and more right than red (index 0).
+          - White (index 3) must be lower than red (index 0) and green (index 1) and more left than blue (index 2).
+          - Blue (index 2) must be lower than red (index 0) and green (index 1) and more right than white (index 3).
+
+        Returns:
+            bool: True if all conditions are satisfied; False otherwise.
+        """
+        if len(self.polygon_points) < 4:
+            return True
+        r = self.polygon_points[0]
+        g = self.polygon_points[1]
+        b = self.polygon_points[2]
+        w = self.polygon_points[3]
+        cond1 = (r.y() < b.y() and r.y() < w.y() and r.x() < g.x())
+        cond2 = (g.y() < b.y() and g.y() < w.y() and g.x() > r.x())
+        cond3 = (w.y() > r.y() and w.y() > g.y() and w.x() < b.x())
+        cond4 = (b.y() > r.y() and b.y() > g.y() and b.x() > w.x())
+        return cond1 and cond2 and cond3 and cond4
+
+    def _emitSelection(self) -> None:
+        """
+        Emits the current ROI as a list of four (x, y) tuples in scene coordinates.
+        Also updates the polygon outline:
+          - If the polygon is inverted (negative area) or the control point validation fails, outline is red.
+          - Otherwise, outline is green.
+        """
+        area: float = self.compute_signed_area()
+        pen: QtGui.QPen = self.polygon_item.pen()
+        if area < 0 or not self.validate_control_points():
+            pen.setColor(Qt.red)
+        else:
+            pen.setColor(Qt.green)
+        self.polygon_item.setPen(pen)
+        pts: List[Tuple[int, int]] = [(int(pt.x()), int(pt.y())) for pt in self.polygon_points]
         if self.selection_callback:
             self.selection_callback(pts)
 
-    def resetSelection(self):
+    def resetSelection(self) -> None:
         """
         Clears the polygon overlay, removes control points, and resets the selection.
         """
@@ -158,22 +279,20 @@ class PolygonSelectionScene(QtWidgets.QGraphicsScene):
             self.removeItem(cp)
         self.control_points = []
 
-    def setPolygon(self, points: List[Tuple[float, float]]):
+    def setPolygon(self, points: List[Tuple[float, float]]) -> None:
         """
-        Loads a saved ROI (a list of 4 (x, y) tuples) and creates the corresponding polygon.
-        All conversions from the saved ROI to polygon points occur here; the saved ROI remains
-        a pure numeric representation.
+        Loads a saved ROI (a list of four (x, y) tuples) and updates the polygon and control points.
+
+        Parameters:
+            points (List[Tuple[float, float]]): The ROI points in scene coordinates.
         """
-        # Remove any existing control points from the scene.
         for cp in self.control_points:
             self.removeItem(cp)
         self.control_points = []
-        # Set up the new polygon.
         poly = QtGui.QPolygonF([QtCore.QPointF(x, y) for (x, y) in points])
         self.polygon_item.setPolygon(poly)
         self.polygon_points = [QtCore.QPointF(x, y) for (x, y) in points]
         self.selection_complete = True
-        # Create control points for the loaded polygon.
         for i, pt in enumerate(self.polygon_points):
             cp = ControlPoint(i, pt, self.controlPointMoved)
             self.control_points.append(cp)
@@ -185,24 +304,39 @@ class ImageSelectionGraphicsView(QtWidgets.QGraphicsView):
     """
     A graphics view that displays an image and supports Ctrl+wheel zooming.
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self.parent = parent
 
-    def mapToSceneInverted(self, pos) -> QtCore.QPointF:
+    def mapToSceneInverted(self, pos: QtCore.QPointF) -> QtCore.QPointF:
+        """
+        Maps a point in view coordinates to scene coordinates.
+
+        Parameters:
+            pos (QtCore.QPointF): The point in view coordinates.
+
+        Returns:
+            QtCore.QPointF: The corresponding scene coordinate.
+        """
         transform = self.transform().inverted()[0]
         return transform.map(pos)
 
-    def wheelEvent(self, event):
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        """
+        Handles mouse wheel events for zooming when Ctrl is held.
+
+        Parameters:
+            event (QtGui.QWheelEvent): The wheel event.
+        """
         if event.modifiers() == Qt.ControlModifier:
-            zoom_factor = 1.02
-            view_pos = event.position()
-            scene_pos = self.mapToScene(view_pos.toPoint())
+            zoom_factor: float = 1.02
+            view_pos: QtCore.QPointF = event.position()
+            scene_pos: QtCore.QPointF = self.mapToScene(view_pos.toPoint())
             if event.angleDelta().y() > 0:
                 self.scale(zoom_factor, zoom_factor)
             else:
                 self.scale(1/zoom_factor, 1/zoom_factor)
-            new_view_pos = self.mapFromScene(scene_pos)
+            new_view_pos: QtCore.QPointF = self.mapFromScene(scene_pos)
             self.horizontalScrollBar().setValue(
                 self.horizontalScrollBar().value() + view_pos.x() - new_view_pos.x())
             self.verticalScrollBar().setValue(
@@ -214,59 +348,67 @@ class ImageSelectionGraphicsView(QtWidgets.QGraphicsView):
 class ImageSelectionWidget(QtWidgets.QWidget):
     """
     A widget for selecting a polygonal region in an image.
-    The user selects four points on the image; these points are ordered and used
-    to define an ROI as a list of four (x, y) tuples which is saved to the
-    current wall in the project settings. The underlying image remains unchanged and the polygon
-    overlay (red) with movable control points (green) is drawn on top.
 
-    Note: When the ROI is updated (via control point moves or initial selection), the ROI is saved
-    in a pure numeric format (a list of four (x, y) tuples). Any conversion needed to extract pixels
-    from the underlying image is handled outside the stored ROI.
+    The user selects four points on the image to define an ROI as a list of four (x, y) tuples.
+    The ROI is saved to the current wall in the project settings. The underlying image remains unchanged,
+    and the polygon overlay is drawn with a red or green outline (red if inverted or invalid) along with
+    control points in distinct colors (red, green, blue, white).
+    After the initial ROI is set, subsequent left-clicks update corners sequentially only when the
+    Alt (or Command on macOS) modifier is held.
+
+    The ROI is stored in scene coordinates as a list of four (x, y) tuples.
     """
-    def __init__(self, project_settings: ProjectSettingsModel, parent=None):
+    def __init__(self, project_settings: ProjectSettingsModel, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
-        self.place_holder_pixmap = None
-        self.current_frame = None
-        self.layout = None
-        self.pixmap = None
-        self.graphics_view = None
-        self.graphics_scene = None
-        self.project_settings = project_settings
+        self.place_holder_pixmap: QPixmap = None
+        self.current_frame: PixMapFrame = None
+        self.layout: QtWidgets.QVBoxLayout = None
+        self.pixmap: QtWidgets.QGraphicsPixmapItem = None
+        self.graphics_view: ImageSelectionGraphicsView = None
+        self.graphics_scene: PolygonSelectionScene = None
+        self.project_settings: ProjectSettingsModel = project_settings
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Sets up the UI by creating the graphics view, scene, and image placeholder.
+        """
         self.layout = QtWidgets.QVBoxLayout(self)
         self.graphics_view = ImageSelectionGraphicsView(self)
         self.layout.addWidget(self.graphics_view)
-        # Create the polygon selection scene with the callback.
         self.graphics_scene = PolygonSelectionScene(selection_callback=self.polygonSelected)
         self.graphics_view.setScene(self.graphics_scene)
         self.place_holder_pixmap = QPixmap(ResourceLoader.open_vp_cal_logo()).scaled(
             500, 500, Qt.KeepAspectRatio)
-        # Add the image pixmap with a low z-value so it appears behind the polygon.
         self.pixmap = self.graphics_scene.addPixmap(self.place_holder_pixmap)
         self.pixmap.setZValue(0)
-        # If a saved ROI exists, load it and set up the polygon overlay.
         if self.project_settings.current_wall and self.project_settings.current_wall.roi:
-            roi = self.project_settings.current_wall.roi  # Expected to be a list of 4 (x, y) tuples.
+            roi: List[Tuple[float, float]] = self.project_settings.current_wall.roi
             self.graphics_scene.setPolygon(roi)
         self.clear()
         QApplication.processEvents()
 
     def current_frame_changed(self, frame: PixMapFrame) -> None:
-        """Update the displayed image when the frame changes."""
+        """
+        Called when the current frame changes.
+
+        Parameters:
+            frame (PixMapFrame): The new frame.
+        """
         self.display_image(frame)
 
     def display_image(self, frame: PixMapFrame) -> None:
         """
-        Load and display an image from the given frame.
-        If a saved ROI exists in the current wall, convert it into four corner points
-        and update the polygon overlay accordingly; otherwise, reset the polygon.
+        Loads and displays an image from the given frame.
+        If a saved ROI exists, updates the polygon overlay accordingly.
+
+        Parameters:
+            frame (PixMapFrame): The frame to display.
         """
         QApplication.processEvents()
         self.current_frame = frame
         if self.project_settings.current_wall and self.project_settings.current_wall.roi:
-            roi = self.project_settings.current_wall.roi  # List of 4 (x, y) tuples.
+            roi: List[Tuple[float, float]] = self.project_settings.current_wall.roi
             self.graphics_scene.setPolygon(roi)
         else:
             self.graphics_scene.resetSelection()
@@ -275,29 +417,37 @@ class ImageSelectionWidget(QtWidgets.QWidget):
         QApplication.processEvents()
 
     def clear(self) -> None:
-        """Clear the image and display the placeholder."""
+        """
+        Clears the image view and displays the placeholder.
+        """
         if self.pixmap:
             self.pixmap.setPixmap(self.place_holder_pixmap)
             scene_rect = self.graphics_scene.sceneRect()
-            center_x = scene_rect.width() / 2
-            center_y = scene_rect.height() / 2
-            pixmap_width = self.pixmap.pixmap().width()
-            pixmap_height = self.pixmap.pixmap().height()
-            pixmap_x = center_x - pixmap_width / 2
-            pixmap_y = center_y - pixmap_height / 2
+            center_x: float = scene_rect.width() / 2
+            center_y: float = scene_rect.height() / 2
+            pixmap_width: float = self.pixmap.pixmap().width()
+            pixmap_height: float = self.pixmap.pixmap().height()
+            pixmap_x: float = center_x - pixmap_width / 2
+            pixmap_y: float = center_y - pixmap_height / 2
             self.pixmap.setPos(pixmap_x, pixmap_y)
 
     def polygonSelected(self, points: List[Tuple[float, float]]) -> None:
         """
-        Callback when the polygon selection is complete or updated.
-        Stores the ROI (as a list of four (x, y) tuples) in the project settings.
+        Callback when the polygon selection is updated.
+        Stores the ROI (list of four (x, y) tuples) in the project settings.
+
+        Parameters:
+            points (List[Tuple[float, float]]): The ROI points.
         """
         if self.project_settings.current_wall:
             self.project_settings.current_wall.roi = points
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         """
-        Display a context menu on right-click with an option to reset the ROI.
+        Displays a context menu with an option to reset the ROI.
+
+        Parameters:
+            event (QtGui.QContextMenuEvent): The context menu event.
         """
         context_menu = QtWidgets.QMenu(self)
         reset_roi = context_menu.addAction("Reset ROI")
@@ -306,9 +456,7 @@ class ImageSelectionWidget(QtWidgets.QWidget):
 
     def on_reset_roi(self) -> None:
         """
-        Reset the ROI to its default value (for example, the rectangle defined by
-        [(0,0), (100,0), (100,100), (0,100)]), reset the polygon overlay,
-        and re-display the current frame.
+        Resets the ROI to a default value, clears the polygon overlay, and re-displays the current frame.
         """
         if self.current_frame and self.project_settings.current_wall:
             self.project_settings.current_wall.roi = [(0, 0), (100, 0), (100, 100), (0, 100)]
