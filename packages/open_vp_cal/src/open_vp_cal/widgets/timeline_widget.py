@@ -22,7 +22,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QSlider, QLabel, QPushButton, QSpinBox
 from PySide6.QtCore import QObject, Signal, Slot, Qt, QEvent
 
-from open_vp_cal.core.constants import SourceSelect, InputSelectSources
+from open_vp_cal.core.constants import SourceSelect, InputSelectSources, InputFormats
 from open_vp_cal.framework.sequence_loader import SequenceLoader, FrameRangeException
 from open_vp_cal.framework.frame import Frame
 from open_vp_cal.imaging.imaging_utils import load_image_buffer_to_qpixmap
@@ -396,12 +396,12 @@ class TimelineWidget(LockableWidget):
         return utils.select_folder()
 
     @staticmethod
-    def select_file() -> Path:
+    def select_file(valid_formats) -> Path:
         """ returns the file path to the selected folder if one was selected
 
         :return: returns the file path to the selected folder if one was selected
         """
-        return utils.select_file()
+        return utils.select_file(valid_formats)
 
     def _set_active_state(self, value: bool):
         """
@@ -427,8 +427,18 @@ class TimelineWidget(LockableWidget):
             folder_path = self.select_folder()
             if not folder_path:
                 return
+
+        # If its any other source other than ARRI we know we are loading a single clip not a sequence
+        elif input_source != InputSelectSources.ARRI:
+            valid_formats = InputFormats.get_formats_for_source(input_source)
+            file_path = self.select_file(valid_formats)
+            if not file_path:
+                return
+
+            folder_path = self.model.pre_process_input_to_aces_sequence(input_source, file_path)
+
         else:
-            # If it's not we need to know if it's a single file or multiple files
+            # If it is ARRI we need to know if we are loading sequences or single clips
             result = utils.ask_file_type()
             if result == SourceSelect.CANCEL:
                 return
@@ -441,7 +451,8 @@ class TimelineWidget(LockableWidget):
                 if not os.path.exists(folder_path):
                     return
             else:
-                file_path = self.select_file()
+                valid_formats = InputFormats.get_formats_for_source(input_source)
+                file_path = self.select_file(valid_formats)
                 if not file_path:
                     return
 

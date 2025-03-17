@@ -1,16 +1,11 @@
 import open_vp_cal
-from open_vp_cal.core.constants import FileFormats, InputSelectSources, VERSION, \
-    PRE_PROCESSING_FORMAT_MAP
+from open_vp_cal.core.constants import InputSelectSources, VERSION, \
+    PRE_PROCESSING_FORMAT_MAP, InputFormats
 
 REDLINE_CMD = "Redline"
 ART_CMD = "art-cmd"
 RAW_EXPORTER_CMD = "rawexporter"
 FFMPEG_CMD = "ffmpeg"
-
-RED_FORMATS = (FileFormats.FF_R3D,)
-ARRI_FORMATS = (FileFormats.FF_ARX, FileFormats.FF_ARI, FileFormats.FF_MXF)
-SONY_FORMATS = (FileFormats.FF_MXF,)
-MOV_FORMATS = (FileFormats.FF_MOV,)
 
 _FORMAT_MAP = {
     InputSelectSources.RED:
@@ -22,7 +17,7 @@ _FORMAT_MAP = {
                 "win32": "C:/Program Files/Red/Redline.exe",
                 "linux": "/usr/local/bin/Redline"
             },
-            "formats": RED_FORMATS,
+            "formats": InputFormats.RED_FORMATS,
             "args": [("--i", "<FILEPATH_IN>"), ("--format", "2"), ("--useMeta", ""), ("--resizeX", "<RESOLUTION_X>"), ("--resizeY", "<RESOLUTION_Y>"), ("-gpuPlatform", "1"), ("-o", "<FILEPATH_OUT>")]
         }
     ],
@@ -36,8 +31,8 @@ _FORMAT_MAP = {
                 "win32": "C:/Program Files/ARRI/art-cmd.exe",
                 "linux": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd"
             },
-            "formats": ARRI_FORMATS,
-            "args": [("process", ""), ("--input", "<FILEPATH_IN>"), ("--output", "<OUTPUT_FOLDER>/output.%07d.exr"), ("--video-codec", "exr_uncompressed/f16"), ("--target-colorspace", "AP0/D60/linear"), ("--letterbox-size", "<RESOLUTION_X>x<RESOLUTION_Y>")]
+            "formats": InputFormats.ARRI_FORMATS,
+            "args": [("process", ""), ("--input", "<FILEPATH_IN>"), ("--output", "<OUTPUT_FOLDER>/<OUTPUT_FILENAME>.%07d.exr"), ("--video-codec", "exr_uncompressed/f16"), ("--target-colorspace", "AP0/D60/linear"), ("--letterbox-size", "<RESOLUTION_X>x<RESOLUTION_Y>")]
 
         }
     ],
@@ -50,7 +45,7 @@ _FORMAT_MAP = {
                 "win32": "C:/Program Files/RAW Viewer/rawexporter.exe",
                 "linux": "/usr/local/bin/rawexporter"
             },
-            "formats": SONY_FORMATS,
+            "formats": InputFormats.SONY_FORMATS,
             "args": [("--input", "<FILEPATH_IN>"), ("-D", "<OUTPUT_FOLDER>"), ("-O", "<OUTPUT_FILENAME>"), ("-V", "exr"), ("--bake", "ACES_LINEAR"), ("--width", "<RESOLUTION_X>"), ("--height", "<RESOLUTION_Y>")]
         },
     ],
@@ -63,8 +58,8 @@ _FORMAT_MAP = {
                 "win32": "C:/Program Files/ffmped/ffmpeg.exe",
                 "linux": "/usr/local/bin/ffmpeg"
             },
-            "formats": MOV_FORMATS,
-            "args": [("-i", "<FILEPATH_IN>"), ("-vf", "scale=<RESOLUTION_X>:<RESOLUTION_Y>"), ("", "<OUTPUT_FOLDER>/output.%07d.dpx")]
+            "formats": InputFormats.MOV_FORMATS,
+            "args": [("-i", "<FILEPATH_IN>"), ("-vf", "scale=<RESOLUTION_X>:<RESOLUTION_Y>"), ("", "<OUTPUT_FOLDER>/<OUTPUT_FILENAME>.%07d.dpx")]
         }
     ]
 }

@@ -21,7 +21,8 @@ import numpy as np
 from PySide6.QtGui import QImage, Qt, QPixmap
 from PySide6.QtWidgets import QFileDialog, QWidget, QMessageBox
 
-from open_vp_cal.core.constants import FileFormats, SourceSelect, InputSelectSources
+from open_vp_cal.core.constants import SourceSelect, InputSelectSources, \
+    InputFormats
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.core.utils import stack_numpy_array
 
@@ -49,7 +50,7 @@ def select_folder() -> str:
     return ""
 
 
-def select_file() -> Path | None:
+def select_file(valid_extensions) -> Path | None:
     """
     Opens a QFileDialog to select a single file with specified extensions.
 
@@ -59,7 +60,7 @@ def select_file() -> Path | None:
     dialog = QFileDialog()
     dialog.setFileMode(QFileDialog.ExistingFile)  # Allow selection of only existing files
     # Combine all extensions into a single filter
-    all_extensions = " ".join(f"*{ext}" for ext in FileFormats.FF_ALL_CONVERT)
+    all_extensions = " ".join(f"*{ext}" for ext in valid_extensions)
     dialog.setNameFilter(f"Supported Files ({all_extensions})")
 
     if dialog.exec_() == QFileDialog.Accepted:
@@ -104,11 +105,22 @@ def ask_input_source() -> SourceSelect | InputSelectSources:
     msg_box.setIconPixmap(
         logo.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
-    rgb_seq_button = msg_box.addButton("RGB Sequence", QMessageBox.AcceptRole)
-    red_button = msg_box.addButton("Red", QMessageBox.AcceptRole)
-    sony_button = msg_box.addButton("Sony", QMessageBox.AcceptRole)
-    arri_button = msg_box.addButton("Arri", QMessageBox.AcceptRole)
-    mov_button = msg_box.addButton("Mov", QMessageBox.AcceptRole)
+    rgb_seq_button = msg_box.addButton("RGB File Sequence", QMessageBox.AcceptRole)
+
+    exts = "(" + ", ".join("*" + ext for ext in InputFormats.get_formats_for_source(InputSelectSources.RED)) + ")"
+    red_button = msg_box.addButton(f"RED {exts}", QMessageBox.AcceptRole)
+
+    exts = "(" + ", ".join("*" + ext for ext in InputFormats.get_formats_for_source(
+        InputSelectSources.SONY)) + ")"
+    sony_button = msg_box.addButton(f"Sony {exts}", QMessageBox.AcceptRole)
+
+    exts = "(" + ", ".join("*" + ext for ext in InputFormats.get_formats_for_source(
+        InputSelectSources.ARRI)) + ")"
+    arri_button = msg_box.addButton(f"ARRI {exts}", QMessageBox.AcceptRole)
+
+    exts = "(" + ", ".join("*" + ext for ext in InputFormats.get_formats_for_source(
+        InputSelectSources.MOV)) + ")"
+    mov_button = msg_box.addButton(f"RBG Clip {exts}", QMessageBox.AcceptRole)
     cancel_button = msg_box.addButton("Cancel", QMessageBox.RejectRole)
 
     msg_box.exec_()

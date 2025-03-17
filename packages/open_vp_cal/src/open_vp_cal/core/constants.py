@@ -376,11 +376,12 @@ class FileFormats:
     FF_R3D = ".R3D"
     FF_MXF = ".mxf"
     FF_MOV = ".mov"
+    FF_MP4 = ".mp4"
     FF_ARI = ".ari"
     FF_ARX = ".arx"
     FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
     FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
-    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV, FF_ARI, FF_ARX]
+    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV, FF_ARI, FF_ARX, FF_MP4]
     FF_DEFAULT = FF_EXR
 
 
@@ -409,10 +410,40 @@ class ProjectFolders:
 
 class InputSelectSources:
     """
-
+    Represents the different input sources.
     """
     RED = "RED"
     SONY = "SONY"
     ARRI = "ARRI"
     RBG_SEQUENCE = "RGB_Sequence"
     MOV = "MOV"
+
+
+class InputFormats:
+    """
+    Contains tuples of file formats for each input source.
+    """
+    RED_FORMATS = (FileFormats.FF_R3D,)
+    ARRI_FORMATS = (FileFormats.FF_ARX, FileFormats.FF_ARI, FileFormats.FF_MXF)
+    SONY_FORMATS = (FileFormats.FF_MXF,)
+    MOV_FORMATS = (FileFormats.FF_MOV, FileFormats.FF_MP4)
+
+    @classmethod
+    def get_formats_for_source(cls, source: InputSelectSources) -> tuple:
+        """
+        Returns the tuple of file formats corresponding to the given input source.
+
+        Parameters:
+            source (str): The input source, e.g. InputSelectSources.RED, InputSelectSources.ARRI, etc.
+
+        Returns:
+            tuple: The tuple of file formats corresponding to the source.
+                   If the source is not found, returns an empty tuple.
+        """
+        mapping = {
+            InputSelectSources.RED: cls.RED_FORMATS,
+            InputSelectSources.ARRI: cls.ARRI_FORMATS,
+            InputSelectSources.SONY: cls.SONY_FORMATS,
+            InputSelectSources.MOV: cls.MOV_FORMATS,
+        }
+        return mapping.get(source, ())

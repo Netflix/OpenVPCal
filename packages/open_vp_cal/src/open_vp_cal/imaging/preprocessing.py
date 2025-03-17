@@ -133,7 +133,7 @@ def convert_raw_to_aces(pre_process_config, input_source, input_file, output_fil
         "<FILEPATH_OUT>": output_file_name.as_posix(),
         "<RESOLUTION_X>": str(resolution_x),
         "<RESOLUTION_Y>": str(resolution_y),
-        "<OUTPUT_FILENAME>": filename,
+        "<OUTPUT_FILENAME>": filename.replace(".", "_"),
         "<OUTPUT_FOLDER>": output_folder.as_posix()
     }
     format_details_populated = replace_command_args(format_details, replacement_dict)
