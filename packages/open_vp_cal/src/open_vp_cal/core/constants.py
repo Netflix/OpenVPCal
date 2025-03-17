@@ -45,8 +45,8 @@ YELLOW = (252, 186, 3)
 KELVIN_TEMPERATURES = [5003, 6000, 6504]
 
 OPEN_VP_CAL_UNIT_TESTING = "OPEN_VP_CAL_UNIT_TESTING"
-LOG_URL = 'https://yl6ov5gen9.execute-api.eu-west-1.amazonaws.com/default/update_openvpcal_database'
 VERSION = "openvp_cal_version"
+PRE_PROCESSING_FORMAT_MAP = "PRE_PROCESSING_FORMAT_MAP"
 
 TARGET_MAX_LUM_NITS_NONE_PQ = 100
 

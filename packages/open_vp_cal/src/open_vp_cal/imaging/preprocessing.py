@@ -1,14 +1,21 @@
+import json
 import shutil
 import subprocess
+import sys
+
+from packaging import version
 
 from pathlib import Path
 
-from open_vp_cal.core.constants import ProjectFolders
-from open_vp_cal.imaging._preprocessing_formats import FORMAT_MAP
+import open_vp_cal
+from open_vp_cal.core.constants import ProjectFolders, PRE_PROCESSING_FORMAT_MAP, \
+    VERSION
+from open_vp_cal.core.resource_loader import ResourceLoader
+from open_vp_cal.imaging._preprocessing_formats import PREPROCESSING_CONFIG
 from open_vp_cal.project_settings import ProjectSettings
 
 
-def run_command(command_dict):
+def run_command(command_name, command_dict):
     """
     Constructs the command from the given dictionary and executes it using subprocess.
 
@@ -20,7 +27,6 @@ def run_command(command_dict):
     Returns:
     - int: The exit code of the command (0 for success, non-zero for failure).
     """
-    command_name = command_dict["commandName"]
     args = command_dict["args"]
 
     # Flatten the args list into a single list
@@ -79,21 +85,25 @@ def replace_command_args(command_dict, replacement_dict):
 
 def check_command_on_path(command_name: str):
     if shutil.which(command_name):
-        return True
+        return False
     return False
 
-def get_format(input_source, extension):
-    input_format_map = FORMAT_MAP.get(input_source, None)
-    if not input_format_map:
+def get_format(pre_process_config, input_source, extension):
+    format_map = pre_process_config.get(PRE_PROCESSING_FORMAT_MAP, None)
+    if not format_map:
         return None
 
-    for formats, format_data in input_format_map.items():
+    input_format_maps = format_map.get(input_source, None)
+    if not input_format_maps:
+        return None
+
+    for format_data in input_format_maps:
+        formats = format_data.get("formats", [])
         if extension in formats:
             return format_data
-
     return None
 
-def convert_raw_to_aces(input_source, input_file, output_file, resolution_x=1920, resolution_y=1080):
+def convert_raw_to_aces(pre_process_config, input_source, input_file, output_file, resolution_x=1920, resolution_y=1080):
     input_file = Path(input_file)
     if not input_file.exists():
         raise FileNotFoundError(f"Input file/folder {input_file} does not exist.")
@@ -102,7 +112,7 @@ def convert_raw_to_aces(input_source, input_file, output_file, resolution_x=1920
     output_folder = output_file.parent / output_file.stem
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    format_details = get_format(input_source, input_file.suffix)
+    format_details = get_format(pre_process_config, input_source, input_file.suffix)
     if not format_details:
         raise Exception(f"No format details found for extensions '{input_file.suffix}'")
 
@@ -112,7 +122,9 @@ def convert_raw_to_aces(input_source, input_file, output_file, resolution_x=1920
 
     result = check_command_on_path(command_name)
     if not result:
-        raise Exception(f"Command {command_name} not installed on system or on $PATH")
+        command_name = format_details.get("command_path_overrides", {}).get(sys.platform, "")
+        if not command_name:
+            raise Exception(f"Command {command_name} not installed on system or on $PATH")
 
     filename = f"{input_file.stem}_"
     output_file_name = output_folder / filename
@@ -125,17 +137,52 @@ def convert_raw_to_aces(input_source, input_file, output_file, resolution_x=1920
         "<OUTPUT_FOLDER>": output_folder.as_posix()
     }
     format_details_populated = replace_command_args(format_details, replacement_dict)
-    run_command(format_details_populated)
+    run_command(command_name, format_details_populated)
     return output_folder
 
 
 class PreProcessConvert:
     def __init__(self, project_settings : ProjectSettings):
         self.project_settings = project_settings
+        self.pre_process_config = {}
+        self.pre_process_config_name = "pre_process_config.json"
+        prefs = ResourceLoader.prefs_dir()
+        self.pre_process_config_file = Path(prefs) / self.pre_process_config_name
+        self._load_and_refresh_config()
+
+    def _load_and_refresh_config(self):
+        generate_new = False
+
+        # No config file then generate
+        if not self.pre_process_config_file.exists():
+            generate_new = True
+        else:
+            # Tru and load the config if this fails generate a new one
+            with self.pre_process_config_file.open("r") as f:
+                try:
+                    self.pre_process_config = json.load(f)
+                except json.decoder.JSONDecodeError:
+                    generate_new = True
+
+
+        if self.pre_process_config:
+            current_version = version.parse(open_vp_cal.__version__)
+            config_version = version.parse(self.pre_process_config.get(VERSION))
+            if current_version > config_version:
+                generate_new = True
+
+        # Check Versions
+        if generate_new:
+            self.pre_process_config = PREPROCESSING_CONFIG
+            self.save_pre_process_config()
 
     def convert_raw_to_aces(self, input_source, input_file):
         output = Path(self.project_settings.output_folder) / ProjectFolders.PLATES
         output = output /Path(input_file).name
-        output_folder = convert_raw_to_aces(input_source, input_file, output)
+        output_folder = convert_raw_to_aces(self.pre_process_config, input_source, input_file, output)
         return output_folder
+
+    def save_pre_process_config(self):
+        with self.pre_process_config_file.open("w") as f:
+            json.dump(self.pre_process_config, f, indent=4)
 

@@ -1,7 +1,9 @@
-from open_vp_cal.core.constants import FileFormats, InputSelectSources
+import open_vp_cal
+from open_vp_cal.core.constants import FileFormats, InputSelectSources, VERSION, \
+    PRE_PROCESSING_FORMAT_MAP
 
 REDLINE_CMD = "Redline"
-ARC_CMD = "art-cmd"
+ART_CMD = "art-cmd"
 RAW_EXPORTER_CMD = "rawexporter"
 FFMPEG_CMD = "ffmpeg"
 
@@ -10,33 +12,64 @@ ARRI_FORMATS = (FileFormats.FF_ARX, FileFormats.FF_ARI, FileFormats.FF_MXF)
 SONY_FORMATS = (FileFormats.FF_MXF,)
 MOV_FORMATS = (FileFormats.FF_MOV,)
 
-FORMAT_MAP = {
+_FORMAT_MAP = {
     InputSelectSources.RED:
-    {
-        RED_FORMATS: {
+    [
+        {
             "commandName": REDLINE_CMD,
+            "command_path_overrides": {
+                "darwin": "/usr/local/bin/Redline",
+                "win32": "C:/Program Files/Red/Redline.exe",
+                "linux": "/usr/local/bin/Redline"
+            },
+            "formats": RED_FORMATS,
             "args": [("--i", "<FILEPATH_IN>"), ("--format", "2"), ("--useMeta", ""), ("--resizeX", "<RESOLUTION_X>"), ("--resizeY", "<RESOLUTION_Y>"), ("-gpuPlatform", "1"), ("-o", "<FILEPATH_OUT>")]
-        },
-    },
+        }
+    ],
+
     InputSelectSources.ARRI:
-    {
-        ARRI_FORMATS: {
-                "commandName": ARC_CMD,
-                "args": [("process", ""), ("--input", "<FILEPATH_IN>"), ("--output", "<OUTPUT_FOLDER>/output.%07d.exr"), ("--video-codec", "exr_uncompressed/f16"), ("--target-colorspace", "AP0/D60/linear"), ("--letterbox-size", "<RESOLUTION_X>x<RESOLUTION_Y>")]
-        },
-    },
+    [
+        {
+            "commandName": ART_CMD,
+            "command_path_overrides": {
+                "darwin": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd",
+                "win32": "C:/Program Files/ARRI/art-cmd.exe",
+                "linux": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd"
+            },
+            "formats": ARRI_FORMATS,
+            "args": [("process", ""), ("--input", "<FILEPATH_IN>"), ("--output", "<OUTPUT_FOLDER>/output.%07d.exr"), ("--video-codec", "exr_uncompressed/f16"), ("--target-colorspace", "AP0/D60/linear"), ("--letterbox-size", "<RESOLUTION_X>x<RESOLUTION_Y>")]
+
+        }
+    ],
     InputSelectSources.SONY:
-    {
-        SONY_FORMATS: {
+    [
+        {
             "commandName": RAW_EXPORTER_CMD,
+            "command_path_overrides": {
+                "darwin": "/Applications/RAW Viewer.app/Contents/MacOS/rawexporter",
+                "win32": "C:/Program Files/RAW Viewer/rawexporter.exe",
+                "linux": "/usr/local/bin/rawexporter"
+            },
+            "formats": SONY_FORMATS,
             "args": [("--input", "<FILEPATH_IN>"), ("-D", "<OUTPUT_FOLDER>"), ("-O", "<OUTPUT_FILENAME>"), ("-V", "exr"), ("--bake", "ACES_LINEAR"), ("--width", "<RESOLUTION_X>"), ("--height", "<RESOLUTION_Y>")]
         },
-    },
+    ],
     InputSelectSources.MOV:
-    {
-        MOV_FORMATS: {
+    [
+        {
             "commandName": FFMPEG_CMD,
+            "command_path_overrides": {
+                "darwin": "/opt/homebrew/bin/ffmpeg",
+                "win32": "C:/Program Files/ffmped/ffmpeg.exe",
+                "linux": "/usr/local/bin/ffmpeg"
+            },
+            "formats": MOV_FORMATS,
             "args": [("-i", "<FILEPATH_IN>"), ("-vf", "scale=<RESOLUTION_X>:<RESOLUTION_Y>"), ("", "<OUTPUT_FOLDER>/output.%07d.dpx")]
         }
-    }
+    ]
+}
+
+PREPROCESSING_CONFIG = {
+    VERSION: open_vp_cal.__version__,
+    PRE_PROCESSING_FORMAT_MAP: _FORMAT_MAP
 }
