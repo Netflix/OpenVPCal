@@ -85,7 +85,7 @@ def replace_command_args(command_dict, replacement_dict):
 
 def check_command_on_path(command_name: str):
     if shutil.which(command_name):
-        return False
+        return True
     return False
 
 def get_format(pre_process_config, input_source, extension):
