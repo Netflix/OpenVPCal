@@ -19,9 +19,10 @@ import os
 import sys
 from typing import List
 
-from PySide6.QtGui import QIcon, QAction, QPixmap
+from PySide6.QtGui import QIcon, QAction, QPixmap, QDesktopServices
 from PySide6.QtWidgets import QMainWindow, QDockWidget, QMenu, QFileDialog, QMessageBox, QPushButton
-from PySide6.QtCore import Qt, QObject, QEvent, Signal, QSettings, QDataStream, QFile, QIODevice, QByteArray, QTimer
+from PySide6.QtCore import Qt, QObject, QEvent, Signal, QSettings, QDataStream, QFile, \
+    QIODevice, QByteArray, QTimer, QUrl
 
 from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import constants
@@ -144,6 +145,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.max_distances_model = None
         self.max_distances_view = None
         self.menu_bar = None
+        self.open_prefs_action = None
+        self.open_project_folder_action = None
         self.plate_settings_view = None
         self.project_settings_controller = None
         self.project_settings_model = None
@@ -395,6 +398,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.action_export_swatches.triggered.connect(self.export_analysis_swatches)
         self.action_add_custom_gamut.triggered.connect(self.add_custom_gamut)
         self.action_add_custom_gamut_from_matrix.triggered.connect(self.add_custom_gamut_from_matrix)
+        self.open_prefs_action.triggered.connect(self.open_prefs_folder)
+        self.open_project_folder_action.triggered.connect(self.open_project_folder)
 
     def _connect_window_menu_actions_to_dock_widget_vis(self) -> None:
         """ Connects the actions in the window menu to the dock widgets, so they can be shown and hidden
@@ -433,6 +438,9 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.file_menu.addAction(self.action_add_custom_gamut_from_matrix)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.load_sequence_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(self.open_project_folder_action)
+        self.file_menu.addAction(self.open_prefs_action)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.action_save_layout)
         self.file_menu.addAction(self.action_load_layout)
@@ -477,6 +485,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.action_export_swatches = QAction("Export Debug Swatches", self)
         self.action_add_custom_gamut = QAction("Add Custom Gamut for xy Primaries", self)
         self.action_add_custom_gamut_from_matrix = QAction("Add Custom Gamut from NPM Matrix", self)
+        self.open_project_folder_action = QAction("Open Project In Folder Viewer", self)
+        self.open_prefs_action = QAction("Open Prefs In Folder Viewer", self)
 
     def _create_actions_for_window_menu(self) -> None:
         """ Creates the actions for the window menu
@@ -608,6 +618,28 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.image_selection_widget.clear()
         self.max_distances_controller.clear()
         self.delta_e_controller.clear()
+
+    def open_prefs_folder(self) -> None:
+        """
+        Open the preferences folder in the file browser
+        """
+        self._open_folder(ResourceLoader.prefs_dir().as_posix())
+
+    def open_project_folder(self) -> None:
+        """
+        Open the preferences folder in the file browser
+        """
+        self._open_folder(self.project_settings_model.output_folder)
+
+    def _open_folder(self, folder_path: str) -> None:
+        """
+        Open the folder path in the file browser
+        """
+        # Create a local file URL from the folder path
+        url = QUrl.fromLocalFile(folder_path)
+
+        # Open the folder in the system's file browser
+        QDesktopServices.openUrl(url)
 
     def add_custom_gamut(self) -> None:
         """ Add a custom gamut to the project settings
