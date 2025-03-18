@@ -207,7 +207,7 @@ def add_error_to_log(error_log: str, error: str) -> None:
 def run_cli(
         project_settings_file_path: str,
         output_folder: str,
-        ocio_config_path: str = None, force=False, error_log: str = None ) -> dict[str, LedWallSettings]:
+        ocio_config_path: str = None, force=False, error_log: str = None, export_analysis_swatches: bool = False ) -> dict[str, LedWallSettings]:
     """ Runs the application in CLI mode to process the given project settings file.
 
     Args:
@@ -217,6 +217,7 @@ def run_cli(
         force: Whether to force the processing to continue even if there are warnings and errors, highly discouraged and
             primarily for testing purposes
         error_log: The error log file path to store errors in as a json file
+        export_analysis_swatches: For debugging we can force the swatches to be exported after the analysis
 
     Returns: The list of ProcessingResults
 
@@ -258,6 +259,9 @@ def run_cli(
         add_error_to_log(error_log, output)
         if not force:
             raise ValueError(output)
+
+    if export_analysis_swatches:
+        open_vp_cal_base.export_debug_swatches(project_settings)
 
     status = open_vp_cal_base.post_analysis_validations(project_settings.led_walls)
     if not status:

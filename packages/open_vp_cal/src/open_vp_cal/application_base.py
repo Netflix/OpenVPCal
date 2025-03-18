@@ -27,6 +27,7 @@ from open_vp_cal.framework.processing import Processing, SeparationException
 from open_vp_cal.framework.utils import (generate_patterns_for_led_walls,
                                          generate_spg_patterns_for_led_walls)
 from open_vp_cal.framework.validation import Validation
+from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 
@@ -396,3 +397,23 @@ class OpenVPCalBase:
         """
 
         generate_spg_patterns_for_led_walls(project_settings, led_walls)
+
+    def export_debug_swatches(self, project_settings) -> None:
+        """ Export the Analysis Swatches in their raw format that was sampled from the camera
+        """
+        swatches_folder = os.path.join(
+            project_settings.export_folder, constants.ProjectFolders.SWATCHES)
+        if not os.path.exists(swatches_folder):
+            os.mkdir(swatches_folder)
+
+        for led_wall in project_settings.led_walls:
+            if led_wall.processing_results.sample_buffers:
+                led_swatches_output_folder = os.path.join(swatches_folder, led_wall.name)
+                if not os.path.exists(led_swatches_output_folder):
+                    os.mkdir(led_swatches_output_folder)
+                file_name = f"{led_wall.name}_swatches_ACES2065-1.exr"
+                output_file_name = os.path.join(led_swatches_output_folder, file_name)
+                sample_buffers_stitched, _ = imaging_utils.create_and_stitch_analysis_strips(
+                    [], led_wall.processing_results.sample_buffers)
+                result = imaging_utils.stitch_images_vertically([sample_buffers_stitched])
+                imaging_utils.write_image(result, output_file_name, "float")
