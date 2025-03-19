@@ -655,14 +655,16 @@ class PatchGeneration:
         nit_bar_roi = Oiio.ROI(0, nit_bar_width, 0, nit_bar_height)
         rois = self.split_roi(nit_bar_roi, nit_bar_steps)
         img_buffers = self.create_image_buffers_from_rois(rois)
+        half_17_percent = (self.peak_lum * 0.17) * 0.5
+        half_19_percent = (self.peak_lum * 0.19) * 0.5
+
         Oiio.ImageBufAlgo.fill(
             img_buffers[0],
-            [self.peak_lum * 0.17, self.peak_lum * 0.17, self.peak_lum * 0.17]
+            [half_17_percent, half_17_percent, half_17_percent]
         )
         Oiio.ImageBufAlgo.fill(
             img_buffers[1],
-
-            [self.peak_lum * 0.19, self.peak_lum * 0.19, self.peak_lum * 0.19]
+            [half_19_percent, half_19_percent, half_19_percent]
         )
         patch = self.insert_image_buffers(patch, img_buffers, x_pos=1920, y_pos=1800)
         self._add_slate_text(
@@ -970,9 +972,10 @@ class PatchGeneration:
         patch_roi = Oiio.ROI(start_x, start_x + patch_width, start_y, start_y + patch_height)
         inner_edge_roi = self.reduce_roi(patch_roi, 1)
         inner_patch_roi = self.reduce_roi(inner_edge_roi, 0.5)
-        Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum), roi=patch_roi)
+        half_18_percent = self.percent_18_lum * 0.5
+        Oiio.ImageBufAlgo.fill(patch, (half_18_percent, half_18_percent, half_18_percent), roi=patch_roi)
         Oiio.ImageBufAlgo.fill(patch, (0.0, 0.0, 0.0), roi=inner_edge_roi)
-        Oiio.ImageBufAlgo.fill(patch, (self.percent_18_lum, self.percent_18_lum, self.percent_18_lum),
+        Oiio.ImageBufAlgo.fill(patch, (half_18_percent, half_18_percent, half_18_percent),
                                roi=inner_patch_roi)
 
         title = "Open VP Cal - LED Calibration Tool"
