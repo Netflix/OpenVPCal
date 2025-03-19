@@ -21,6 +21,7 @@ import os
 import tempfile
 from typing import Union, Tuple, List, Dict, Optional, TYPE_CHECKING
 
+import numpy as np
 from colour import RGB_Colourspace
 
 from open_vp_cal.core import calibrate, constants, utils, ocio_utils, ocio_config
@@ -71,7 +72,7 @@ class Processing:
         :return: Sample results
         """
         results = self._get_samples(separation_results, constants.PATCHES.MAX_WHITE)
-        self._samples[constants.Measurements.MAX_WHITE] = results[0].samples
+        self._samples[constants.Measurements.MAX_WHITE] = self.half_values(results[0].samples)
         return results
 
     def get_macbeth_samples(self, separation_results):
@@ -85,7 +86,7 @@ class Processing:
             self.led_wall, separation_results
         )
         results = sample_patch.run()
-        self._samples[constants.Measurements.MACBETH] = results[0].samples
+        self._samples[constants.Measurements.MACBETH] = self.half_values(results[0].samples)
         colour_space = utils.get_target_colourspace_for_led_wall(self.led_wall)
         rgb_references = macbeth.get_rgb_references_for_color_checker(colour_space, illuminant=None)
         peak_lum = self.led_wall.target_max_lum_nits * 0.01
@@ -93,7 +94,7 @@ class Processing:
         self._reference_samples[constants.Measurements.MACBETH] = rgb_references.tolist()
 
         for sample_result in results[0].samples[:-6]:
-            self._sample_frames.append(self._generation.generate_solid_patch(sample_result)[0])
+            self._sample_frames.append(self._generation.generate_solid_patch(self.half_values(sample_result))[0])
 
         for reference_patch in rgb_references[:-6]:
             self._reference_frames.append(self._generation.generate_solid_patch(reference_patch)[0])
@@ -108,6 +109,20 @@ class Processing:
         self._samples[constants.Measurements.PRIMARIES_SATURATION] = self.led_wall.primaries_saturation
         self._reference_samples[constants.Measurements.PRIMARIES_SATURATION] = self.led_wall.primaries_saturation
         return self._samples, self._reference_samples
+
+    def half_values(self, data):
+        # The first patch on the led wall is now actually half as bright so we have to double the exposure on the camera
+        # to ensure the camera exposes at 18%, we only do this on the first patch which is only used to expose the camera correctly
+        # so we halve all the values from the samples to get the actual values, this ensures the camera is not under exposed and getting a lot of noise
+        # which can cause the calibrations to be badly affected in the shadows
+        if isinstance(data, dict):
+            return {key: self.half_values(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self.half_values(item) for item in data]
+        elif isinstance(data, (int, float, np.number)):
+            return data * 0.5
+        else:
+            return data
 
     def run_sampling(self):
         """ Runs the sampling process to extract the samples form the image sequences,
@@ -156,6 +171,7 @@ class Processing:
         self.get_macbeth_samples(self.led_wall.separation_results)
         self.get_max_white_samples(self.led_wall.separation_results)
         samples, reference_samples = self.get_additional_samples_data()
+
 
         results = ProcessingResults()
         results.samples = samples
@@ -499,8 +515,8 @@ class Processing:
 
         self._samples[constants.Measurements.EOTF_RAMP] = []
         for sample_result in sample_results:
-            self._samples[constants.Measurements.EOTF_RAMP].append(sample_result.samples)
-            self._sample_frames.append(self._generation.generate_solid_patch(sample_result.samples)[0])
+            self._samples[constants.Measurements.EOTF_RAMP].append(self.half_values(sample_result.samples))
+            self._sample_frames.append(self._generation.generate_solid_patch(self.half_values(sample_result.samples))[0])
         return sample_results
 
     def get_primaries_samples(self, separation_results):
@@ -511,7 +527,7 @@ class Processing:
         :return: Tuple of red, green, and blue results
         """
         red_results = self._get_samples(separation_results, constants.PATCHES.RED_PRIMARY_DESATURATED)
-        self._sample_frames.append(self._generation.generate_solid_patch(red_results[0].samples)[0])
+        self._sample_frames.append(self._generation.generate_solid_patch(self.half_values(red_results[0].samples))[0])
         self._reference_samples[constants.Measurements.DESATURATED_RGB] = []
 
         reference_patch, reference_patch_values = self._generation.find_and_generate_patch_from_map(
@@ -520,23 +536,23 @@ class Processing:
         self._reference_samples[constants.Measurements.DESATURATED_RGB].append(reference_patch_values)
 
         green_results = self._get_samples(separation_results, constants.PATCHES.GREEN_PRIMARY_DESATURATED)
-        self._sample_frames.append(self._generation.generate_solid_patch(green_results[0].samples)[0])
+        self._sample_frames.append(self._generation.generate_solid_patch(self.half_values(green_results[0].samples))[0])
         reference_patch, reference_patch_values = self._generation.find_and_generate_patch_from_map(
             constants.PATCHES.GREEN_PRIMARY_DESATURATED)
         self._reference_frames.extend(reference_patch)
         self._reference_samples[constants.Measurements.DESATURATED_RGB].append(reference_patch_values)
 
         blue_results = self._get_samples(separation_results, constants.PATCHES.BLUE_PRIMARY_DESATURATED)
-        self._sample_frames.append(self._generation.generate_solid_patch(blue_results[0].samples)[0])
+        self._sample_frames.append(self._generation.generate_solid_patch(self.half_values(blue_results[0].samples))[0])
         reference_patch, reference_patch_values = self._generation.find_and_generate_patch_from_map(
             constants.PATCHES.BLUE_PRIMARY_DESATURATED)
         self._reference_frames.extend(reference_patch)
         self._reference_samples[constants.Measurements.DESATURATED_RGB].append(reference_patch_values)
 
         self._samples[constants.Measurements.DESATURATED_RGB] = [
-            red_results[0].samples,
-            green_results[0].samples,
-            blue_results[0].samples
+            self.half_values(red_results[0].samples),
+            self.half_values(green_results[0].samples),
+            self.half_values(blue_results[0].samples)
         ]
         return red_results, green_results, blue_results
 
@@ -548,10 +564,10 @@ class Processing:
         :return: Sample results
         """
         results = self._get_samples(separation_results, constants.PATCHES.GREY_18_PERCENT)
-        self._samples[constants.Measurements.GREY] = results[0].samples
+        self._samples[constants.Measurements.GREY] = self.half_values(results[0].samples)
 
         self._sample_frames.append(
-            self._generation.generate_solid_patch(results[0].samples)[0]
+            self._generation.generate_solid_patch(self.half_values(results[0].samples))[0]
         )
         reference_patch, reference_values = self._generation.find_and_generate_patch_from_map(
             constants.PATCHES.GREY_18_PERCENT)
