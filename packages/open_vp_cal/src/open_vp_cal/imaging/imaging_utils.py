@@ -21,6 +21,7 @@ import os
 import os.path
 import tempfile
 
+import cv2
 from PySide6 import QtGui
 from PySide6.QtGui import QImage, QPixmap
 import PyOpenColorIO as ocio
@@ -543,17 +544,51 @@ def get_perspective_transform(src_points: np.ndarray,
     return M
 
 
+def four_point_transform_np(image, pts):
+    """
+    Applies a perspective transformation to obtain a top-down view of the ROI defined by pts.
+    The points are assumed to be in order: top-left, top-right, bottom-right, bottom-left.
+
+    Args:
+        image (np.array): The image as a NumPy array.
+        pts (np.array): A 4x2 array of (x, y) coordinates.
+
+    Returns:
+        np.array: The warped (dewarped) image.
+    """
+    # Unpack the points
+    tl, tr, br, bl = pts
+
+    # Compute the width of the new image
+    widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+    widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+    maxWidth = max(int(widthA), int(widthB))
+
+    # Compute the height of the new image
+    heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+    heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+    maxHeight = max(int(heightA), int(heightB))
+
+    # Set up the destination points for the transform
+    dst = np.array([
+        [0, 0],
+        [maxWidth - 1, 0],
+        [maxWidth - 1, maxHeight - 1],
+        [0, maxHeight - 1]
+    ], dtype="float32")
+
+    # Compute the perspective transform matrix and apply it
+    M = cv2.getPerspectiveTransform(pts, dst)
+    warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
+    return warped
+
+
 def extract_roi(input_image: Oiio.ImageBuf, roi_input: list) -> Oiio.ImageBuf:
     """
-    Extracts a quadrilateral ROI from the input image, warps it into a square output,
-    and returns the de-warped (cropped) image.
+    Extracts a quadrilateral ROI from the input image, applies a four-point perspective transform
+    to obtain a top-down view, and returns the de-warped image.
 
-    If the roi_input corresponds to the full image (i.e. all four corners of the image),
-    the original input_image is returned.
-
-    Otherwise, we first crop the image to the minimal bounding rectangle of roi_input,
-    adjust the ROI coordinates accordingly, compute the perspective transform,
-    and then warp the cropped image.
+    If roi_input corresponds to the full image, the original input_image is returned.
 
     Args:
         input_image (Oiio.ImageBuf): The input image.
@@ -562,12 +597,19 @@ def extract_roi(input_image: Oiio.ImageBuf, roi_input: list) -> Oiio.ImageBuf:
                           top-left, top-right, bottom-right, bottom-left.
 
     Returns:
-        Oiio.ImageBuf: The cropped and dewarped square image.
+        Oiio.ImageBuf: The cropped and dewarped image.
     """
+    # Get the full image dimensions.
     spec = input_image.spec()
-    full_roi = [(0, 0), (spec.width, 0), (spec.width, spec.height), (0, spec.height)]
-    if np.allclose(np.array(roi_input, dtype=np.float32),
-                   np.array(full_roi, dtype=np.float32)):
+    full_roi = np.array([
+        [0, 0],
+        [spec.width, 0],
+        [spec.width, spec.height],
+        [0, spec.height]
+    ], dtype=np.float32)
+
+    roi_np = np.array(roi_input, dtype=np.float32)
+    if np.allclose(roi_np, full_roi):
         return input_image
 
     # Compute the minimal bounding box that contains the ROI.
@@ -586,36 +628,14 @@ def extract_roi(input_image: Oiio.ImageBuf, roi_input: list) -> Oiio.ImageBuf:
         raise ValueError("Failed to crop image: " + cropped_input.geterror())
 
     # Adjust the ROI points relative to the cropped image.
-    adjusted_roi = [(pt[0] - left_box, pt[1] - top_box) for pt in roi_input]
-    src_points = np.array(adjusted_roi, dtype=np.float32)
+    adjusted_roi = np.array(
+        [(pt[0] - left_box, pt[1] - top_box) for pt in roi_input],
+        dtype=np.float32
+    )
 
-    # Compute edge lengths for the ROI (from the adjusted coordinates).
-    width_top = np.linalg.norm(src_points[1] - src_points[0])
-    width_bottom = np.linalg.norm(src_points[2] - src_points[3])
-    height_left = np.linalg.norm(src_points[3] - src_points[0])
-    height_right = np.linalg.norm(src_points[2] - src_points[1])
-    side = int(max(width_top, width_bottom, height_left, height_right))
-    if side < 1:
-        raise ValueError("Computed side length is zero or negative.")
-
-    # Define destination points for a square of size side x side.
-    dst_points = np.array([
-        [0, 0],
-        [side - 1, 0],
-        [side - 1, side - 1],
-        [0, side - 1]
-    ], dtype=np.float32)
-
-    # Compute the perspective transform matrix.
-    M = get_perspective_transform(src_points, dst_points)
-
-    # Create an empty ImageBuf for the warped output.
-    warped_image = Oiio.ImageBuf()
-    output_roi = Oiio.ROI(0, side, 0, side)
-    Oiio.ImageBufAlgo.warp(warped_image, cropped_input, M, roi=output_roi)
-
-    if warped_image.has_error:
-        raise ValueError("Failed to extract ROI: " + warped_image.geterror())
+    cropped_np = image_buf_to_np_array(cropped_input)
+    warped_np = four_point_transform_np(cropped_np, adjusted_roi)
+    warped_image = img_buf_from_numpy_array(warped_np)
 
     return warped_image
 
