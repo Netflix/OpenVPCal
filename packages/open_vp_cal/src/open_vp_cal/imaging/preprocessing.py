@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import sys
 
+from open_vp_cal.core.structures import OpenVPCalException
 from packaging import version
 
 from pathlib import Path
@@ -114,17 +115,20 @@ def convert_raw_to_aces(pre_process_config, input_source, input_file, output_fil
 
     format_details = get_format(pre_process_config, input_source, input_file.suffix)
     if not format_details:
-        raise Exception(f"No format details found for extensions '{input_file.suffix}'")
+        raise OpenVPCalException(f"No format details found for extensions '{input_file.suffix}'")
 
     command_name = format_details.get("commandName", None)
     if not command_name:
-        raise Exception(f"No commandName found for format '{input_file.suffix}'")
+        raise OpenVPCalException(f"No commandName found for format '{input_file.suffix}'")
 
     result = check_command_on_path(command_name)
     if not result:
         command_name = format_details.get("command_path_overrides", {}).get(sys.platform, "")
         if not command_name:
-            raise Exception(f"Command {command_name} not installed on system or on $PATH")
+            raise OpenVPCalException(f"Command {command_name} not installed on system or on $PATH")
+
+        if not Path(command_name).exists():
+            raise OpenVPCalException(f"Command {command_name} not installed on system or on $PATH")
 
     filename = f"{input_file.stem}_"
     output_file_name = output_folder / filename

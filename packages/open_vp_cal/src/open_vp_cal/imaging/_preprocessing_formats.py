@@ -28,7 +28,7 @@ _FORMAT_MAP = {
             "commandName": ART_CMD,
             "command_path_overrides": {
                 "darwin": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd",
-                "win32": "C:/Program Files/ARRI/art-cmd.exe",
+                "win32": "C:\ARRI\\bin\\art-cmd.exe",
                 "linux": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd"
             },
             "formats": InputFormats.ARRI_FORMATS,
@@ -42,7 +42,7 @@ _FORMAT_MAP = {
             "commandName": RAW_EXPORTER_CMD,
             "command_path_overrides": {
                 "darwin": "/Applications/RAW Viewer.app/Contents/MacOS/rawexporter",
-                "win32": "C:/Program Files/RAW Viewer/rawexporter.exe",
+                "win32": "C:\Program Files\Sony\RAW Viewer\\rawexporter.exe",
                 "linux": "/usr/local/bin/rawexporter"
             },
             "formats": InputFormats.SONY_FORMATS,
@@ -55,7 +55,7 @@ _FORMAT_MAP = {
             "commandName": FFMPEG_CMD,
             "command_path_overrides": {
                 "darwin": "/opt/homebrew/bin/ffmpeg",
-                "win32": "C:/Program Files/ffmped/ffmpeg.exe",
+                "win32": "C:\FFMpeg\\ffmpeg.exe",
                 "linux": "/usr/local/bin/ffmpeg"
             },
             "formats": InputFormats.MOV_FORMATS,
