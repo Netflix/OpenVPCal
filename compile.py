@@ -150,12 +150,13 @@ def add_key_value_to_plist(plist_path: str, key_name: str, bool_value: bool) -> 
     # We can write the data back out to the Info.plist file
     tree.write(plist_path)
 
-def update_iscc_app_version(filename: str, new_version: str) -> None:
+def update_iscc_app_version(filename: str, new_version: str, icon_path:str) -> None:
     """ Updates the version in the ISS file which is used to define the build process for the installer on windows
 
     Args:
         filename: The filename of the .iss filepath
         new_version: The new version we want to update too
+        icon_path: The path to the icon file
     """
     # Read the content of the file
     with open(filename, 'r') as file:
@@ -164,6 +165,9 @@ def update_iscc_app_version(filename: str, new_version: str) -> None:
     # Replace the placeholder with the new version
     placeholder = '#define MyAppVersion "{}"'.format(new_version)
     updated_content = content.replace('#define MyAppVersion "0.0.1a"', placeholder)
+
+    placeholder = 'SetupIconFile={}'.format(icon_path)
+    updated_content = updated_content.replace('SetupIconFile=OPENVP_CAL_ICON_PATH', placeholder)
 
     # Write the updated content back to the file
     with open(filename, 'w') as file:
@@ -379,7 +383,7 @@ def main() -> int:
             print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
-        return_code = build_windows_installer([], version)
+        return_code = build_windows_installer([], version, icon_file_path)
 
     print('Return code:', return_code)
     return return_code
@@ -426,12 +430,13 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
     return manual_paths
 
 
-def build_windows_installer(manual_paths, version) -> int:
+def build_windows_installer(manual_paths, version, icon_path) -> int:
     """ Builds the window's installer and ensures the manual files are copied to the distribution folder
 
     Args:
         manual_paths: The third party library paths we need to include
         version: The version of the app we are building so we update the installer compilation instructions
+        icon_path: The path to icon file
 
     Returns: The return code of the process
 
@@ -447,7 +452,7 @@ def build_windows_installer(manual_paths, version) -> int:
 
     iss_file_name = os.path.join(current_script_directory, "OpenVPCal.iss")
 
-    update_iscc_app_version(iss_file_name, version)
+    update_iscc_app_version(iss_file_name, version, icon_path)
 
     return_code = create_windows_installer(
         iss_file_name
