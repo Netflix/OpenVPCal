@@ -7,7 +7,7 @@ requires-python = "==3.11.*"
 authors = [
     { name = "Your Name", email = "your.email@example.com" }
 ]
-license = { file = "LICENSE.md" }
+license-files = ["LICENSE.md"]
 dependencies = [
     "open-vp-cal-spg @ file:///${PROJECT_ROOT}/packages/spg",
     "open-vp-cal-spg-icvfxpatterns @ file:///${PROJECT_ROOT}/packages/spg_icvfxpatterns",
@@ -36,6 +36,9 @@ target-version = "py311"  # Set your Python version
 [tool.ruff.lint]
 select = ["E", "F", "W"]
 ignore = ["E501"]
+
+[tool.setuptools]
+packages = []
 
 [build-system]
 requires = ["setuptools", "wheel"]
