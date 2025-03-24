@@ -14,7 +14,7 @@ _FORMAT_MAP = {
             "commandName": REDLINE_CMD,
             "command_path_overrides": {
                 "darwin": "/usr/local/bin/Redline",
-                "win32": "C:/Program Files/Red/Redline.exe",
+                "win32": "C:\Program Files\REDCINE-X PRO 64-bit\Redline.exe",
                 "linux": "/usr/local/bin/Redline"
             },
             "formats": InputFormats.RED_FORMATS,
