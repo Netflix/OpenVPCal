@@ -18,7 +18,7 @@ _FORMAT_MAP = {
                 "linux": "/usr/local/bin/Redline"
             },
             "formats": InputFormats.RED_FORMATS,
-            "args": [("--i", "<FILEPATH_IN>"), ("--format", "2"), ("--useMeta", ""), ("--resizeX", "<RESOLUTION_X>"), ("--resizeY", "<RESOLUTION_Y>"), ("-gpuPlatform", "1"), ("-o", "<FILEPATH_OUT>")],
+            "args": [("--i", "<FILEPATH_IN>"), ("--format", "2") ,("--exrACES", "1"), ("--useMeta", ""), ("--resizeX", "<RESOLUTION_X>"), ("--resizeY", "<RESOLUTION_Y>"), ("-gpuPlatform", "1"), ("-o", "<FILEPATH_OUT>")],
             LedWallSettingsKeys.INPUT_PLATE_GAMUT: CameraColourSpace.CS_ACES
         }
     ],
