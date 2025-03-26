@@ -17,12 +17,14 @@ Module describes the class which is responsible for the timeline widget.
 """
 import os
 from pathlib import Path
+from typing import Tuple
 
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QSlider, QLabel, QPushButton, QSpinBox
 from PySide6.QtCore import QObject, Signal, Slot, Qt, QEvent
 
-from open_vp_cal.core.constants import SourceSelect, InputSelectSources, InputFormats
+from open_vp_cal.core.constants import SourceSelect, InputSelectSources, InputFormats, \
+    LedWallSettingsKeys
 from open_vp_cal.framework.sequence_loader import SequenceLoader, FrameRangeException
 from open_vp_cal.framework.frame import Frame
 from open_vp_cal.imaging.imaging_utils import load_image_buffer_to_qpixmap
@@ -135,7 +137,7 @@ class TimelineModel(QObject):
         self.set_current_frame(self.project_settings.current_wall.sequence_loader.start_frame)
         self.sequence_changed = False
 
-    def pre_process_input_to_aces_sequence(self, input_source, file_path) -> str:
+    def pre_process_input_to_plate_sequence(self, input_source, file_path) -> Tuple[str, str]:
         """ For the given input file for instance this could be an .R3D file
             we use the command line applications to pre extract this to EXR files
             in ACES for the user
@@ -147,16 +149,17 @@ class TimelineModel(QObject):
 
         """
         ppo = PreProcessConvert(self.project_settings)
-        folder_path = ppo.convert_raw_to_aces(input_source, file_path)
+        folder_path, plate_gamut = ppo.convert_raw_to_aces(input_source, file_path)
         folder_path = folder_path.as_posix()
-        return folder_path
+        return folder_path, plate_gamut
 
-    def load_sequence(self, folder_path: str) -> None:
+    def load_sequence(self, folder_path: str, input_plate_gamut: str = "") -> None:
         """ Loads a sequence into the sequence loader and stores the folder path in the LED wall we have set as the
         current wall
 
         Args:
             folder_path: The folder path to load
+            input_plate_gamut: The plate gamut of the input sequence if known
         """
         # Load the sequence into the sequence loader and store the folder path
         self.project_settings.current_wall.sequence_loader.load_sequence(folder_path)
@@ -166,6 +169,11 @@ class TimelineModel(QObject):
         # which causes the signals to fire ensuring the model and ui are now in sync
         self.led_wall_selection_changed()
         self.sequence_loaded.emit(self.project_settings.current_wall)
+
+        # If The input plate gamut is known we store it in the project settings
+        if input_plate_gamut:
+            self.project_settings.set_data(LedWallSettingsKeys.INPUT_PLATE_GAMUT,
+                                           input_plate_gamut)
 
     def load_all_sequences_for_led_walls(self) -> None:
         """ Loads all sequences for all led walls
@@ -417,6 +425,7 @@ class TimelineWidget(LockableWidget):
     def load_sequence(self):
         """ Loads an image sequence into the model
         """
+        plate_gamut = ""
         input_source = utils.ask_input_source()
         if input_source == SourceSelect.CANCEL:
             return
@@ -435,7 +444,7 @@ class TimelineWidget(LockableWidget):
             if not file_path:
                 return
 
-            folder_path = self.model.pre_process_input_to_aces_sequence(input_source, file_path)
+            folder_path, plate_gamut = self.model.pre_process_input_to_plate_sequence(input_source, file_path)
 
         else:
             # If it is ARRI we need to know if we are loading sequences or single clips
@@ -456,9 +465,9 @@ class TimelineWidget(LockableWidget):
                 if not file_path:
                     return
 
-                folder_path = self.model.pre_process_input_to_aces_sequence(input_source, file_path)
+                folder_path, plate_gamut = self.model.pre_process_input_to_plate_sequence(input_source, file_path)
 
-        self.model.load_sequence(folder_path)
+        self.model.load_sequence(folder_path, input_plate_gamut=plate_gamut)
         frame = self.model.current_frame
 
         self.model.set_current_frame(frame + 1)

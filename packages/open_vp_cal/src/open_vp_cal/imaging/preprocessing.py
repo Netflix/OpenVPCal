@@ -10,7 +10,7 @@ from pathlib import Path
 
 import open_vp_cal
 from open_vp_cal.core.constants import ProjectFolders, PRE_PROCESSING_FORMAT_MAP, \
-    VERSION
+    VERSION, LedWallSettingsKeys
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.imaging._preprocessing_formats import PREPROCESSING_CONFIG
 from open_vp_cal.project_settings import ProjectSettings
@@ -104,7 +104,7 @@ def get_format(pre_process_config, input_source, extension):
             return format_data
     return None
 
-def convert_raw_to_aces(pre_process_config, input_source, input_file, output_file, resolution_x=1920, resolution_y=1080):
+def convert_raw_to_plate(pre_process_config, input_source, input_file, output_file, resolution_x=1920, resolution_y=1080):
     input_file = Path(input_file)
     if not input_file.exists():
         raise FileNotFoundError(f"Input file/folder {input_file} does not exist.")
@@ -142,7 +142,7 @@ def convert_raw_to_aces(pre_process_config, input_source, input_file, output_fil
     }
     format_details_populated = replace_command_args(format_details, replacement_dict)
     run_command(command_name, format_details_populated)
-    return output_folder
+    return output_folder, format_details[LedWallSettingsKeys.INPUT_PLATE_GAMUT]
 
 
 class PreProcessConvert:
@@ -183,8 +183,8 @@ class PreProcessConvert:
     def convert_raw_to_aces(self, input_source, input_file):
         output = Path(self.project_settings.output_folder) / ProjectFolders.PLATES
         output = output /Path(input_file).name
-        output_folder = convert_raw_to_aces(self.pre_process_config, input_source, input_file, output)
-        return output_folder
+        output_folder, plate_gamut = convert_raw_to_plate(self.pre_process_config, input_source, input_file, output)
+        return output_folder, plate_gamut
 
     def save_pre_process_config(self):
         with self.pre_process_config_file.open("w") as f:
