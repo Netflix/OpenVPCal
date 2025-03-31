@@ -35,6 +35,7 @@ if not ocio_version >= required_version:
     raise ImportError("Requires OCIO v2.4 or greater.")
 
 
+
 def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename) -> None:
     """ Write a LUT to a file in CLF format using PQ
 
@@ -172,6 +173,57 @@ def create_gamut_compression(results: dict) -> ocio.GroupTransform:
     return gamut_comp_group
 
 
+def create_grading_bspline_curve(lut: list) -> ocio.GradingBSplineCurve:
+    """
+    Creates a GradingCurve from a list of control points.
+
+    Parameters:
+        lut (list): A list of [x, y] pairs representing control poxwints.
+
+    Returns:
+        ocio.GradingCurve: A GradingCurve with the control points inserted.
+    """
+    curve = ocio.GradingBSplineCurve([v for point in lut for v in point])
+    return curve
+
+
+
+def create_LUT_GradingCurveTransform(lut_r, lut_g, lut_b):
+    grading_transform_red = ocio.GradingRGBCurveTransform()
+    grading_transform_red.setStyle(ocio.GRADING_LOG)
+
+    # Create a GradingRGBCurve and assign the individual channel curves.
+    grading_rgb_curve = ocio.GradingRGBCurve()
+    grading_rgb_curve.red = create_grading_bspline_curve(lut_r)
+
+    # Set the RGB curve into the transform.
+    grading_transform_red.setValue(grading_rgb_curve)
+
+    grading_transform_green = ocio.GradingRGBCurveTransform()
+    grading_transform_green.setStyle(ocio.GRADING_LOG)
+
+    # Create a GradingRGBCurve and assign the individual channel curves.
+    grading_rgb_curve = ocio.GradingRGBCurve()
+    grading_rgb_curve.green = create_grading_bspline_curve(lut_g)
+
+    # Set the RGB curve into the transform.
+    grading_transform_green.setValue(grading_rgb_curve)
+
+    grading_transform_blue = ocio.GradingRGBCurveTransform()
+    grading_transform_blue.setStyle(ocio.GRADING_LOG)
+
+    # Create a GradingRGBCurve and assign the individual channel curves.
+    grading_rgb_curve = ocio.GradingRGBCurve()
+    grading_rgb_curve.blue = create_grading_bspline_curve(lut_b)
+
+    # Set the RGB curve into the transform.
+    grading_transform_blue.setValue(grading_rgb_curve)
+
+
+    return grading_transform_red, grading_transform_green, grading_transform_blue
+
+
+
 def populate_ocio_group_transform_for_CO_CS_EOTF(
         clf_name: str, group: ocio.GroupTransform, output_folder: str, results: dict) -> None:
     """ Populate the OCIO group transform for the CO_CS_EOTF calculation order
@@ -185,9 +237,21 @@ def populate_ocio_group_transform_for_CO_CS_EOTF(
     """
     # EOTF LUT
     if results[constants.Results.ENABLE_EOTF_CORRECTION]:
-        clf_name = os.path.join(output_folder, clf_name + ".clf")
-        eotf_lut_group = create_EOTF_LUT(clf_name, results)
-        group.appendTransform(eotf_lut_group)
+        try:
+            grading_group = ocio.GroupTransform()
+            grading_curve_r, grading_curve_g, grading_curve_b = create_LUT_GradingCurveTransform(
+                results[constants.Results.EOTF_LUT_R],
+                results[constants.Results.EOTF_LUT_G],
+                results[constants.Results.EOTF_LUT_B]
+            )
+            grading_group.appendTransform(grading_curve_r)
+            grading_group.appendTransform(grading_curve_g)
+            grading_group.appendTransform(grading_curve_b)
+            group.appendTransform(grading_group)
+        except:
+            clf_name = os.path.join(output_folder, clf_name + ".clf")
+            eotf_lut_group = create_EOTF_LUT(clf_name, results)
+            group.appendTransform(eotf_lut_group)
 
     # matrix transform to screen colour space
     group.appendTransform(
@@ -216,9 +280,21 @@ def populate_ocio_group_transform_for_CO_EOTF_CS(
     # EOTF LUT
     # must be written to a sidecar file, which is named from the config
     if results[constants.Results.ENABLE_EOTF_CORRECTION]:
-        lut_filename = os.path.join(output_folder, clf_name + ".clf")
-        eotf_lut_group = create_EOTF_LUT(lut_filename, results)
-        group.appendTransform(eotf_lut_group)
+        try:
+            grading_group = ocio.GroupTransform()
+            grading_curve_r, grading_curve_g, grading_curve_b = create_LUT_GradingCurveTransform(
+                results[constants.Results.EOTF_LUT_R],
+                results[constants.Results.EOTF_LUT_G],
+                results[constants.Results.EOTF_LUT_B]
+            )
+            grading_group.appendTransform(grading_curve_r)
+            grading_group.appendTransform(grading_curve_g)
+            grading_group.appendTransform(grading_curve_b)
+            group.appendTransform(grading_group)
+        except:
+            lut_filename = os.path.join(output_folder, clf_name + ".clf")
+            eotf_lut_group = create_EOTF_LUT(lut_filename, results)
+            group.appendTransform(eotf_lut_group)
 
 
 def bake_3d_lut(
