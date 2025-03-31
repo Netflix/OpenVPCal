@@ -253,6 +253,7 @@ class Results:
     EOTF_LINEARITY = "eotf_linearity"
     AVOID_CLIPPING = "avoid_clipping"
     CAMERA_WHITE_BALANCE_MATRIX = "camera_white_balance_matrix"
+    SCALED_AND_CONVERTED_SAMPLES = "scaled_and_converted_samples"
 
 
 class CAT:

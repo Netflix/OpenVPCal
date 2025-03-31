@@ -85,6 +85,48 @@ def achromatic(rgb, shadow_rolloff):
     return np.asarray([value, value, value])
 
 
+def blend_luts(lut_r, lut_g, lut_b, n):
+    """
+    Blends the x values of lut_r and lut_b with lut_g for indices 1 to n-1.
+
+    Parameters:
+        lut_r, lut_g, lut_b: lists of [x, y] pairs.
+            (x is the actual value; y is the reference value, which remains unchanged)
+        n: Number of steps (starting at index 0) over which to blend.
+           - Index 0 remains untouched.
+           - At index 1, the blended x value is 100% from lut_g.
+           - At index n-1, the blended x value is 100% from the original lut_r (or lut_b).
+
+    Returns:
+        A tuple (blended_lut_r, blended_lut_g, blended_lut_b) with blended x values.
+    """
+    # Copy LUTs so as not to modify the originals
+    blended_lut_r = [pair[:] for pair in lut_r]
+    blended_lut_g = [pair[:] for pair in lut_g]
+    blended_lut_b = [pair[:] for pair in lut_b]
+
+    # Determine the number of blend steps (cannot exceed available indices)
+    blend_steps = min(n, len(lut_r))
+
+    # Blend indices 1 to blend_steps-1
+    if blend_steps > 1:
+        for i in range(1, blend_steps):
+            # Calculate blend factor so that:
+            #   at index 1: blend_factor = 0  (100% lut_g)
+            #   at index blend_steps-1: blend_factor = 1 (100% original channel)
+            if blend_steps > 2:
+                blend_factor = (i - 1) / (blend_steps - 2)
+            else:
+                blend_factor = 1.0
+
+            # Blend the x values; y values remain unchanged.
+            blended_lut_r[i][0] = (1 - blend_factor) * lut_g[i][0] + blend_factor * \
+                                  lut_r[i][0]
+            blended_lut_b[i][0] = (1 - blend_factor) * lut_g[i][0] + blend_factor * \
+                                  lut_b[i][0]
+
+    return blended_lut_r, blended_lut_g, blended_lut_b
+
 def eotf_correction_calculation(
         grey_ramp_screen, grey_signal_value_rgb, deltaE_grey_ramp, avoid_clipping=True,
         peak_lum=None, deltaE_threshold=20):
@@ -148,10 +190,11 @@ def eotf_correction_calculation(
         lut_g[0] = [0.0, 0.0]
         lut_b[0] = [0.0, 0.0]
 
+    lut_r, lut_g, lut_b = blend_luts(lut_r, lut_g, lut_b, 6)
+
     lut_r = np.array(lut_r)
     lut_g = np.array(lut_g)
     lut_b = np.array(lut_b)
-
 
     if avoid_clipping:
         if not peak_lum:
