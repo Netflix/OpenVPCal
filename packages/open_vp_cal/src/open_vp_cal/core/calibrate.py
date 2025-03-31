@@ -15,6 +15,7 @@ limitations under the License.
 
 The main module of the core which deals with the calculation of the calibration for the LED walls
 """
+import copy
 import math
 from typing import Union, List, Dict, Tuple
 
@@ -709,6 +710,33 @@ def run(
         # the reference_cs
         input_plate_cs = reference_cs
 
+    # 1b) We now halve all the values
+    def half_values(data):
+        # The first patch on the led wall is now actually half as bright so we have to double the exposure on the camera
+        # to ensure the camera exposes at 18%, we only do this on the first patch which is only used to expose the camera correctly
+        # so we halve all the values from the samples to get the actual values, this ensures the camera is not under exposed and getting a lot of noise
+        # which can cause the calibrations to be badly affected in the shadows
+
+        if isinstance(data, dict):
+            return {key: half_values(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [half_values(item) for item in data]
+        elif isinstance(data, (int, float, np.number)):
+            return data * 0.5
+        else:
+            return data
+
+    for key in measured_samples:
+        if key not in [constants.Measurements.EOTF_RAMP_SIGNAL,
+                       constants.Measurements.PRIMARIES_SATURATION]:
+            measured_samples[key] = half_values(measured_samples[key])
+
+    # We make a copy of the measured samples now they have been converted to aces and halved
+    # We generate the swatches from these samples, whilst further manipulations happen
+    # to the samples from here on
+    half_stop_samples_for_swatches = copy.deepcopy(measured_samples)
+
+
     # 2) Once we have our camera native colour space we decide on the cat we want to use to convert to camera space
     camera_conversion_cat = utils.get_cat_for_camera_conversion(native_camera_gamut_cs.name)
 
@@ -1031,6 +1059,7 @@ def run(
 
     # Return the results using simple, serializable types
     return {
+        Results.SCALED_AND_CONVERTED_SAMPLES: half_stop_samples_for_swatches,
         Results.PRE_CALIBRATION_SCREEN_PRIMARIES: screen_cs.primaries.tolist(),
         Results.PRE_CALIBRATION_SCREEN_WHITEPOINT: screen_cs.whitepoint.tolist(),
         Results.TARGET_GAMUT: target_cs.name,

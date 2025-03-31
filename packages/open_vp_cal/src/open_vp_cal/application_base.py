@@ -250,6 +250,8 @@ class OpenVPCalBase:
                 processing = Processing(led_wall)
                 processing.run_sampling()
                 processing.analyse()
+                processing.generate_sample_buffers()
+                processing.generate_sample_swatches()
             except SeparationException as e:
                 self.error_message(f"{led_wall.name}\n{e}")
                 return False
