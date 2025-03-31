@@ -48,7 +48,7 @@ class LedWallSettings:
             constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION: True,
             constants.LedWallSettingsKeys.AUTO_WB_SOURCE: False,
             constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER: '',
-            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: 33,
+            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: 30,
             constants.LedWallSettingsKeys.PRIMARIES_SATURATION: 0.7,
             constants.LedWallSettingsKeys.CALCULATION_ORDER: constants.CalculationOrder.CO_DEFAULT,
             constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: constants.ColourSpace.CS_DEFAULT_REF,
