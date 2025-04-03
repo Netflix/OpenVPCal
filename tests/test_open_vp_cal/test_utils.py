@@ -264,25 +264,38 @@ class TestProject(TestUtils):
 
     def compare_data(self, expected, actual):
         for key, expected_value in expected.items():
-            if key not in actual:
-                return False, f"Key {key} not found in actual data"
+            self.assertIn(key, actual, f"Key {key} not found in actual data")
             if isinstance(expected_value, list):
                 for exp_item, act_item in zip(expected_value, actual[key]):
                     if isinstance(exp_item, list):
                         for exp_subitem, act_subitem in zip(exp_item, act_item):
                             if isinstance(exp_subitem, float):
-                                if not self.are_close(exp_subitem, act_subitem):
-                                    return False, f"Mismatch in {key}: expected {exp_subitem}, got {act_subitem}"
-                            elif exp_subitem != act_subitem:
-                                return False, f"Mismatch in {key}: expected {exp_subitem}, got {act_subitem}"
+                                self.assertTrue(
+                                    self.are_close(exp_subitem, act_subitem),
+                                    f"Mismatch in {key}: expected {exp_subitem}, got {act_subitem}"
+                                )
+                            else:
+                                self.assertEqual(
+                                    exp_subitem, act_subitem,
+                                    f"Mismatch in {key}: expected {exp_subitem}, got {act_subitem}"
+                                )
                     elif isinstance(exp_item, float):
-                        if not self.are_close(exp_item, act_item):
-                            return False, f"Mismatch in {key}: expected {exp_item}, got {act_item}"
-                    elif exp_item != act_item:
-                        return False, f"Mismatch in {key}: expected {exp_item}, got {act_item}"
+                        self.assertTrue(
+                            self.are_close(exp_item, act_item),
+                            f"Mismatch in {key}: expected {exp_item}, got {act_item}"
+                        )
+                    else:
+                        self.assertEqual(
+                            exp_item, act_item,
+                            f"Mismatch in {key}: expected {exp_item}, got {act_item}"
+                        )
             elif isinstance(expected_value, float):
-                if not self.are_close(expected_value, actual[key]):
-                    return False, f"Mismatch in {key}: expected {expected_value}, got {actual[key]}"
-            elif expected_value != actual[key]:
-                return False, f"Mismatch in {key}: expected {expected_value}, got {actual[key]}"
-        return True, "Success"
+                self.assertTrue(
+                    self.are_close(expected_value, actual[key]),
+                    f"Mismatch in {key}: expected {expected_value}, got {actual[key]}"
+                )
+            else:
+                self.assertEqual(
+                    expected_value, actual[key],
+                    f"Mismatch in {key}: expected {expected_value}, got {actual[key]}"
+                )
