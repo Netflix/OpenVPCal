@@ -193,8 +193,8 @@ class Processing:
         # we now set our input_plate_gamut to reference as this is now the colour space
         # the samples are now in
         calibration_results = calibrate.run(
-            measured_samples=self.led_wall.processing_results.samples,
-            reference_samples=self.led_wall.processing_results.reference_samples,
+            measured_samples_in=self.led_wall.processing_results.samples,
+            reference_samples_in=self.led_wall.processing_results.reference_samples,
             input_plate_gamut=self.led_wall.project_settings.reference_gamut,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
@@ -263,8 +263,8 @@ class Processing:
         # we now set our input_plate_gamut to reference as this is now the colour space
         # the samples are now in
         calibration_results = calibrate.run(
-            measured_samples=self.led_wall.processing_results.samples,
-            reference_samples=self.led_wall.processing_results.reference_samples,
+            measured_samples_in=self.led_wall.processing_results.samples,
+            reference_samples_in=self.led_wall.processing_results.reference_samples,
             input_plate_gamut=self.led_wall.project_settings.reference_gamut,
             native_camera_gamut=native_camera_cs,
             target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,

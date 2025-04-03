@@ -630,8 +630,8 @@ def check_eotf_max_values(measured_samples):
             "Ensure You Playback & Capture Setup Is Correct")
 
 def run(
-        measured_samples: Dict,
-        reference_samples: Dict,
+        measured_samples_in: Dict,
+        reference_samples_in: Dict,
         input_plate_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
         native_camera_gamut: Union[str, RGB_Colourspace, constants.CameraColourSpace],
         target_gamut: Union[str, RGB_Colourspace, constants.ColourSpace],
@@ -653,8 +653,8 @@ def run(
     """ Run the entire calibration process.
 
     Args:
-        measured_samples: a dictionary containing the measured values sampled from the input plate
-        reference_samples: a dictionary containing the reference values for the calibration process displayed on
+        measured_samples_in: a dictionary containing the measured values sampled from the input plate
+        reference_samples_in: a dictionary containing the reference values for the calibration process displayed on
         the led wall
         input_plate_gamut: The colour space of the input plate we measured the samples from, this should be ACES2065-1,
             the samples and the plate are preprocessed in the framework into ACES before being passed in.
@@ -712,6 +712,10 @@ def run(
         REFERENCE_TO_INPUT_MATRIX: The computed reference to input plate colour space matrix
 
     """
+    # We make a copy of the samples to ensure that we do not do any inplace operations by mistake if these passed in as reference
+    measured_samples = copy.deepcopy(measured_samples_in)
+    reference_samples = copy.deepcopy(reference_samples_in)
+
     # If we are not working in PQ we force target nits to 100 aka 1.0
     if target_EOTF != constants.EOTF.EOTF_ST2084:
         target_max_lum_nits = 100
