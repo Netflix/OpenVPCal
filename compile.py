@@ -422,6 +422,13 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
             library_root,
             "python3.11", "site-packages", "OpenImageIO"
         )
+    elif platform.system() == 'Linux':
+        arch = 'x64-linux'
+        library_root = os.path.join(vcpkg_folder, "installed", arch, "lib")
+        python_oiio_lib_folder = os.path.join(
+            library_root,
+            "python3.11", "site-packages", "OpenImageIO"
+        )
     lib_files = os.listdir(library_root)
     for lib_file in lib_files:
         manual_paths.append(f"{library_root}/{lib_file}")
