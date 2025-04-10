@@ -622,7 +622,7 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
                 gamut_only_cs_name = cls.spg.walls[led_wall_name].gamut_only_cs_name
                 gamut_and_transfer_function_cs_name = cls.spg.walls[led_wall_name].gamut_and_transfer_function_cs_name
 
-            if gamut_only_cs_name and gamut_only_cs_name:
+            if gamut_only_cs_name and gamut_and_transfer_function_cs_name:
                 # If we have a pattern generator that has an input transform we use it else we use the gamut only
                 # Reference images for instance may come in a different color space etc
                 input_transform = cls.input_transform if cls.input_transform else gamut_only_cs_name

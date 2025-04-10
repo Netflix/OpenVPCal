@@ -98,7 +98,7 @@ def create_rolloff_grading_curve_pq(peak_lum: int, peak_content: int, rolloff_st
 
     return rolloff_transform_master
 
-def create_rolloff_look(peak_lum: int, peak_content: int, prefix: str = "", rolloff_start: float = 0.9):
+def create_rolloff_look(peak_lum: float, peak_content: float, prefix: str = "", rolloff_start: float = 0.9):
     """ Creates an ocio look containing a rolloff grading curve for a given wall.
 
     Args:
