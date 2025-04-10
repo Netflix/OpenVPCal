@@ -78,8 +78,11 @@ class LedWallColourSpaces:
     target_gamut_cs = None
     view_transform = None
     rolloff_look_soft = None
+    rolloff_view_soft = None
     rolloff_look_medium = None
+    rolloff_view_medium = None
     rolloff_look_hard = None
+    rolloff_view_hard = None
     pre_calibration_view_transform = None
     display_colour_space_cs = None
     transfer_function_only_cs = None

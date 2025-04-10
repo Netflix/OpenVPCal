@@ -484,8 +484,14 @@ class OcioConfigWriter:
         if led_wall_settings.target_eotf == EOTF.EOTF_ST2084:
             soft, med, hard = self.get_rolloff_look(led_wall_settings)
             led_wall_colour_spaces.rolloff_look_soft = soft
+            led_wall_colour_spaces.rolloff_view_soft = self.get_post_calibration_view_transform_rolloff(led_wall_settings, soft.getName())
+
             led_wall_colour_spaces.rolloff_look_medium = med
+            led_wall_colour_spaces.rolloff_view_medium = self.get_post_calibration_view_transform_rolloff(led_wall_settings, med.getName())
+
             led_wall_colour_spaces.rolloff_look_hard = hard
+            led_wall_colour_spaces.rolloff_view_hard = self.get_post_calibration_view_transform_rolloff(led_wall_settings, hard.getName())
+
 
         return led_wall_colour_spaces
 
@@ -654,6 +660,48 @@ class OcioConfigWriter:
         calibration_cs.setTransform(group, ocio.COLORSPACE_DIR_FROM_REFERENCE)
         calibration_preview_cs.setTransform(group_preview, ocio.COLORSPACE_DIR_FROM_REFERENCE)
         return calibration_cs, calibration_preview_cs
+
+    def get_post_calibration_view_transform_rolloff(self, led_wall_settings: LedWallSettings, look_name) -> ocio.ViewTransform:
+        """ Get the OCIO view transform for post-calibration
+
+        Args:
+            led_wall_settings: The LED wall settings we want the view transform for
+
+        Returns: The OCIO view transform for post-calibration
+
+        """
+        view_transform_description, view_transform_name = self.get_post_calibration_view_transform_metadata(
+            led_wall_settings)
+
+        view_transform_name = f"{view_transform_name} - {look_name}"
+        view_transform_description = view_transform_description + f" With Rolloff {look_name}"
+
+        view_transform = self._get_view_transform(view_transform_name, view_transform_description)
+        group = ocio.GroupTransform()
+        look_trans = ocio.LookTransform(
+            src=led_wall_settings.project_settings.reference_gamut,
+            dst=led_wall_settings.project_settings.reference_gamut,
+            looks=look_name,
+        )
+        group.appendTransform(look_trans)
+
+        name, clf_name = self.get_calibration_space_metadata(led_wall_settings)
+        group.appendTransform(
+            ocio.ColorSpaceTransform(
+                src=led_wall_settings.project_settings.reference_gamut, dst=name
+            )
+        )
+
+        builtin_aces_to_XYZ_D65_bradford = ocio.BuiltinTransform(
+            "UTILITY - ACES-AP0_to_CIE-XYZ-D65_BFD",
+            direction=ocio.TransformDirection.TRANSFORM_DIR_FORWARD,
+        )
+
+        group.appendTransform(
+            builtin_aces_to_XYZ_D65_bradford
+        )
+        view_transform.setTransform(group, ocio.ViewTransformDirection.VIEWTRANSFORM_DIR_FROM_REFERENCE)
+        return view_transform
 
     def get_post_calibration_view_transform(self, led_wall_settings: LedWallSettings) -> ocio.ViewTransform:
         """ Get the OCIO view transform for post-calibration
@@ -915,12 +963,24 @@ class OcioConfigWriter:
 
             if lw_cs.rolloff_look_soft:
                 config.addLook(lw_cs.rolloff_look_soft)
+                config.addViewTransform(lw_cs.rolloff_view_soft)
+                config.addSharedView(
+                    lw_cs.rolloff_view_soft.getName(), lw_cs.rolloff_view_soft.getName(),
+                    ocio.OCIO_VIEW_USE_DISPLAY_NAME)
 
             if lw_cs.rolloff_look_medium:
                 config.addLook(lw_cs.rolloff_look_medium)
+                config.addViewTransform(lw_cs.rolloff_view_medium)
+                config.addSharedView(
+                    lw_cs.rolloff_view_medium.getName(), lw_cs.rolloff_view_medium.getName(),
+                    ocio.OCIO_VIEW_USE_DISPLAY_NAME)
 
             if lw_cs.rolloff_look_hard:
                 config.addLook(lw_cs.rolloff_look_hard)
+                config.addViewTransform(lw_cs.rolloff_view_hard)
+                config.addSharedView(
+                    lw_cs.rolloff_view_hard.getName(), lw_cs.rolloff_view_hard.getName(),
+                    ocio.OCIO_VIEW_USE_DISPLAY_NAME)
 
             if lw_cs.transfer_function_only_cs:
                 if lw_cs.transfer_function_only_cs.getName() not in added_colour_spaces:
@@ -982,6 +1042,15 @@ class OcioConfigWriter:
             if lw_cs.display_colour_space_cs and lw_cs.view_transform:
                 config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(),
                                             calibrated_output_name)
+                if lw_cs.rolloff_view_soft:
+                    config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(), lw_cs.rolloff_view_soft.getName())
+
+                if lw_cs.rolloff_view_medium:
+                    config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(), lw_cs.rolloff_view_medium.getName())
+
+                if lw_cs.rolloff_view_hard:
+                    config.addDisplaySharedView(lw_cs.display_colour_space_cs.getName(), lw_cs.rolloff_view_hard.getName())
+
 
             if lw_cs.aces_cct_display_colour_space_cs and lw_cs.aces_cct_view_transform:
                 config.addDisplaySharedView(
@@ -997,6 +1066,16 @@ class OcioConfigWriter:
                 comps = active_views.split(",")
                 if calibrated_output_name not in comps:
                     comps.insert(0, calibrated_output_name)
+                    if lw_cs.rolloff_view_soft:
+                        if not lw_cs.rolloff_view_soft.getName() in comps:
+                            comps.insert(1, lw_cs.rolloff_view_soft.getName())
+                    if lw_cs.rolloff_view_medium:
+                        if not lw_cs.rolloff_view_medium.getName() in comps:
+                            comps.insert(2, lw_cs.rolloff_view_medium.getName())
+                    if lw_cs.rolloff_view_hard:
+                        if not lw_cs.rolloff_view_hard.getName() in comps:
+                            comps.insert(3, lw_cs.rolloff_view_hard.getName())
+
                     active_views = ",".join(comps)
                     config.setActiveViews(active_views)
 
@@ -1074,17 +1153,23 @@ class OcioConfigWriter:
     def get_rolloff_look(self, led_wall_settings: LedWallSettings):
         soft = ocio_utils.create_rolloff_look(
             led_wall_settings.target_max_lum_nits,
-            led_wall_settings.project_settings.content_max_lum, led_wall_settings.name,
-                            rolloff_start=0.7)
+            led_wall_settings.project_settings.content_max_lum,
+            prefix="Soft",
+            rolloff_start=0.7
+        )
 
         medium = ocio_utils.create_rolloff_look(
             led_wall_settings.target_max_lum_nits,
-            led_wall_settings.project_settings.content_max_lum, led_wall_settings.name,
-            rolloff_start=0.8)
+            led_wall_settings.project_settings.content_max_lum,
+            prefix="Medium",
+            rolloff_start=0.8
+        )
 
         hard = ocio_utils.create_rolloff_look(
             led_wall_settings.target_max_lum_nits,
-            led_wall_settings.project_settings.content_max_lum, led_wall_settings.name,
-            rolloff_start=0.9)
+            led_wall_settings.project_settings.content_max_lum,
+            prefix="Hard",
+            rolloff_start=0.9
+        )
         return soft, medium, hard
 

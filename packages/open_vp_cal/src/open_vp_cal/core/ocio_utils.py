@@ -98,7 +98,7 @@ def create_rolloff_grading_curve_pq(peak_lum: int, peak_content: int, rolloff_st
 
     return rolloff_transform_master
 
-def create_rolloff_look(peak_lum: int, peak_content: int, wall_name: str, rolloff_start: float = 0.9):
+def create_rolloff_look(peak_lum: int, peak_content: int, prefix: str = "", rolloff_start: float = 0.9):
     """ Creates an ocio look containing a rolloff grading curve for a given wall.
 
     Args:
@@ -109,7 +109,7 @@ def create_rolloff_look(peak_lum: int, peak_content: int, wall_name: str, rollof
         rolloff_start (float): Percentage of the peak luminance to start the rolloff.
 
     """
-    look_name = f"{wall_name}_rolloff_{int(peak_lum * rolloff_start)}_nits_to_{peak_lum}_nits"
+    look_name = f"{prefix}_Rolloff_{int(peak_lum * rolloff_start)}_nits_to_{peak_lum}_nits"
     look = ocio.Look()
     look.setProcessSpace("ACES2065-1")
 
