@@ -163,6 +163,10 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.DEFAULT: self.export_lut_for_aces_cct_in_target_out
             },
             constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: {constants.DEFAULT: self.custom_logo_path},
+            constants.ProjectSettingsKeys.CONTENT_MAX_LUM: {
+                constants.DEFAULT: self.content_max_lum,
+                "min": 0.0, "max": constants.PQ.PQ_MAX_NITS, "step": 50, "decimals": 2
+            },
         }
 
     def set_data(self, key: str, value: object):
@@ -619,6 +623,7 @@ class ProjectSettingsView(LockableWidget):
         self.output_folder = None
 
         self.frame_rate = None
+        self.content_max_lum = None
         self.export_lut_for_aces_cct_in_target_out = None
         self.export_lut_for_aces_cct = None
         self.reference_gamut = None
@@ -675,6 +680,7 @@ class ProjectSettingsView(LockableWidget):
         self.resolution_height = QSpinBox()
         self.frames_per_patch = QSpinBox()
         self.frame_rate = QComboBox()
+        self.content_max_lum = QDoubleSpinBox()
 
         custom_logo_layout = QHBoxLayout()
         self.custom_logo_path = QLineEdit()
@@ -689,6 +695,7 @@ class ProjectSettingsView(LockableWidget):
         patch_generation_layout.addRow(QLabel("Resolution: Height:"), self.resolution_height)
         patch_generation_layout.addRow(QLabel("Frames Per Patch:"), self.frames_per_patch)
         patch_generation_layout.addRow(QLabel("Frame Rate:"), self.frame_rate)
+        patch_generation_layout.addRow(QLabel("Content Max Lum:"), self.content_max_lum)
         patch_generation_layout.addRow(QLabel("Custom Logo:"), custom_logo_layout)
         patch_generation_group.setLayout(patch_generation_layout)
 
@@ -1006,6 +1013,12 @@ class ProjectSettingsController(QObject):
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.FRAMES_PER_PATCH, self.project_settings_view.frames_per_patch.value())
         )
+        self.project_settings_view.content_max_lum.valueChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.CONTENT_MAX_LUM,
+                self.project_settings_view.content_max_lum.value())
+        )
+
         self.project_settings_view.frame_rate.currentIndexChanged.connect(
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.FRAME_RATE, float(self.project_settings_view.frame_rate.currentText()))

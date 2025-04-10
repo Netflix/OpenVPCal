@@ -481,6 +481,12 @@ class OcioConfigWriter:
                 led_wall_settings)
             led_wall_colour_spaces.aces_cct_display_colour_space_cs = self.get_aces_cct_display_colour_space()
 
+        if led_wall_settings.target_eotf == EOTF.EOTF_ST2084:
+            soft, med, hard = self.get_rolloff_look(led_wall_settings)
+            led_wall_colour_spaces.rolloff_look_soft = soft
+            led_wall_colour_spaces.rolloff_look_medium = med
+            led_wall_colour_spaces.rolloff_look_hard = hard
+
         return led_wall_colour_spaces
 
     def get_aces_cct_display_colour_space(self) -> ocio.ColorSpace:
@@ -907,6 +913,15 @@ class OcioConfigWriter:
         for _, lw_cs in colour_spaces.items():
             calibrated_output_name = OcioConfigWriter.get_calibrated_output_name(lw_cs)
 
+            if lw_cs.rolloff_look_soft:
+                config.addLook(lw_cs.rolloff_look_soft)
+
+            if lw_cs.rolloff_look_medium:
+                config.addLook(lw_cs.rolloff_look_medium)
+
+            if lw_cs.rolloff_look_hard:
+                config.addLook(lw_cs.rolloff_look_hard)
+
             if lw_cs.transfer_function_only_cs:
                 if lw_cs.transfer_function_only_cs.getName() not in added_colour_spaces:
                     config.addColorSpace(lw_cs.transfer_function_only_cs)
@@ -1055,3 +1070,21 @@ class OcioConfigWriter:
                                   f"{lw_cs.led_wall_settings.native_camera_gamut} - "
                                   f"{calc_order}")
         return calibrated_output_name
+
+    def get_rolloff_look(self, led_wall_settings: LedWallSettings):
+        soft = ocio_utils.create_rolloff_look(
+            led_wall_settings.target_max_lum_nits,
+            led_wall_settings.project_settings.content_max_lum, led_wall_settings.name,
+                            rolloff_start=0.7)
+
+        medium = ocio_utils.create_rolloff_look(
+            led_wall_settings.target_max_lum_nits,
+            led_wall_settings.project_settings.content_max_lum, led_wall_settings.name,
+            rolloff_start=0.8)
+
+        hard = ocio_utils.create_rolloff_look(
+            led_wall_settings.target_max_lum_nits,
+            led_wall_settings.project_settings.content_max_lum, led_wall_settings.name,
+            rolloff_start=0.9)
+        return soft, medium, hard
+

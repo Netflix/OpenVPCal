@@ -15,6 +15,7 @@ limitations under the License.
 
 Module contains utility functions specific to OpenColorIO
 """
+import math
 import os
 from typing import Any
 
@@ -34,6 +35,100 @@ required_version = Version("2.4")
 if not ocio_version >= required_version:
     raise ImportError("Requires OCIO v2.4 or greater.")
 
+
+def compute_power_curve_points(x_start: float, y_start: float, x_end: float, y_end: float, n: int):
+    """
+    Compute points for a power function curve.
+
+    Args:
+        x_start (float): The starting x value.
+        y_start (float): The starting y value.
+        x_end (float): The ending x value.
+        y_end (float): The ending y value.
+        n (int): The number of points to generate.
+
+    """
+    # Calculate the exponent B and coefficient A for the power function y = A * x^B.
+    B = math.log2(y_end / y_start) / math.log2(x_end / x_start)
+    A = y_start / (x_start ** B)
+
+    # Generate n linearly spaced x values between x_start and x_end.
+    x_vals = np.linspace(x_start, x_end, n)
+
+    # Compute the corresponding y values using the power function.
+    y_vals = A * (x_vals ** B)
+
+    return x_vals, y_vals, A, B
+
+
+def create_rolloff_grading_curve_pq(peak_lum: int, peak_content: int, rolloff_start: float = 0.9):
+    """
+    Create a rolloff grading curve for PQ values.
+
+    Args:
+        peak_lum (int): Peak luminance of the led wall in nits.
+        peak_content (int): Peak content of the content in nits.
+        rolloff_start (float): Percentage of the peak luminance to start the rolloff.
+    """
+    peak_lum_pq = eotf_inverse_ST2084(peak_lum)
+    peak_content_pq = eotf_inverse_ST2084(peak_content)
+
+    minimum_peak_lum_pq = eotf_inverse_ST2084(peak_lum * rolloff_start)
+
+    minimum_peak_lum_anchor = minimum_peak_lum_pq * 0.9
+
+    curve_points = [0.0, 0.0]
+    curve_points.extend([minimum_peak_lum_anchor, minimum_peak_lum_anchor])
+
+    n = 10
+    x_vals, y_vals, _, _ = compute_power_curve_points(float(minimum_peak_lum_pq), float(minimum_peak_lum_pq), float(peak_content_pq), float(peak_lum_pq), n)
+    for x, y in zip(x_vals, y_vals):
+        curve_points.extend([x, y])
+
+    curve = ocio.GradingBSplineCurve([point for point in curve_points])
+
+    rolloff_transform_master = ocio.GradingRGBCurveTransform()
+    rolloff_transform_master.setStyle(ocio.GRADING_LOG)
+
+    # Create a GradingRGBCurve and assign the individual channel curves.
+    grading_rgb_curve = ocio.GradingRGBCurve()
+    grading_rgb_curve.master = curve
+    rolloff_transform_master.setValue(grading_rgb_curve)
+
+
+    return rolloff_transform_master
+
+def create_rolloff_look(peak_lum: int, peak_content: int, wall_name: str, rolloff_start: float = 0.9):
+    """ Creates an ocio look containing a rolloff grading curve for a given wall.
+
+    Args:
+        peak_lum (int): Peak luminance of the led wall in nits.
+        peak_content (int): Peak content of the content in nits.
+        wall_name (str): Name of the wall.
+        config (ocio.Config): OCIO configuration object.
+        rolloff_start (float): Percentage of the peak luminance to start the rolloff.
+
+    """
+    look_name = f"{wall_name}_rolloff_{int(peak_lum * rolloff_start)}_nits_to_{peak_lum}_nits"
+    look = ocio.Look()
+    look.setProcessSpace("ACES2065-1")
+
+    group = ocio.GroupTransform()
+    curve = ocio.BuiltinTransform(
+        "CURVE - ST-2084_to_LINEAR",
+        direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
+    )
+    group.appendTransform(curve)
+    rolloff_transform_master = create_rolloff_grading_curve_pq(peak_lum, peak_content, rolloff_start=rolloff_start)
+    group.appendTransform(rolloff_transform_master)
+    curve2 = ocio.BuiltinTransform(
+        "CURVE - ST-2084_to_LINEAR"
+    )
+    group.appendTransform(curve2)
+
+    look.setTransform(group)
+    look.setName(look_name)
+    return look
 
 
 def write_eotf_lut_pq(lut_r, lut_g, lut_b, filename) -> None:

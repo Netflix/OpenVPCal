@@ -77,6 +77,9 @@ class LedWallColourSpaces:
     target_with_inv_eotf_cs = None
     target_gamut_cs = None
     view_transform = None
+    rolloff_look_soft = None
+    rolloff_look_medium = None
+    rolloff_look_hard = None
     pre_calibration_view_transform = None
     display_colour_space_cs = None
     transfer_function_only_cs = None

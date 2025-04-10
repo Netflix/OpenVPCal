@@ -34,6 +34,7 @@ class ProjectSettings:
         """Initialize an empty ProjectSettings object."""
         self._default_project_settings = {
             constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.FF_DEFAULT,
+            constants.ProjectSettingsKeys.CONTENT_MAX_LUM: constants.PQ.PQ_MAX_NITS,
             constants.ProjectSettingsKeys.RESOLUTION_WIDTH: constants.DEFAULT_RESOLUTION_WIDTH,
             constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: constants.DEFAULT_RESOLUTION_HEIGHT,
             constants.ProjectSettingsKeys.OUTPUT_FOLDER: os.path.join(str(Path.home()), "OpenVPCal_output"),
@@ -336,6 +337,24 @@ class ProjectSettings:
             value (bool): Set whether we want to export out lut for aces cct, with cct in and target out
         """
         self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT] = value
+
+    @property
+    def content_max_lum(self) -> float:
+        """Get the content max luminance for the project
+
+        Returns:
+            int: The content max luminance for the project
+        """
+        return self._project_settings[constants.ProjectSettingsKeys.CONTENT_MAX_LUM]
+
+    @content_max_lum.setter
+    def content_max_lum(self, value: float):
+        """Set the content max luminance for the project
+
+        Args:
+            value (int): The content max luminance for the project
+        """
+        self._project_settings[constants.ProjectSettingsKeys.CONTENT_MAX_LUM] = value
 
     @classmethod
     def from_json(cls, json_file: str):

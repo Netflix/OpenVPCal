@@ -91,6 +91,7 @@ class ProjectSettingsKeys:
     """
     Constants for the project settings attribute names
     """
+    CONTENT_MAX_LUM = "content_max_lum"
     FILE_FORMAT = "file_format"
     RESOLUTION_WIDTH = "resolution_width"
     RESOLUTION_HEIGHT = "resolution_height"
