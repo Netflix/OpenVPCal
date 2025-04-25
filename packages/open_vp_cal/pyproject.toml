@@ -11,7 +11,8 @@ dependencies = [
     "openimageio==3.0.4.0",
     "packaging>=24.2",
     "pyqtgraph>=0.13.7",
-    "pyside6>=6.8.2.1"
+    "pyside6>=6.8.2.1",
+    "deepdiff"
 ]
 
 [project.optional-dependencies]
