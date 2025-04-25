@@ -1067,13 +1067,13 @@ class OcioConfigWriter:
                 if calibrated_output_name not in comps:
                     comps.insert(0, calibrated_output_name)
                     if lw_cs.rolloff_view_soft:
-                        if not lw_cs.rolloff_view_soft.getName() in comps:
+                        if lw_cs.rolloff_view_soft.getName() not in comps:
                             comps.insert(1, lw_cs.rolloff_view_soft.getName())
                     if lw_cs.rolloff_view_medium:
-                        if not lw_cs.rolloff_view_medium.getName() in comps:
+                        if lw_cs.rolloff_view_medium.getName() not in comps:
                             comps.insert(2, lw_cs.rolloff_view_medium.getName())
                     if lw_cs.rolloff_view_hard:
-                        if not lw_cs.rolloff_view_hard.getName() in comps:
+                        if lw_cs.rolloff_view_hard.getName() not in comps:
                             comps.insert(3, lw_cs.rolloff_view_hard.getName())
 
                     active_views = ",".join(comps)

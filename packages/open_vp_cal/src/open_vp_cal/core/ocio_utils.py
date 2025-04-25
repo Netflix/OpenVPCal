@@ -343,7 +343,7 @@ def populate_ocio_group_transform_for_CO_CS_EOTF(
             grading_group.appendTransform(grading_curve_g)
             grading_group.appendTransform(grading_curve_b)
             group.appendTransform(grading_group)
-        except:
+        except Exception:
             clf_name = os.path.join(output_folder, clf_name + ".clf")
             eotf_lut_group = create_EOTF_LUT(clf_name, results)
             group.appendTransform(eotf_lut_group)
@@ -386,7 +386,7 @@ def populate_ocio_group_transform_for_CO_EOTF_CS(
             grading_group.appendTransform(grading_curve_g)
             grading_group.appendTransform(grading_curve_b)
             group.appendTransform(grading_group)
-        except:
+        except Exception:
             lut_filename = os.path.join(output_folder, clf_name + ".clf")
             eotf_lut_group = create_EOTF_LUT(lut_filename, results)
             group.appendTransform(eotf_lut_group)
