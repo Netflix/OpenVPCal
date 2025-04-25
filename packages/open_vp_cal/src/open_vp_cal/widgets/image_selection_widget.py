@@ -408,8 +408,9 @@ class ImageSelectionWidget(QtWidgets.QWidget):
         QApplication.processEvents()
         self.current_frame = frame
         if self.project_settings.current_wall and self.project_settings.current_wall.roi:
-            roi: List[Tuple[float, float]] = self.project_settings.current_wall.roi
-            self.graphics_scene.setPolygon(roi)
+            roi: List[List[float]] = self.project_settings.current_wall.roi
+            roi_tuples = [(x, y) for x, y in roi]
+            self.graphics_scene.setPolygon(roi_tuples)
         else:
             self.graphics_scene.resetSelection()
         self.pixmap.setPixmap(self.current_frame.pixmap)
@@ -440,7 +441,7 @@ class ImageSelectionWidget(QtWidgets.QWidget):
             points (List[Tuple[float, float]]): The ROI points.
         """
         if self.project_settings.current_wall:
-            self.project_settings.current_wall.roi = points
+            self.project_settings.current_wall.roi = [[x, y] for x, y in points]
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         """
@@ -459,6 +460,6 @@ class ImageSelectionWidget(QtWidgets.QWidget):
         Resets the ROI to a default value, clears the polygon overlay, and re-displays the current frame.
         """
         if self.current_frame and self.project_settings.current_wall:
-            self.project_settings.current_wall.roi = [(0, 0), (100, 0), (100, 100), (0, 100)]
+            self.project_settings.current_wall.roi = [[0, 0], [100, 0], [100, 100], [0, 100]]
             self.graphics_scene.resetSelection()
             self.display_image(self.current_frame)
