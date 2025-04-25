@@ -16,7 +16,7 @@ limitations under the License.
 The module defines the main window for the application
 """
 import os
-import sys
+from deepdiff import DeepDiff
 from typing import List
 
 from PySide6.QtGui import QIcon, QAction, QPixmap, QDesktopServices
@@ -833,11 +833,31 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         else:
             self.exit()
 
-    @staticmethod
-    def exit() -> None:
+    def exit(self) -> None:
         """ Causes the application to exit
         """
-        sys.exit(0)
+        self.close()
+
+    def closeEvent(self, event) -> None:
+        saved_settings_path = os.path.join(
+            self.project_settings_model.output_folder,
+            DEFAULT_PROJECT_SETTINGS_NAME
+        )
+
+        temp_settings_model = ProjectSettings.from_json(saved_settings_path)
+        temp_settings_dict = temp_settings_model.to_dict()
+        current_settings_dict = self.project_settings_model.to_dict()
+
+        diff = DeepDiff(
+            temp_settings_dict,
+            current_settings_dict,
+            ignore_order=True,
+            ignore_type_in_groups=[(list, tuple)]
+        )
+        if diff:
+            result = self.warning_message("You have unsaved changes, would you like to save them before exiting?")
+            if result:
+                self.save_project_settings(inform_completion=False)
 
     def _get_led_walls_for_processing(self, mode):
         if not self.project_settings_model.led_walls:
