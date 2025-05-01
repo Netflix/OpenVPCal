@@ -61,6 +61,63 @@ def compute_power_curve_points(x_start: float, y_start: float, x_end: float, y_e
     return x_vals, y_vals, A, B
 
 
+def hermite_interpolation(x_vals, x0, y0, x1, y1, m0, m1):
+    """
+    Perform cubic Hermite interpolation on given x values.
+
+    Args:
+        x_vals (np.ndarray): x positions within [x0, x1]
+        x0, y0: start point and derivative m0
+        x1, y1: end point and derivative m1
+        m0, m1: derivatives dy/dx at x0 and x1
+    Returns:
+        np.ndarray: interpolated y values
+    """
+    t = (x_vals - x0) / (x1 - x0)
+    h00 = 2*t**3 - 3*t**2 + 1
+    h10 = t**3 - 2*t**2 + t
+    h01 = -2*t**3 + 3*t**2
+    h11 = t**3 - t**2
+    return (h00 * y0 +
+            h10 * (x1 - x0) * m0 +
+            h01 * y1 +
+            h11 * (x1 - x0) * m1)
+
+def generate_sparse_monotonic_curve(x_max, target_y, x_split, linear_fraction=0.9, n_curve_points=10):
+    """
+    Generate sparse points for a curve that is linear until x_split then a
+    Hermite roll-off to (x_max, target_y), with C1 continuity and guaranteed monotonicity.
+
+    Returns:
+        x_full, y_full: concatenated numpy arrays of x and y points.
+    """
+    # Linear segment
+    y_split = x_split
+    if x_split == 0:
+        raise ValueError("x_split cannot be zero.")
+    slope_linear = y_split / x_split
+    linear_end = linear_fraction * x_split
+    x_linear = np.array([0.0, linear_end])
+    y_linear = slope_linear * x_linear
+
+    # Roll-off segment
+    # Secant slope between split and end
+    s = (target_y - y_split) / (x_max - x_split)
+    # Clamp initial tangent for monotonicity: m0 <= 3*s ensures no overshoot
+    if s < 0:
+        raise ValueError("target_y must be >= y_split for monotonicity.")
+    m0 = min(slope_linear, 3 * s)
+    m1 = 0.0
+
+    x_curve = np.linspace(x_split, x_max, n_curve_points)
+    y_curve = hermite_interpolation(x_curve, x_split, y_split, x_max, target_y, m0, m1)
+
+    # Combine
+    x_full = np.concatenate([x_linear, x_curve])
+    y_full = np.concatenate([y_linear, y_curve])
+    return x_full, y_full
+
+
 def create_rolloff_grading_curve_pq(peak_lum: int, peak_content: int, rolloff_start: float = 0.9):
     """
     Create a rolloff grading curve for PQ values.
@@ -75,13 +132,12 @@ def create_rolloff_grading_curve_pq(peak_lum: int, peak_content: int, rolloff_st
 
     minimum_peak_lum_pq = eotf_inverse_ST2084(peak_lum * rolloff_start)
 
-    minimum_peak_lum_anchor = minimum_peak_lum_pq * 0.9
-
-    curve_points = [0.0, 0.0]
-    curve_points.extend([minimum_peak_lum_anchor, minimum_peak_lum_anchor])
+    curve_points = []
 
     n = 10
-    x_vals, y_vals, _, _ = compute_power_curve_points(float(minimum_peak_lum_pq), float(minimum_peak_lum_pq), float(peak_content_pq), float(peak_lum_pq), n)
+    x_vals, y_vals, = generate_sparse_monotonic_curve(
+        peak_content_pq, peak_lum_pq, minimum_peak_lum_pq, linear_fraction=0.9, n_curve_points=n
+    )
     for x, y in zip(x_vals, y_vals):
         curve_points.extend([x, y])
 
@@ -98,6 +154,7 @@ def create_rolloff_grading_curve_pq(peak_lum: int, peak_content: int, rolloff_st
 
     return rolloff_transform_master
 
+
 def create_rolloff_look(peak_lum: float, peak_content: float, prefix: str = "", rolloff_start: float = 0.9):
     """ Creates an ocio look containing a rolloff grading curve for a given wall.
 
@@ -109,7 +166,7 @@ def create_rolloff_look(peak_lum: float, peak_content: float, prefix: str = "", 
         rolloff_start (float): Percentage of the peak luminance to start the rolloff.
 
     """
-    look_name = f"{prefix}_Rolloff_{int(peak_lum * rolloff_start)}_nits_to_{peak_lum}_nits"
+    look_name = f"{prefix}_Rolloff_s{int(peak_lum * rolloff_start)}-{int(peak_content)}_to_{int(peak_lum)}_nits"
     look = ocio.Look()
     look.setProcessSpace("ACES2065-1")
 
