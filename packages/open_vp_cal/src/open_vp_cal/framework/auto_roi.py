@@ -145,7 +145,7 @@ class AutoROI(BaseSamplePatch):
             return results
 
         frame = self.led_wall.sequence_loader.get_frame(
-            first_patch_frame + self.trim_frames)
+            first_patch_frame)
 
         image_plate_gamut = frame.image_buf
         pixel_buffer = 5
