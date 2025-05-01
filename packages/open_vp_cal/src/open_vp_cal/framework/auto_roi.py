@@ -138,7 +138,8 @@ class AutoROI(BaseSamplePatch):
             AutoROIResults: The results of the ROI detection.
         """
         results = AutoROIResults()
-        first_patch_frame, _ = self.calculate_first_and_last_patch_frame()
+        frames_to_sample = self.calculate_frames_to_sample()
+        first_patch_frame = frames_to_sample[0]
 
         if first_patch_frame > self.led_wall.sequence_loader.end_frame:
             return results

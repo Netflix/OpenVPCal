@@ -15,14 +15,14 @@ limitations under the License.
 
 Module that contains classes who are responsible for sampling and analysing the patches in the image sequence
 """
-import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 from colour_checker_detection.detection.segmentation import (
     detect_colour_checkers_segmentation)
 
 from open_vp_cal.core.utils import find_factors_pairs
 from open_vp_cal.imaging import imaging_utils
-from open_vp_cal.core.structures import SamplePatchResults
+from open_vp_cal.core.structures import SamplePatchResults, OpenVPCalException
 from open_vp_cal.framework.identify_separation import SeparationResults
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.core import constants
@@ -40,8 +40,8 @@ class BaseSamplePatch:
         self.led_wall = led_wall_settings
         self.separation_results = separation_results
         self.patch = patch
-        self.trim_frames = 1  # The num frames we trim from the start and end of the patch, so we avoid multiplexing
         self.required_sample_frames = 3
+        self.min_required_sample_frames = 2
 
     def get_num_patches_relative_to_red(self, red_patch_index) -> int:
         """ Returns the number of patches relative to the red patch index, accounting
@@ -60,26 +60,96 @@ class BaseSamplePatch:
             return patch_index - red_patch_index + self.led_wall.num_grey_patches
         return patch_index - red_patch_index
 
-    def calculate_first_and_last_patch_frame(self) -> tuple[int, int]:
+    def get_sample_range(self, first_frame, last_frame, num_frames):
         """
-        Calculate the first and last frame of the patch.
+        Returns a list of frame numbers sampled evenly around the centre frame,
+        which is automatically calculated as the midpoint of the range.
+
+        Args:
+            first_frame (int): The first frame in the sequence.
+            last_frame (int): The last frame in the sequence.
+            num_frames (int): The total number of frames to return.
+
+        Returns:
+            List[int]: A list of frame numbers sampled symmetrically around the centre frame.
+        """
+        # We trim by one frame to remove any chance of multi plexing
+        first_frame +=1
+        last_frame -=1
+
+        if num_frames < 1:
+            raise ValueError("num_frames must be at least 1")
+        if last_frame < first_frame:
+            raise ValueError("last_frame must be >= first_frame")
+
+        total_frames = last_frame - first_frame + 1
+        if num_frames > total_frames:
+            raise ValueError("Requested more frames than available in the range")
+
+        # Calculate the centre frame
+        centre_frame = (first_frame + last_frame) // 2
+
+        # Special case: only one frame requested
+        if num_frames == 1:
+            return [centre_frame]
+
+        half = (num_frames - 1) / 2
+
+        # Determine how far to go left and right
+        if num_frames % 2 == 1:
+            left_count = right_count = int(half)
+        else:
+            left_count = int(half)
+            right_count = int(half)
+
+        max_left = centre_frame - first_frame
+        max_right = last_frame - centre_frame
+
+        # Adjust to stay within bounds
+        left_count = min(left_count, max_left)
+        right_count = min(right_count, max_right)
+
+        # Balance the window if needed
+        while left_count + right_count < num_frames - 1:
+            if left_count < max_left:
+                left_count += 1
+            elif right_count < max_right:
+                right_count += 1
+            else:
+                break
+
+        # Generate frame list
+        left_frames = [centre_frame - i for i in range(left_count, 0, -1)]
+        right_frames = [centre_frame + i for i in range(1, right_count + 1)]
+        return left_frames + [centre_frame] + right_frames
+
+    def calculate_frames_to_sample(self) -> list[int]:
+        """
+        Calculates the frames which we should sample based on the predicted first and last frames
+        of each patch, by remving the first and last frames of each patch to reduce the chance of
+        multiplexing, and then isolating a number of frames from around the centre frame of each
+        patch, we need to ensure that we have a minimum of 2 samples from each patch
 
         Returns:
             tuple[int, int]: The first and last frame of the patch.
         """
+        first_patch_frame, last_patch_frame = self.calculate_first_and_last_patch_frame()
+
+        sample_frames = self.get_sample_range(
+            first_patch_frame, last_patch_frame, self.required_sample_frames
+        )
+        return sample_frames
+
+    def calculate_first_and_last_patch_frame(self):
         red_patch_index = constants.PATCHES.get_patch_index(
             constants.PATCHES.RED_PRIMARY_DESATURATED)
-
         number_of_patches_relative_to_red = self.get_num_patches_relative_to_red(
             red_patch_index
         )
         number_of_frames = number_of_patches_relative_to_red * self.separation_results.separation
+        # We get the predicted first frame and last frame of the patch assuming we remove the first and last frames to account for multiplexing
         first_patch_frame = number_of_frames + self.separation_results.first_red_frame.frame_num
-        last_patch_frame = first_patch_frame + (self.separation_results.separation - 1)
-        trim_frames = (
-                                  last_patch_frame - first_patch_frame) // self.required_sample_frames
-        if trim_frames > self.trim_frames:
-            self.trim_frames = trim_frames
+        last_patch_frame = first_patch_frame + self.separation_results.separation
         return first_patch_frame, last_patch_frame
 
     def get_white_balance_matrix_from_slate(self) -> np.ndarray:
@@ -140,28 +210,56 @@ class SamplePatch(BaseSamplePatch):
         Returns:
             None
         """
-        first_patch_frame, last_patch_frame = self.calculate_first_and_last_patch_frame()
-        self.analyse_patch_frames(0, self.sample_results, first_patch_frame,
-                                  last_patch_frame)
+        sample_frames = self.calculate_frames_to_sample()
+        self.analyse_patch_frames(0, self.sample_results, sample_frames)
 
-    def analyse_patch_frames(self, idx: int, results: list,
-                             first_patch_frame: int, last_patch_frame: int) -> None:
+    def get_mixed_tol_outlier_indices(
+            self,
+            samples: list[list[float]],
+            rtol: float = 0.1,
+            atol: float = 1e-4
+    ) -> list[int]:
+        """
+        Identify indices of RGB samples where, for any channel,
+        |value - median(channel)| > atol + rtol * |median(channel)|.
+
+        This combines an absolute floor (atol) with a relative fraction (rtol).
+
+        Args:
+            samples: List of [R, G, B] samples.
+            rtol: Relative tolerance (fraction of the channel’s median).
+            atol: Minimum absolute tolerance.
+
+        Returns:
+            A list of sample-indices to remove.
+        """
+        arr = np.array(samples, dtype=float)  # shape (N, 3)
+        med = np.median(arr, axis=0)  # [med_R, med_G, med_B]
+        # Compute allowed tolerance per channel:
+        tol = atol + rtol * np.abs(med)  # shape (3,)
+
+        # Compute absolute differences:
+        diffs = np.abs(arr - med)  # shape (N, 3)
+
+        # A sample is an outlier if any channel’s diff exceeds tol:
+        mask = np.any(diffs > tol, axis=1)  # shape (N,)
+        return list(np.nonzero(mask)[0])
+
+    def analyse_patch_frames(self, idx: int, results: list, frames_to_sample: list[int]) -> None:
         """
         Analyse the frames of the patch.
 
         Args:
             idx (int): The index to store the results.
             results (list[open_vp_cal.core.structures.SamplePatchResults]): The list to store the results.
-            first_patch_frame (int): The first frame of the patch.
-            last_patch_frame (int): The last frame of the patch.
+            frames_to_sample (list): The frame numbers to sample
         Returns:
             None
         """
-        # We trim a number of frames off either side of the patch to ensure we remove multiplexing
         sample_results = SamplePatchResults()
+        sample_frames = []
         samples = []
-        for frame_num in range(first_patch_frame + self.trim_frames,
-                               (last_patch_frame - self.trim_frames) + 1):
+        for frame_num in frames_to_sample:
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
             section_input = frame.extract_roi(self.led_wall.roi)
 
@@ -175,7 +273,22 @@ class SamplePatch(BaseSamplePatch):
             mean_color = imaging_utils.sample_image(section_aces)
 
             samples.append(mean_color)
-            sample_results.frames.append(frame)
+            sample_frames.append(frame)
+
+        # Now we have our samples we need to filter out any major outliers
+        indices_to_remove = self.get_mixed_tol_outlier_indices(samples, rtol=0.1, atol=1e-4)
+        for index in sorted(indices_to_remove, reverse=True):
+            del samples[index]
+            del sample_frames[index]
+
+        if len(samples) < self.min_required_sample_frames:
+            error_msg = (f"Samples from frames {frames_to_sample} for Patch {self.patch}_{idx} all have significant differences.\nThis typically indicates a problem with the playback, either missing genlock, frame blending from the media player, inconsistent playback from the media player, or extreme multiplexing."
+             f"Ensure your setup is correct and re record your samples")
+            raise OpenVPCalException(
+                error_msg
+            )
+
+        sample_results.frames = sample_frames
         sample_results.samples = [sum(channel) / len(channel) for channel in
                                   zip(*samples)]
         results[idx] = sample_results
@@ -214,22 +327,36 @@ class SampleRampPatches(SamplePatch):
 
         # We have x number of grey patches and one black frame at the beginning of the ramp
         grey_patches = self.led_wall.num_grey_patches + 1
-        threads = []
         results = [None] * grey_patches
-        for patch_count in range(0, grey_patches):
-            patch_start_frame = first_patch_frame + (
-                        patch_count * self.separation_results.separation)
-            patch_last_frame = patch_start_frame + (
-                        self.separation_results.separation - 1)
+        # You can choose max_workers to tune parallelism; leaving it None lets Python decide.
+        with ThreadPoolExecutor() as executor:
+            futures = []
+            for patch_count in range(grey_patches):
+                patch_start_frame = first_patch_frame + (
+                        patch_count * self.separation_results.separation
+                )
+                patch_last_frame = patch_start_frame + (
+                    self.separation_results.separation
+                )
+                sample_frames = self.get_sample_range(
+                    patch_start_frame,
+                    patch_last_frame,
+                    self.required_sample_frames
+                )
 
-            thread = threading.Thread(target=self.analyse_patch_frames, args=(
-                patch_count, results, patch_start_frame, patch_last_frame)
-                                      )
-            thread.start()
-            threads.append(thread)
+                fut = executor.submit(
+                    self.analyse_patch_frames,
+                    patch_count,
+                    results,
+                    sample_frames
+                )
+                futures.append(fut)
 
-        for thread in threads:
-            thread.join()
+            # iterate over completed futures, raising any exceptions
+            for fut in as_completed(futures):
+                fut.result()
+
+        # at this point either all patches succeeded, or the first exception has bubbled up
         self.sample_results = results
 
 
@@ -265,13 +392,11 @@ class MacBethSample(BaseSamplePatch):
         """
         Detect the macbeth chart in the patch and extract the samples for each of the swatches on the macbeth chart
         """
-        first_patch_frame, last_patch_frame = self.calculate_first_and_last_patch_frame()
-        # We trim a number of frames off either side of the patch to ensure we remove multiplexing
+        frames_to_sample = self.calculate_frames_to_sample()
         sample_results = SamplePatchResults()
         samples = []
         white_balance_matrix = self.get_white_balance_matrix_from_slate()
-        for frame_num in range(first_patch_frame + self.trim_frames,
-                               (last_patch_frame - self.trim_frames) + 1):
+        for frame_num in frames_to_sample:
             frame = self.led_wall.sequence_loader.get_frame(frame_num)
             sample_results.frames.append(frame)
 
