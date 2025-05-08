@@ -16,9 +16,8 @@ limitations under the License.
 Module which has classes dedicated to identifying the separation between the images within the sequence, which
 is done through identifying the first red frame and first green frame in the image sequence
 """
-from typing import List
-
 import numpy as np
+from open_vp_cal.framework.frame import Frame
 from scipy.signal import find_peaks
 
 from open_vp_cal.imaging import imaging_utils
@@ -34,8 +33,11 @@ class SeparationResults:
         """
         Initialize an instance of SeparationResults.
         """
+        self.first_grey_frame = None
         self.first_red_frame = None
         self.first_green_frame = None
+        self.first_blue_frame = None
+        self.second_red_frame = None
 
     @property
     def is_valid(self) -> bool:
@@ -44,12 +46,17 @@ class SeparationResults:
 
         Returns: Returns if the separation results are valid or not
         """
-        if not self.first_green_frame:
+        if None in (
+                self.first_red_frame,
+                self.first_green_frame,
+                self.first_blue_frame,
+                self.first_grey_frame,
+                self.second_red_frame):
             return False
-        if not self.first_green_frame:
-            return False
+
         if self.separation < 1:
             return False
+
         return True
 
     @property
@@ -60,11 +67,31 @@ class SeparationResults:
         Returns: The separation value between the first red and green frames if both have been found
 
         """
-        if not self.first_red_frame or not self.first_green_frame:
+        frames = (
+            self.first_red_frame,
+            self.first_green_frame,
+            self.first_blue_frame,
+            self.first_grey_frame,
+            self.second_red_frame,
+        )
+
+        # 1) Bail out if any frame is missing
+        if any(f is None for f in frames):
             return -1
-        if self.first_green_frame.frame_num < self.first_red_frame.frame_num:
+
+        # 2) Extract their frame_nums
+        nums = [f.frame_num for f in frames]
+
+        # 3) Make sure they’re non-decreasing
+        if any(b < a for a, b in zip(nums, nums[1:])):
             return -1
-        return self.first_green_frame.frame_num - self.first_red_frame.frame_num
+
+        green_to_red = self.first_green_frame.frame_num - self.first_red_frame.frame_num
+        green_to_blue = self.first_blue_frame.frame_num - self.first_green_frame.frame_num
+        blue_to_grey = self.first_grey_frame.frame_num - self.first_blue_frame.frame_num
+        grey_to_second_red = self.second_red_frame.frame_num - self.first_grey_frame.frame_num
+        separation = round((green_to_red + green_to_blue + blue_to_grey + grey_to_second_red) / 4.0)
+        return separation
 
 
 class IdentifySeparation:
@@ -89,37 +116,14 @@ class IdentifySeparation:
         Returns:
             SeparationResults: The results of the separation identification.
         """
-        self._find_first_red_and_green_frames()
+        self._find_frame_peaks()
         self.led_wall.separation_results = self.separation_results
         return self.separation_results
 
-    @staticmethod
-    def check_red(mean_color: List[float]) -> bool:
-        """ We check if the mean colour is red or not
-
-        Args:
-            mean_color: The mean colour of the roi for an image
-
-        Returns: True or False depending on if the mean colour is red or not
-
+    def _find_frame_peaks(self) -> None:
         """
-        return imaging_utils.detect_red(mean_color)
-
-    @staticmethod
-    def check_green(mean_color: List[float]) -> bool:
-        """ We check if the mean colour is green or not
-
-        Args:
-            mean_color: The mean colour of the roi for an image
-
-        Returns: True or False depending on if the mean colour is green or not
-        """
-        return imaging_utils.detect_green(mean_color)
-
-    def _find_first_red_and_green_frames(self) -> None:
-        """
-        Iterates over all frames in the sequence loader, computes the mean colour of each frame, and finds the first
-        frame that is red and the first frame that is green.
+        Iterates over all frames in the sequence loader, convert the images to ACES2065-1, computes the mean colour of each
+        patch, and we detect the peaks
 
         The results are stored in the separation_results attribute.
         """
@@ -156,7 +160,8 @@ class IdentifySeparation:
             )
 
             # Compute the average for all the values which are above the initial average
-            mean_color, _ = imaging_utils.get_average_value_above_average(image)
+            img_array = imaging_utils.image_buf_to_np_array(image)
+            mean_color = np.mean(img_array, axis=(0, 1)).tolist()
             distance = 0
             if previous_mean_frame:
                 distance = imaging_utils.calculate_distance(
@@ -167,57 +172,37 @@ class IdentifySeparation:
             distances.append(distance)
             previous_mean_frame = mean_color
 
-            # Check if the image is red or we detect a significant change in the mean
-            if self.check_red(mean_color):
-                if self.separation_results.first_red_frame is None:
-                    self.separation_results.first_red_frame = frame
-                    continue
-
-            # Check if the image is green or if we detect a significant change in the
-            # mean colour
-            if self.check_green(mean_color):
-                if self.separation_results.first_green_frame is None:
-                    self.separation_results.first_green_frame = frame
-                    continue
-
+            # Calculate the peaks
             distances_array = np.array(distances)
             peaks, _ = find_peaks(distances_array, height=1)
-            if len(peaks) >= 4:
+            if len(peaks) >= 8:
+                    peak_frame = self.get_frame_for_peak(frame_numbers, peaks, 0)
+                    self.separation_results.first_red_frame = peak_frame
 
-                first_peak_frame_num = frame_numbers[peaks[0]]
-                first_peak_frame = self.led_wall.sequence_loader.get_frame(
-                    first_peak_frame_num
-                )
-                # If we didn't find a red frame, set the first red frame to the first
-                # peak
-                if self.separation_results.first_red_frame is None:
-                    self.separation_results.first_red_frame = first_peak_frame
+                    peak_frame = self.get_frame_for_peak(frame_numbers, peaks, 1)
+                    self.separation_results.first_green_frame = peak_frame
 
-                # If the detected red frame is not within 3 frames of the first peak
-                # we detected the second red patch so we should use the first peak as
-                # the first red frame
-                if not imaging_utils.is_within_range(
-                        self.separation_results.first_red_frame.frame_num,
-                        first_peak_frame_num, 3):
-                    self.separation_results.first_red_frame = first_peak_frame
+                    peak_frame = self.get_frame_for_peak(frame_numbers, peaks, 2)
+                    self.separation_results.first_blue_frame = peak_frame
 
-                second_peak_frame_num = frame_numbers[peaks[1]]
-                second_peak_frame = self.led_wall.sequence_loader.get_frame(
-                    second_peak_frame_num
-                )
-                # If we didn't find a green frame, set the first green frame to the
-                # second peak
-                if self.separation_results.first_green_frame is None:
-                    self.separation_results.first_green_frame = second_peak_frame
+                    peak_frame = self.get_frame_for_peak(frame_numbers, peaks, 3)
+                    self.separation_results.first_grey_frame = peak_frame
 
-                # If the detected green frame is not within 3 frames of the second peak
-                # we detected the second green patch so we should use the first peak as
-                # the first red frame
-                if not imaging_utils.is_within_range(
-                        self.separation_results.first_green_frame.frame_num,
-                        second_peak_frame_num, 3):
-                    self.separation_results.first_green_frame = second_peak_frame
-
-                if (self.separation_results.first_red_frame is not None
-                        and self.separation_results.first_green_frame is not None):
+                    peak_frame = self.get_frame_for_peak(frame_numbers, peaks, 4)
+                    self.separation_results.second_red_frame = peak_frame
                     break
+
+    def get_frame_for_peak(self, frame_numbers: list[int], peaks: np.ndarray, peak_idx: int) -> Frame:
+        """ Gets the frame for the given peak index so we can get the frame for the detected patches
+
+        Args:
+            frame_numbers (list[int]): The list of frame numbers
+            peaks (np.ndarray): The peaks detected in the image sequence
+            peak_idx (int): The index of the peak we want to get the frame for
+
+        """
+        first_peak_frame_num = frame_numbers[peaks[peak_idx]]
+        first_peak_frame = self.led_wall.sequence_loader.get_frame(
+            first_peak_frame_num
+        )
+        return first_peak_frame
