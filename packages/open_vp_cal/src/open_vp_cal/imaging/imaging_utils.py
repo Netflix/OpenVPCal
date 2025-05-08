@@ -914,42 +914,6 @@ def _get_xyY_values(values: np.array, colour_space: str = "ACES2065-1") -> np.ar
     return colour.XYZ_to_xyY(numpy_array_XYZ)
 
 
-def detect_red(values: np.array, colour_space: str = "ACES2065-1") -> bool:
-    """ For the given values and colour space we convert to xyY and try to determine if the image is red or not
-
-    Args:
-        values: The values to convert
-        colour_space: The colour space to convert from
-
-    Returns: True if the image is red
-
-    """
-    numpy_array_xyY = _get_xyY_values(values, colour_space=colour_space)
-    red_threshold = 0.4
-    if numpy_array_xyY[0] > red_threshold:
-        return True
-    return False
-
-
-def detect_green(values: np.array, colour_space: str = "ACES2065-1") -> bool:
-    """ For the given values and colour space we convert to xyY and try to determine if the image is green or not
-
-    Args:
-        values: The values to convert
-        colour_space: The colour space to convert from
-
-    Returns: True if the image is green
-
-    """
-    numpy_array_xyY = _get_xyY_values(values, colour_space=colour_space)
-    green_threshold = 0.45
-    red_threshold = 0.35
-
-    if numpy_array_xyY[0] < red_threshold and numpy_array_xyY[1] > green_threshold:
-        return True
-    return False
-
-
 def compute_clipped_mean(image: np.array, channel_idx: int, sigma: int = 3):
     """ Computes the mean of the given channel after clipping the outliers using standard deviation
 
