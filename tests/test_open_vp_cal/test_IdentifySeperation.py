@@ -21,9 +21,13 @@ from open_vp_cal.framework.identify_separation import IdentifySeparation
 
 class TestIdentifySeparation(TestProcessorBase):
     def test_identify_separation(self):
+        self.led_wall.roi = self.recalc_old_roi(self.led_wall.roi)
         identify_sep = IdentifySeparation(self.led_wall)
         results = identify_sep.run()
-        self.assertEqual(results.first_red_frame.frame_num, 73)
-        self.assertEqual(results.first_green_frame.frame_num, 78)
+        self.assertEqual(results.first_red_frame.frame_num, 72)
+        self.assertEqual(results.first_green_frame.frame_num, 77)
+        self.assertEqual(results.first_blue_frame.frame_num, 82)
+        self.assertEqual(results.first_grey_frame.frame_num, 87)
+        self.assertEqual(results.second_red_frame.frame_num, 92)
         self.assertEqual(results.separation, 5)
 

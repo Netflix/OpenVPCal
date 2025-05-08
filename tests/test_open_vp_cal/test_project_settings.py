@@ -37,6 +37,7 @@ class TestProjectSettings(TestBase):
             "project_settings":
                 {
                     constants.ProjectSettingsKeys.PROJECT_ID: "123456",
+                    constants.ProjectSettingsKeys.CONTENT_MAX_LUM: constants.PQ.PQ_MAX_NITS,
                     constants.ProjectSettingsKeys.FILE_FORMAT: "exr",
                     constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
                     constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,
