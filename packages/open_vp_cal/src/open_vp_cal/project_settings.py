@@ -345,6 +345,9 @@ class ProjectSettings:
         Returns:
             int: The content max luminance for the project
         """
+        # To maintain backwards compatability with v1.x we check to see if it exists and if not we call the setter before we return the value
+        if constants.ProjectSettingsKeys.CONTENT_MAX_LUM not in self._project_settings:
+            self.content_max_lum = constants.PQ.PQ_MAX_NITS
         return self._project_settings[constants.ProjectSettingsKeys.CONTENT_MAX_LUM]
 
     @content_max_lum.setter
