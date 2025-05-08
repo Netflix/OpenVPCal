@@ -146,6 +146,10 @@ class BaseSamplePatch:
         number_of_patches_relative_to_red = self.get_num_patches_relative_to_red(
             red_patch_index
         )
+
+        if not self.separation_results.is_valid:
+            raise OpenVPCalException("Separation results are not valid")
+
         number_of_frames = number_of_patches_relative_to_red * self.separation_results.separation
         # We get the predicted first frame and last frame of the patch assuming we remove the first and last frames to account for multiplexing
         first_patch_frame = number_of_frames + self.separation_results.first_red_frame.frame_num
