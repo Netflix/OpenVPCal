@@ -21,13 +21,13 @@ The underlying image remains unchanged, and the polygon is drawn as an overlay.
 Control point vertices are drawn using a color map:
     0: red (top-left)
     1: green (top-right)
-    2: blue (bottom-right)
-    3: white (bottom-left)
+    2: white (bottom-right)
+    3: blue (bottom-left)
 If the ROI is inside out or if the control points do not satisfy the following criteria:
-    - Red is higher than blue and white and more left than green.
-    - Green is higher than blue and white and more right than red.
-    - White is lower than red and green and more left than blue.
-    - Blue is lower than red and green and more right than white.
+    - Red is higher than the two bottom points and more left than green.
+    - Green is higher than the two bottom points and more right than red.
+    - Bottom-right (white) is lower than red and green and more right than bottom-left (blue).
+    - Bottom-left (blue) is lower than red and green and more left than bottom-right (white).
 then the polygon outline is drawn in red; otherwise, it is green.
 After the initial ROI is set, subsequent left-clicks update the next corner sequentially—but only if the
 user holds Alt (or Command on macOS). Without the modifier key the click only does selection.
@@ -79,13 +79,13 @@ class ControlPoint(QtWidgets.QGraphicsEllipseItem):
                                 and its new scene coordinate.
 
     Colors are assigned as follows:
-        0: red, 1: green, 2: blue, 3: white.
+        0: red, 1: green, 2: white, 3: blue.
     """
     def __init__(self, index: int, pos: QtCore.QPointF, update_func) -> None:
         radius: int = 4
         super().__init__(-radius, -radius, 2 * radius, 2 * radius)
         self.index: int = index
-        color_map = {0: Qt.red, 1: Qt.green, 2: Qt.blue, 3: Qt.white}
+        color_map = {0: Qt.red, 1: Qt.green, 2: Qt.white, 3: Qt.blue}
         self.setBrush(QtGui.QBrush(color_map.get(index, Qt.green)))
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
@@ -240,14 +240,14 @@ class PolygonSelectionScene(QtWidgets.QGraphicsScene):
         """
         if len(self.polygon_points) < 4:
             return True
-        r = self.polygon_points[0]
-        g = self.polygon_points[1]
-        b = self.polygon_points[2]
-        w = self.polygon_points[3]
-        cond1 = (r.y() < b.y() and r.y() < w.y() and r.x() < g.x())
-        cond2 = (g.y() < b.y() and g.y() < w.y() and g.x() > r.x())
-        cond3 = (w.y() > r.y() and w.y() > g.y() and w.x() < b.x())
-        cond4 = (b.y() > r.y() and b.y() > g.y() and b.x() > w.x())
+        r = self.polygon_points[0]  # red (top-left)
+        g = self.polygon_points[1]  # green (top-right)
+        wr = self.polygon_points[2]  # white (bottom-right)
+        bl = self.polygon_points[3]  # blue (bottom-left)
+        cond1 = (r.y() < wr.y() and r.y() < bl.y() and r.x() < g.x())
+        cond2 = (g.y() < wr.y() and g.y() < bl.y() and g.x() > r.x())
+        cond3 = (wr.y() > r.y() and wr.y() > g.y() and wr.x() > bl.x())
+        cond4 = (bl.y() > r.y() and bl.y() > g.y() and bl.x() < wr.x())
         return cond1 and cond2 and cond3 and cond4
 
     def _emitSelection(self) -> None:
@@ -352,7 +352,7 @@ class ImageSelectionWidget(QtWidgets.QWidget):
     The user selects four points on the image to define an ROI as a list of four (x, y) tuples.
     The ROI is saved to the current wall in the project settings. The underlying image remains unchanged,
     and the polygon overlay is drawn with a red or green outline (red if inverted or invalid) along with
-    control points in distinct colors (red, green, blue, white).
+    control points in distinct colors (red, green, white, blue).
     After the initial ROI is set, subsequent left-clicks update corners sequentially only when the
     Alt (or Command on macOS) modifier is held.
 
