@@ -22,12 +22,7 @@
                 "input_plate_gamut": "ACES2065-1",
                 "native_camera_gamut": "REDWideGamutRGB",
                 "reference_to_target_cat": "Bradford",
-                "roi": [
-                    668,
-                    1238,
-                    261,
-                    833
-                ],
+                "roi": [],
                 "shadow_rolloff": 0.008,
                 "target_max_lum_nits": 100,
                 "target_gamut": "sRGB",

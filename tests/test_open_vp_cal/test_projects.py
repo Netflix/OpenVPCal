@@ -321,7 +321,7 @@ class TestSample_Project9_Seperation_Green_Detection_BlueWall(BaseTestProjectPla
     project_name = "Sample_Project9_Seperation_Green_Detection_BlueWall"
 
     def test_project9(self):
-        expected_roi = [[668, 261], [1238, 261], [1238, 833], [668, 833]]
+        expected_roi = [(668, 260), (1240, 260), (1240, 832), (668, 832)]
         results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
