@@ -237,45 +237,6 @@ def is_git_installed() -> bool:
     except Exception:
         return False
 
-
-def git_clone(repo_url: str, target_dir: str) -> None:
-    """ Clones the given git repo to the given target directory
-
-    Args:
-        repo_url: The url of the git repo to clone
-        target_dir: The target directory to clone the repo to
-
-    """
-    try:
-        # Check if target_dir exists, if not, create it
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        # Run the git clone command
-        subprocess.check_call(['git', 'clone', repo_url, target_dir])
-    except subprocess.CalledProcessError as exception:
-        raise RuntimeError(f"Git clone failed with error: {exception.output}")
-
-
-def run_vcpkg_bootstrap(folder_path: str) -> None:
-    """ Runs the vcpkg bootstrap command for the given platform
-
-    Args:
-        folder_path: The path to the vcpkg folder
-    """
-    try:
-        # The command must be a list of strings, where each string is a command or argument
-        # The "./vcpkg/bootstrap-vcpkg.bat" path should be adjusted to the correct path of your bat file
-        if platform.system() == 'Windows':
-            script_name = "bootstrap-vcpkg.bat"
-        else:
-            script_name = "bootstrap-vcpkg.sh"
-
-        boot_strap_file = os.path.join(folder_path, script_name)
-        subprocess.run([boot_strap_file], check=True)
-    except subprocess.CalledProcessError as exception:
-        raise RuntimeError("Vcpkg bootstrap failed: " + exception.output)
-
-
 def is_pkgconfig_installed() -> bool:
     """ Checks if pkg-config is installed on platforms which are not windows
 
@@ -291,37 +252,6 @@ def is_pkgconfig_installed() -> bool:
         except FileNotFoundError:
             return False
     return True
-
-
-def run_vcpkg_install(folder_path: str) -> None:
-    """ Runs the vcpkg install command for the given platform
-
-    Args:
-        folder_path: The path to the vcpkg folder
-    """
-    try:
-        # Each part of the command is a separate item in the list
-        # The "./vcpkg/vcpkg.exe" path should be adjusted to the correct path of your exe file
-        args = []
-        if platform.system() == 'Windows':
-            script_name = "vcpkg.exe"
-            triplet = 'x64-windows-release'
-        elif platform.system() == 'Darwin':
-            script_name = "vcpkg"
-            triplet = 'x64-osx'
-            if platform.processor() == 'arm':
-                triplet = 'arm64-osx'
-        else:
-            script_name = "vcpkg"
-            triplet = 'x64-linux'
-
-        vcpkg = os.path.join(folder_path, script_name)
-        args.extend([vcpkg, 'install', 'openimageio[opencolorio,pybind11, freetype]', '--recurse', '--triplet', triplet])
-        subprocess.run(
-            args,
-            check=True)
-    except subprocess.CalledProcessError as exception:
-        raise RuntimeError("Vcpkg install failed:" + exception.output)
 
 
 def main() -> int:
@@ -387,54 +317,6 @@ def main() -> int:
 
     print('Return code:', return_code)
     return return_code
-
-
-def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
-    """ Gets the additional library paths we need to include in the distribution
-
-    Args:
-        vcpkg_folder: The path to the vcpkg folder
-
-    Returns: A list of additional library paths we need to include in the distribution
-
-    """
-    manual_paths = []
-    library_root = None
-    python_oiio_lib_folder = None
-    if platform.system() == 'Windows':
-        library_root = os.path.join(vcpkg_folder, "installed", "x64-windows-release", "bin")
-        python_oiio_lib_folder = os.path.join(
-            vcpkg_folder, "installed", "x64-windows-release", "lib",
-            "python3.11", "site-packages", "OpenImageIO"
-        )
-    elif platform.system() == 'Darwin':
-        arch = "x64-osx"
-        if platform.processor() == "arm":
-            arch = "arm64-osx"
-
-        library_root = os.path.join(vcpkg_folder, "installed", arch, "lib")
-        python_oiio_lib_folder = os.path.join(
-            library_root,
-            "python3.11", "site-packages", "OpenImageIO"
-        )
-    elif platform.system() == 'Linux':
-        arch = 'x64-linux'
-        library_root = os.path.join(vcpkg_folder, "installed", arch, "lib")
-        python_oiio_lib_folder = os.path.join(
-            library_root,
-            "python3.11", "site-packages", "OpenImageIO"
-        )
-    lib_files = os.listdir(library_root)
-    for lib_file in lib_files:
-        manual_paths.append(f"{library_root}/{lib_file}")
-
-    for lib_file in os.listdir(python_oiio_lib_folder):
-        if lib_file == "__init__.py":
-            continue
-        if lib_file == "__pycache__":
-            continue
-        manual_paths.append(f"{python_oiio_lib_folder}/{lib_file}")
-    return manual_paths
 
 
 def build_windows_installer(manual_paths, version, icon_path) -> int:
@@ -524,33 +406,6 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
     # Wait for the process to finish and get the return code.
     return_code = process.wait()
     return return_code
-
-
-def setup_and_install_vcpkgs(vcpkg_folder: str) -> None:
-    """ Sets up and installs the vcpkgs for the given platform
-
-    Args:
-        vcpkg_folder: The path to the vcpkg folder
-    """
-    if not os.path.exists(vcpkg_folder):
-        os.makedirs(vcpkg_folder)
-        git_clone('https://github.com/microsoft/vcpkg', vcpkg_folder)
-        run_vcpkg_bootstrap(vcpkg_folder)
-        run_vcpkg_install(vcpkg_folder)
-
-
-def get_vcpkg_root() -> str:
-    """ Get the root folder of vcpkg
-
-    Returns: The root folder of vcpkg
-
-    """
-    if platform.system() == 'Windows':
-        root_folder = "D:\\"
-    else:
-        root_folder = os.path.expanduser("~")
-    vcpkg_folder = os.path.join(root_folder, "vcpkg")
-    return vcpkg_folder
 
 
 def check_dependencies() -> None:

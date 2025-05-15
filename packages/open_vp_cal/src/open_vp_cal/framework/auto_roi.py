@@ -16,13 +16,9 @@ limitations under the License.
 The Module has classes dedicated to identifying the region of interest within the image sequence
 which we want to extract to analyze.
 """
-
-import sys
 from typing import List, Tuple
 
 import numpy as np
-
-from open_vp_cal.core.utils import clamp
 from open_vp_cal.led_wall_settings import LedWallSettings
 
 from open_vp_cal.imaging import imaging_utils
@@ -177,32 +173,4 @@ class AutoROI(BaseSamplePatch):
         results.green_pixel = co_ords['green']
         results.blue_pixel = co_ords['blue']
         results.white_pixel = co_ords['white']
-
-        # for y_pos in range(balanced_image.spec().height):
-        #     for x_pos in range(balanced_image.spec().width):
-        #         pixel = balanced_image.getpixel(x_pos, y_pos)
-        #         red = clamp(pixel[0], 0, sys.float_info.max)
-        #         green = clamp(pixel[1], 0, sys.float_info.max)
-        #         blue = clamp(pixel[2], 0, sys.float_info.max)
-        #
-        #         if red > results.red_value:
-        #             if red > max(green, blue) * detection_threshold:
-        #                 results.red_pixel = (x_pos + pixel_buffer, y_pos + pixel_buffer)
-        #                 results.red_value = red
-        #
-        #         if green > results.green_value:
-        #             if green > max(red, blue) * detection_threshold:
-        #                 results.green_pixel = (x_pos - pixel_buffer, y_pos + pixel_buffer)
-        #                 results.green_value = green
-        #
-        #         if blue > results.blue_value:
-        #             if blue > max(red, green) * detection_threshold:
-        #                 results.blue_pixel = (x_pos + pixel_buffer, y_pos - pixel_buffer)
-        #                 results.blue_value = blue
-        #
-        #         white = (red + green + blue) / 3
-        #         if white > results.white_value:
-        #             results.white_pixel = (x_pos - pixel_buffer, y_pos - pixel_buffer)
-        #             results.white_value = white
-
         return results
