@@ -22,10 +22,10 @@ import os
 import tempfile
 from json import JSONDecodeError
 
-from open_vp_cal.core import constants, ocio_config
+from open_vp_cal.core import constants
 from open_vp_cal.main import validate_file_path, validate_folder_path, \
     validate_project_settings, generate_patterns, generate_spg_patterns
-from test_open_vp_cal.test_utils import TestBase, TestProject
+from test_utils import TestBase, TestProject
 
 
 class TestArgparseFunctions(TestBase):
@@ -63,7 +63,7 @@ class TestArgparseFunctions(TestBase):
     def test_validate_project_settings_invalid(self):
         fd, path = tempfile.mkstemp(suffix=".json")
         try:
-            with open(path, 'w+') as temp:
+            with open(path, 'w+'):
                 with self.assertRaises(JSONDecodeError):
                     validate_project_settings(path)
         finally:
@@ -95,7 +95,15 @@ class TestProjectCli(TestProject):
         # Override the roi so we have to run the auto detection
         self.project_settings.led_walls[0].roi = None
 
-        results = self.run_cli(self.project_settings)
+        temp_folders = self.pre_process_vp_cal_1x(
+            self.project_settings, self.get_output_folder()
+        )
+        try:
+            results = self.run_cli(self.project_settings)
+            self.cleanup_pre_process_vp1(temp_folders)
+        except Exception as e:
+            self.cleanup_pre_process_vp1(temp_folders)
+            raise e
 
         with open(expected_file, "r", encoding="utf-8") as handle:
             expected_results = json.load(handle)
@@ -126,7 +134,14 @@ class TestProjectCli(TestProject):
         self.project_settings.led_walls[1].match_reference_wall = True
         self.project_settings.led_walls[1].auto_wb_source = False
 
-        results = self.run_cli(self.project_settings)
+        temp_folders = self.pre_process_vp_cal_1x(
+            self.project_settings, self.get_output_folder()
+        )
+        try:
+            results = self.run_cli(self.project_settings)
+            self.cleanup_pre_process_vp1(temp_folders)
+        except Exception:
+            self.cleanup_pre_process_vp1(temp_folders)
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -145,7 +160,7 @@ class TestProjectExternalWhite(TestProject):
     project_name = "SampleProject2_External_White_NoLens"
 
     def test_external_white_no_lens(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue

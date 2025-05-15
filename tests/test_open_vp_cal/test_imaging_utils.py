@@ -16,7 +16,7 @@ limitations under the License.
 
 import os
 
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 from open_vp_cal.imaging import imaging_utils
 
 

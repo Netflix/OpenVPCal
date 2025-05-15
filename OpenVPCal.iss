@@ -23,7 +23,7 @@ OutputBaseFilename=OpenVPCal_Setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=D:\dev\openvpcal\src\open_vp_cal\resources\icon.ico
+SetupIconFile=OPENVP_CAL_ICON_PATH
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]

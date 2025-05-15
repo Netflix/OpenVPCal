@@ -20,7 +20,7 @@ import json
 
 from open_vp_cal.core import constants, ocio_config
 from open_vp_cal.project_settings import ProjectSettings
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject
 
 
 class BaseTestProjectPlateReuse(TestProject):
@@ -64,7 +64,7 @@ class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
     project_name = "Sample_Project7_ROE_WRONGWB"
 
     def test_project7_roe_wrong_wb(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -75,17 +75,18 @@ class TestProject7_ROE_WrongWB(BaseTestProjectPlateReuse):
 
             self.check_separation_frame(led_wall, 1395634, 1395644)
             expected_lut_file = self.get_expected_lut_file(led_wall)
+            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
             self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
             self.assertTrue(os.path.exists(led_wall.processing_results.ocio_config_output_file))
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
-            self.compare_data(expected_results, led_wall.processing_results.calibration_results)
+
 
 
 class TestProject7_ROE_WrongWB_CS_EOTF(BaseTestProjectPlateReuse):
     project_name = "Sample_Project7_ROE_WRONGWB_CS_EOTF"
 
     def test_project7_roe_wrong_wb(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -106,7 +107,7 @@ class TestProject7_ROE_WrongWB_CS_Only(BaseTestProjectPlateReuse):
     project_name = "Sample_Project7_ROE_WRONGWB_CS_Only"
 
     def test_project7_roe_wrong_wb(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -127,7 +128,7 @@ class TestSample_Project1_ROE_Wall1_CSOnly(BaseTestProjectPlateReuse):
     project_name = "Sample_Project1_ROE_Wall1_CSOnly"
 
     def test_project1(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -148,7 +149,7 @@ class TestSample_Project2_ROE_Wall1_CS_EOTF(BaseTestProjectPlateReuse):
     project_name = "Sample_Project2_ROE_Wall1_CS_EOTF"
 
     def test_project2(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -169,7 +170,7 @@ class TestSample_Project3_ROE_Wall1_EOTF_CS(BaseTestProjectPlateReuse):
     project_name = "Sample_Project3_ROE_Wall1_EOTF_CS"
 
     def test_project3(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -199,7 +200,7 @@ class TestSample_Project4_Reference_Wall(BaseTestProjectPlateReuse):
             "AOTO": 1403932,
             "ROE_AWB": 1395644
         }
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -230,7 +231,7 @@ class TestSample_Project5_Decoupled_Lens(BaseTestProjectPlateReuse):
                     self.get_sample_plates(), "A104_C003_11080B_001.R3D", "A104_C003_11080B_001.01397369.exr")
 
     def test_project5(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -267,7 +268,7 @@ class TestSample_Project6_Reference_Wall_With_Decoupled_Lens(BaseTestProjectPlat
             "AOTO": 1403932,
             "ROE_DECOWP": 1395644
         }
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -290,7 +291,8 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
     project_name = "Sample_Project8_ACES_CCT_LUT"
 
     def test_project8(self):
-        results = self.run_cli(self.project_settings)
+        self.project_settings.project_id = "test"
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -299,7 +301,8 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
                 self.get_sample_project_folder(),
                 constants.ProjectFolders.EXPORT,
                 constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
+                ocio_config.OcioConfigWriter.post_calibration_config_name.format(project_id=self.project_settings.project_id)
+            )
 
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
@@ -318,11 +321,13 @@ class TestSample_Project9_Seperation_Green_Detection_BlueWall(BaseTestProjectPla
     project_name = "Sample_Project9_Seperation_Green_Detection_BlueWall"
 
     def test_project9(self):
-        results = self.run_cli(self.project_settings)
+        expected_roi = [[663, 256], [1245, 254], [1244, 835], [664, 840]]
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
 
+            self.assertEqual(expected_roi, led_wall.roi)
             self.check_separation_frame(led_wall, 11, 21)
 
 
@@ -330,16 +335,10 @@ class Test_Sample_Project10_SRGB_EOTF(BaseTestProjectPlateReuse):
     project_name = "Sample_Project10_SRGB_EOTF"
 
     def test_project10(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
-
-            expected_ocio_file = os.path.join(
-                self.get_sample_project_folder(),
-                constants.ProjectFolders.EXPORT,
-                constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
 
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
@@ -357,16 +356,10 @@ class Test_Sample_Project11_SRGB_EOTF(BaseTestProjectPlateReuse):
     project_name = "Sample_Project11_SRGB_EOTF_Verify"
 
     def test_project11(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
-
-            expected_ocio_file = os.path.join(
-                self.get_sample_project_folder(),
-                constants.ProjectFolders.EXPORT,
-                constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
 
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
@@ -384,20 +377,24 @@ class Test_Sample_Project13_Custom_Camera_Gamut(BaseTestProjectPlateReuse):
     project_name = "Sample_Project13_Custom_Camera_Gamut"
 
     def test_project13(self):
-        results = self.run_cli(self.project_settings)
-        for led_wall_name, led_wall in results.items():
+        self.project_settings.project_id = "c0061d"
+        self.project_settings.content_max_lum = 5000
+        results = self.run_cli_with_v1_fixes()
+        for _, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
+
+            expected_file = self.get_results_file(led_wall)
+            with open(expected_file, "r", encoding="utf-8") as handle:
+                expected_results = json.load(handle)
 
             expected_ocio_file = os.path.join(
                 self.get_sample_project_folder(),
                 constants.ProjectFolders.EXPORT,
                 constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name)
-
-            expected_file = self.get_results_file(led_wall)
-            with open(expected_file, "r", encoding="utf-8") as handle:
-                expected_results = json.load(handle)
+                ocio_config.OcioConfigWriter.post_calibration_config_name.format(
+                    project_id=self.project_settings.project_id)
+            )
 
             self.check_separation_frame(led_wall, 1393588, 1393598)
 
@@ -405,12 +402,14 @@ class Test_Sample_Project13_Custom_Camera_Gamut(BaseTestProjectPlateReuse):
             self.compare_lut_cubes(expected_lut_file, led_wall.processing_results.lut_output_file)
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
+            self.files_are_equal(expected_ocio_file,
+                                 led_wall.processing_results.ocio_config_output_file)
 
 class TestSample_Project15_Input_Plate_CS_Conversion(BaseTestProjectPlateReuse):
     project_name = "Sample_Project15_Input_Plate_CS_Conversion"
 
     def test_project9(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes(input_colour_space="Log3G10 REDWideGamutRGB")
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue

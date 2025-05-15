@@ -1,4 +1,7 @@
+*.log
 **/__pycache__/**
+**/build/**
+*.egg-info/
 .idea/*
 **/tests/**/output/**
 **/tests/**/results/**

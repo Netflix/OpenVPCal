@@ -17,7 +17,7 @@ limitations under the License.
 import OpenImageIO as oiio
 
 from open_vp_cal.framework.frame import Frame
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 
 class TestFrame(TestBase):

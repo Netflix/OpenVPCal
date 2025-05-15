@@ -15,7 +15,7 @@ limitations under the License.
 """
 import json
 
-import test_stageassets.utils as utils
+import test_stageassets_utils as utils
 
 from stageassets.rasterMap import Mapping, RasterMap
 

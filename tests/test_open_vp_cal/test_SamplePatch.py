@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import os
-from test_open_vp_cal.test_utils import TestProcessorBase
+from test_utils import TestProcessorBase
 
 
 from open_vp_cal.framework.identify_separation import SeparationResults
@@ -29,14 +29,29 @@ class TestSamplePatch(TestProcessorBase):
         super(TestSamplePatch, self).setUp()
 
         self.separation_results = SeparationResults()
+        self.led_wall.roi = self.recalc_old_roi(self.led_wall.roi)
+
         red_frame = Frame(self.led_wall.project_settings)
-        red_frame.frame_num = 73
+        red_frame.frame_num = 72
 
         green_frame = Frame(self.led_wall.project_settings)
-        green_frame.frame_num = 78
+        green_frame.frame_num = 77
+
+        blue_frame = Frame(self.led_wall.project_settings)
+        blue_frame.frame_num = 82
+
+        grey_frame = Frame(self.led_wall.project_settings)
+        grey_frame.frame_num = 87
+
+        second_red_frame = Frame(self.led_wall.project_settings)
+        second_red_frame.frame_num = 92
 
         self.separation_results.first_red_frame = red_frame
         self.separation_results.first_green_frame = green_frame
+        self.separation_results.first_blue_frame = blue_frame
+        self.separation_results.first_grey_frame = grey_frame
+        self.separation_results.second_red_frame = second_red_frame
+
         self.patch = ""
         self.expected = [[]]
         self.class_to_run = SamplePatch

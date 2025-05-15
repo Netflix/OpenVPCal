@@ -36,13 +36,13 @@ def get_current_folder() -> str:
     return os.path.dirname(os.path.realpath(__file__))
 
 
-def get_src_folder() -> str:
+def get_packages_folder() -> str:
     """ Get the src folder of this project
 
     Returns: The src folder of this project
 
     """
-    return os.path.join(get_current_folder(), "src")
+    return os.path.join(get_current_folder(), "packages")
 
 
 def get_python_package_folder() -> str:
@@ -51,7 +51,7 @@ def get_python_package_folder() -> str:
     Returns: The python package folder of this project
 
     """
-    return os.path.join(get_src_folder(), "open_vp_cal")
+    return os.path.join(get_packages_folder(), "open_vp_cal", "src", "open_vp_cal")
 
 
 def import_module_from_filepath(filepath: str) -> ModuleType:
@@ -150,12 +150,13 @@ def add_key_value_to_plist(plist_path: str, key_name: str, bool_value: bool) -> 
     # We can write the data back out to the Info.plist file
     tree.write(plist_path)
 
-def update_iscc_app_version(filename: str, new_version: str) -> None:
+def update_iscc_app_version(filename: str, new_version: str, icon_path:str) -> None:
     """ Updates the version in the ISS file which is used to define the build process for the installer on windows
 
     Args:
         filename: The filename of the .iss filepath
         new_version: The new version we want to update too
+        icon_path: The path to the icon file
     """
     # Read the content of the file
     with open(filename, 'r') as file:
@@ -164,6 +165,9 @@ def update_iscc_app_version(filename: str, new_version: str) -> None:
     # Replace the placeholder with the new version
     placeholder = '#define MyAppVersion "{}"'.format(new_version)
     updated_content = content.replace('#define MyAppVersion "0.0.1a"', placeholder)
+
+    placeholder = 'SetupIconFile={}'.format(icon_path)
+    updated_content = updated_content.replace('SetupIconFile=OPENVP_CAL_ICON_PATH', placeholder)
 
     # Write the updated content back to the file
     with open(filename, 'w') as file:
@@ -328,10 +332,6 @@ def main() -> int:
     """
     check_dependencies()
 
-    vcpkg_folder = get_vcpkg_root()
-
-    setup_and_install_vcpkgs(vcpkg_folder)
-
     debug = False
     app_name = "OpenVPCal"
     version = get_version_from_python_package()
@@ -342,9 +342,9 @@ def main() -> int:
     platform_sep = get_additional_data_seperator()
 
     additional_python_modules = {
-        "spg": os.path.join(get_src_folder(), "spg"),
-        "stageassets": os.path.join(get_src_folder(), "stageassets"),
-        "spg_icvfxpatterns": os.path.join(get_src_folder(), "spg_icvfxpatterns")
+        "spg": os.path.join(get_packages_folder(), "spg", "src", "spg"),
+        "stageassets": os.path.join(get_packages_folder(), "stageassets", "src", "stageassets"),
+        "spg_icvfxpatterns": os.path.join(get_packages_folder(), "spg_icvfxpatterns", "src", "spg_icvfxpatterns"),
     }
 
     if debug:
@@ -368,11 +368,6 @@ def main() -> int:
         cmds.append("--add-data")
         cmds.append(add_data)
 
-    manual_paths = get_additional_library_paths(vcpkg_folder)
-    for manual_path in manual_paths:
-        cmds.append("--add-data")
-        cmds.append(f"{manual_path}{platform_sep}.")
-
     cmds.append(entry_script)
     process = subprocess.Popen(cmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     print(process.stdout.read())
@@ -388,7 +383,7 @@ def main() -> int:
             print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
-        return_code = build_windows_installer(manual_paths, version)
+        return_code = build_windows_installer([], version, icon_file_path)
 
     print('Return code:', return_code)
     return return_code
@@ -425,7 +420,7 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
     lib_files = os.listdir(library_root)
     for lib_file in lib_files:
         manual_paths.append(f"{library_root}/{lib_file}")
-    
+
     for lib_file in os.listdir(python_oiio_lib_folder):
         if lib_file == "__init__.py":
             continue
@@ -435,12 +430,13 @@ def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
     return manual_paths
 
 
-def build_windows_installer(manual_paths, version) -> int:
+def build_windows_installer(manual_paths, version, icon_path) -> int:
     """ Builds the window's installer and ensures the manual files are copied to the distribution folder
 
     Args:
         manual_paths: The third party library paths we need to include
         version: The version of the app we are building so we update the installer compilation instructions
+        icon_path: The path to icon file
 
     Returns: The return code of the process
 
@@ -453,11 +449,11 @@ def build_windows_installer(manual_paths, version) -> int:
             os.path.basename(manual_path)
         )
         shutil.copy(manual_path, target_file)
-    
+
     iss_file_name = os.path.join(current_script_directory, "OpenVPCal.iss")
-    
-    update_iscc_app_version(iss_file_name, version)
-    
+
+    update_iscc_app_version(iss_file_name, version, icon_path)
+
     return_code = create_windows_installer(
         iss_file_name
     )

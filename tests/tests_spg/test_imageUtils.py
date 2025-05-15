@@ -98,8 +98,8 @@ class TestImageUtils(utils.TestBase):
         )
 
         image_buffer = oiio.ImageBuf(manual_rgb)
-        os.remove(manual_rgb)
         self.compare_against_test_image(image_buffer)
+        os.remove(manual_rgb)
 
     @unittest.skipIf(utils.OIIO_INSTALLED, utils.OIIO_MSG)
     def test_write_image_bgr(self):
@@ -111,8 +111,8 @@ class TestImageUtils(utils.TestBase):
             channel_mapping=["B", "G", "R"]
         )
         image_buffer = oiio.ImageBuf(manual_bgr)
-        os.remove(manual_bgr)
         self.compare_against_test_image(image_buffer)
+        os.remove(manual_bgr)
 
     @unittest.skipIf(utils.OIIO_INSTALLED, utils.OIIO_MSG)
     def test_color_conversion(self):
@@ -143,8 +143,8 @@ class TestImageUtils(utils.TestBase):
         )
 
         image_buffer = oiio.ImageBuf(test_color_conversion_file)
-        os.remove(test_color_conversion_file)
         self.compare_against_test_image(image_buffer)
+        os.remove(test_color_conversion_file)
 
     @unittest.skipIf(utils.OIIO_INSTALLED, utils.OIIO_MSG)
     def test_color_conversion_reference(self):
