@@ -1,5 +1,5 @@
 {
-    "openvp_cal_version": "2.0.0",
+    "openvp_cal_version": "0.1.0a",
     "project_settings": {
         "project_id": "123456",
         "content_max_lum": 10000.0,

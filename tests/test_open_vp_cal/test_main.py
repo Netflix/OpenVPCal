@@ -101,8 +101,9 @@ class TestProjectCli(TestProject):
         try:
             results = self.run_cli(self.project_settings)
             self.cleanup_pre_process_vp1(temp_folders)
-        except Exception:
+        except Exception as e:
             self.cleanup_pre_process_vp1(temp_folders)
+            raise e
 
         with open(expected_file, "r", encoding="utf-8") as handle:
             expected_results = json.load(handle)
