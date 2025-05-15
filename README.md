@@ -1338,7 +1338,7 @@ In this use case, we ask to perform an auto white-balance in the camera on the f
   <tr>
    <td><code>Pros</code>
    </td>
-   <td>Simple, more solid with lens color shits
+   <td>Simple, more solid with lens color shifts
    </td>
   </tr>
   <tr>
@@ -1355,7 +1355,7 @@ In this use case, we ask to perform an auto white-balance in the camera on the f
 
 
 
-##### MATCH WALL CALIBRATION: Shiting the calibration to make multiple walls match
+##### MATCH WALL CALIBRATION: Shooting the calibration to make multiple walls match
 
 When your stage has multiple LED wall types (brands/models) and you want to match them in camera, this workflow allows you to select a “reference wall” that is used as main target for the calibration. By enabling “Match Reference Wall” and selecting from the dropdown menu one of the other walls from the Stage View Bin, OpenVpCal will make sure that the wall you are calibrating will match the Reference one when keeping the camera at the same white balance. The Reference wall can follow any of the other workflows (Simple, Auto-WB and White Point offset), and these shifts will be handed along to the matching wall(s). 
 
