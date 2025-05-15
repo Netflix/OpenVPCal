@@ -20,6 +20,8 @@ which we want to extract to analyze.
 import sys
 from typing import List, Tuple
 
+import numpy as np
+
 from open_vp_cal.core.utils import clamp
 from open_vp_cal.led_wall_settings import LedWallSettings
 
@@ -32,83 +34,56 @@ from open_vp_cal.core import constants
 class AutoROIResults:
     """
     Class to store the results of the ROI detection.
-    Now the ROI is stored as a list of four (x, y) tuples in the order:
-    top-left, top-right, bottom-right, bottom-left.
+    The ROI is returned as a list of four (x, y) tuples in the order:
+    red (top-left), green (top-right), white (bottom-right), blue (bottom-left).
     """
     def __init__(self):
-        self.red_value = -1
-        self.red_pixel = None
-
-        self.green_value = -1
-        self.green_pixel = None
-
-        self.blue_value = -1
-        self.blue_pixel = None
-
-        self.white_value = -1
-        self.white_pixel = None
+        self.red_pixel: Tuple[int, int] = None
+        self.green_pixel: Tuple[int, int] = None
+        self.blue_pixel: Tuple[int, int] = None
+        self.white_pixel: Tuple[int, int] = None
 
     @property
     def is_valid(self) -> bool:
-        # Check that we have at least one valid detection on each edge.
-        if not self.red_pixel and not self.green_pixel:
+        """
+        Validates that all four color pixels are detected and follow the correct spatial layout:
+          - Red (top-left) is above the bottom points and to the left of green.
+          - Green (top-right) is above the bottom points and to the right of red.
+          - White (bottom-right) is below the top points and to the left of blue.
+          - Blue (bottom-left) is below the top points and to the right of white.
+        """
+        pixels = [self.red_pixel, self.green_pixel, self.white_pixel, self.blue_pixel]
+        if any(p is None for p in pixels):
             return False
-        if not self.blue_pixel and not self.white_pixel:
-            return False
-        if not self.red_pixel and not self.blue_pixel:
-            return False
-        if not self.green_pixel and not self.white_pixel:
-            return False
-        return True
+
+        r_x, r_y = self.red_pixel
+        g_x, g_y = self.green_pixel
+        w_x, w_y = self.white_pixel
+        b_x, b_y = self.blue_pixel
+
+        cond1 = (r_y < w_y and r_y < b_y and r_x < g_x)
+        cond2 = (g_y < w_y and g_y < b_y and g_x > r_x)
+        cond3 = (w_y > r_y and w_y > g_y and w_x > b_x)
+        cond4 = (b_y > r_y and b_y > g_y and b_x < w_x)
+
+        return cond1 and cond2 and cond3 and cond4
 
     @property
-    def roi(self) -> List[Tuple[int, int]]:
+    def roi(self) -> List[List[int]]:
         """
-        Returns the ROI as a list of four (x, y) tuples:
-        top-left, top-right, bottom-right, bottom-left.
-        These coordinates are computed from the detected edge pixels.
-        If the results are not valid, an empty list is returned.
+        Returns the ROI as a list of four (x, y) tuples in the order:
+        red, green, white, blue.
+        If the results are not valid, returns an empty list.
         """
-        if self.is_valid:
-            return [
-                (self.left, self.top),
-                (self.right, self.top),
-                (self.right, self.bottom),
-                (self.left, self.bottom)
-            ]
-        else:
+        if not self.is_valid:
             return []
 
-    @property
-    def left(self) -> int:
-        return self._check(self.red_pixel, self.blue_pixel, 0)
-
-    @property
-    def right(self) -> int:
-        return self._check(self.green_pixel, self.white_pixel, 0)
-
-    @property
-    def top(self) -> int:
-        return self._check(self.red_pixel, self.green_pixel, 1)
-
-    @property
-    def bottom(self) -> int:
-        return self._check(self.blue_pixel, self.white_pixel, 1)
-
-    @staticmethod
-    def _check(pixel_a, pixel_b, index):
-        """
-        Returns a value based on the two detected pixels.
-        If only one is valid, that value is returned.
-        If both are valid, the average is returned.
-        """
-        if pixel_a and not pixel_b:
-            return pixel_a[index]
-        if not pixel_a and pixel_b:
-            return pixel_b[index]
-        if pixel_a and pixel_b:
-            return int(((pixel_a[index] + pixel_b[index]) * 0.5))
-        return 0
+        return [
+            list(self.red_pixel),
+            list(self.green_pixel),
+            list(self.white_pixel),
+            list(self.blue_pixel)
+        ]
 
 
 class AutoROI(BaseSamplePatch):
@@ -130,6 +105,38 @@ class AutoROI(BaseSamplePatch):
         super().__init__(led_wall_settings, separation_results,
                          constants.PATCHES.DISTORT_AND_ROI)
 
+    def detect_control_points(self, image: np.ndarray) -> dict:
+        """
+        Detect the most red, green, blue, and white pixel in the image.
+
+        Returns a dict mapping color names to (x, y) coordinates.
+        """
+        # Separate channels as floats
+        R = image[:, :, 0].astype(float)
+        G = image[:, :, 1].astype(float)
+        B = image[:, :, 2].astype(float)
+
+        # Compute simple scores
+        red_score = R - (G + B) / 2
+        green_score = G - (R + B) / 2
+        blue_score = B - (R + G) / 2
+        white_score = np.minimum(np.minimum(R, G), B)  # high, balanced channels
+
+        coords = {}
+        y, x = np.unravel_index(np.argmax(red_score), red_score.shape)
+        coords['red'] = (int(x), int(y))
+
+        y, x = np.unravel_index(np.argmax(green_score), green_score.shape)
+        coords['green'] = (int(x), int(y))
+
+        y, x = np.unravel_index(np.argmax(blue_score), blue_score.shape)
+        coords['blue'] = (int(x), int(y))
+
+        y, x = np.unravel_index(np.argmax(white_score), white_score.shape)
+        coords['white'] = (int(x), int(y))
+
+        return coords
+
     def run(self) -> AutoROIResults:
         """
         Run the auto ROI detection and return the results.
@@ -147,16 +154,13 @@ class AutoROI(BaseSamplePatch):
         frame = self.led_wall.sequence_loader.get_frame(
             first_patch_frame)
 
-        image_plate_gamut = frame.image_buf
-        pixel_buffer = 5
-        detection_threshold = 1.7
-
+        frame_buffer = frame.image_buf
         # Create the white balance matrix.
         white_balance_matrix = self.get_white_balance_matrix_from_slate()
 
         # Ensure the image is in reference space (ACES2065-1).
         frame_image = imaging_utils.apply_color_conversion(
-            image_plate_gamut,
+            frame_buffer,
             str(self.led_wall.input_plate_gamut),
             str(self.led_wall.project_settings.reference_gamut)
         )
@@ -165,31 +169,40 @@ class AutoROI(BaseSamplePatch):
         balanced_image = imaging_utils.apply_matrix_to_img_buf(
             frame_image, white_balance_matrix
         )
-        for y_pos in range(balanced_image.spec().height):
-            for x_pos in range(balanced_image.spec().width):
-                pixel = balanced_image.getpixel(x_pos, y_pos)
-                red = clamp(pixel[0], 0, sys.float_info.max)
-                green = clamp(pixel[1], 0, sys.float_info.max)
-                blue = clamp(pixel[2], 0, sys.float_info.max)
+        image_np = imaging_utils.image_buf_to_np_array(
+            balanced_image)
+        co_ords = self.detect_control_points(image_np)
 
-                if red > results.red_value:
-                    if red > max(green, blue) * detection_threshold:
-                        results.red_pixel = (x_pos + pixel_buffer, y_pos + pixel_buffer)
-                        results.red_value = red
+        results.red_pixel = co_ords['red']
+        results.green_pixel = co_ords['green']
+        results.blue_pixel = co_ords['blue']
+        results.white_pixel = co_ords['white']
 
-                if green > results.green_value:
-                    if green > max(red, blue) * detection_threshold:
-                        results.green_pixel = (x_pos - pixel_buffer, y_pos + pixel_buffer)
-                        results.green_value = green
-
-                if blue > results.blue_value:
-                    if blue > max(red, green) * detection_threshold:
-                        results.blue_pixel = (x_pos + pixel_buffer, y_pos - pixel_buffer)
-                        results.blue_value = blue
-
-                white = (red + green + blue) / 3
-                if white > results.white_value:
-                    results.white_pixel = (x_pos - pixel_buffer, y_pos - pixel_buffer)
-                    results.white_value = white
+        # for y_pos in range(balanced_image.spec().height):
+        #     for x_pos in range(balanced_image.spec().width):
+        #         pixel = balanced_image.getpixel(x_pos, y_pos)
+        #         red = clamp(pixel[0], 0, sys.float_info.max)
+        #         green = clamp(pixel[1], 0, sys.float_info.max)
+        #         blue = clamp(pixel[2], 0, sys.float_info.max)
+        #
+        #         if red > results.red_value:
+        #             if red > max(green, blue) * detection_threshold:
+        #                 results.red_pixel = (x_pos + pixel_buffer, y_pos + pixel_buffer)
+        #                 results.red_value = red
+        #
+        #         if green > results.green_value:
+        #             if green > max(red, blue) * detection_threshold:
+        #                 results.green_pixel = (x_pos - pixel_buffer, y_pos + pixel_buffer)
+        #                 results.green_value = green
+        #
+        #         if blue > results.blue_value:
+        #             if blue > max(red, green) * detection_threshold:
+        #                 results.blue_pixel = (x_pos + pixel_buffer, y_pos - pixel_buffer)
+        #                 results.blue_value = blue
+        #
+        #         white = (red + green + blue) / 3
+        #         if white > results.white_value:
+        #             results.white_pixel = (x_pos - pixel_buffer, y_pos - pixel_buffer)
+        #             results.white_value = white
 
         return results
