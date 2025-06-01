@@ -116,7 +116,7 @@ OpenVPCal is not currently available on PyPi, given OpenImageIO is now available
 ## Additional Requirements
 
 
-* An image processing software to debayer or pre-process the plate and convert it to Linear EXRs (eg Assimilate, Davinci, Baselight, Colorfront, Mistika etc.)
+* A generic image processing software to debayer RAW calibration plates and convert them to Linear EXRs (eg Assimilate, Davinci, Baselight, Colorfront, Mistika etc.) or camera manufacturers reference software for RED (REDCINEX), ARRI (ART), SONY (RAW VIEWER) that can be used directly from within OpenVPCal, see below for more information.
 
 
 ## Hardware Requirements
@@ -124,7 +124,7 @@ OpenVPCal is not currently available on PyPi, given OpenImageIO is now available
 * LED Panels (at least 4x4) or a Display
 * Image Processor (for LED Panel)
 * Media Playback system
-* Camera (preferably capable of RAW recording) and a lens
+* Camera with and a medium-wide lens
 
 
 # Quick Start Guide
@@ -158,7 +158,7 @@ Please use this guide for high-level instructions. For detailed information on t
   <tr>
    <td><code>4. LOAD PATCHES ON YOUR MEDIA PLAYER</code>
    </td>
-   <td>Load the calibration patches on your media player, and <strong>bypass any color transform</strong>, as the calibration patches are already at the target color space. If you have exported EXRs, ensure only to apply the required EOTF transform, <strong>do not modify the color of the charts</strong>. Make sure the patches play correctly, with no frame blending or loop playback. 
+   <td>Load the calibration patches on your media player, and <strong>bypass any color transform</strong>, as the calibration patches are already at the target color space. If you have exported EXRs, ensure only to apply the required EOTF transform (eg. from Linear Rec.2020 to ST2084-Rec2020, <strong>do not apply transforms that will modify the color of the charts from the target primaries</strong>. Make sure the patches play correctly, with no frame blending or loop playback. 
    </td>
   </tr>
   <tr>
@@ -180,13 +180,13 @@ Please use this guide for high-level instructions. For detailed information on t
   <tr>
    <td><code>6. PRE-PROCESS PLATE</code>
    </td>
-   <td>OpenVpCal only accepts Linear EXR as input: pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native. We recommend Linear/AP0 (default for the tool).
+   <td>OpenVpCal accepts a variety of input files, such as DPX, TIFF, MOV, in conventional camera or didplay colur spaces, Linear EXR in ACES or conventional camera or display colour spaces, or SONY RAW, ARRIRAW or RED RAW in their respective file formats and colour spaces. If your camera records in a non-supported format, you will be required to pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native. We recommend Linear/AP0 (default for the tool). The tool accepts custom Input Device Transforms (IDTs) for non conventional input colour spaces.
    </td>
   </tr>
   <tr>
-   <td><code>7. LOAD PLATE EXR SEQUENCE ON WALL</code>
+   <td><code>7. LOAD PLATE FILE ON WALL WIDGET</code>
    </td>
-   <td>In OpenVpCal, right-click on the LED WALL and select “Load Plate Sequence”. Select the folder where the pre-processed camera plate is. 
+   <td>In OpenVpCal, right-click on the LED WALL and select “Load Plate”. Select the folder where the camera plate is. 
    </td>
   </tr>
   <tr>
@@ -210,7 +210,7 @@ Please use this guide for high-level instructions. For detailed information on t
   <tr>
    <td><code>11. CHECK STATUS AND CALIBRATION SETTINGS</code>
    </td>
-   <td>If the analysis is successful, check the patch swatches in the viewer to make sure that every frame is aligned (reference outside, plate inside). Analyse the plotting to determine if the suggested calibration recommendations are in line with your expectations. If the analysis wasn’t successful, reshoot the plates following the suggested corrections. 
+   <td>If the analysis is successful, check the patch swatches in the viewer to make sure that every frame is aligned (reference outside, plate inside). Analyse the plotting to determine if the suggested calibration recommendations are in line with your expectations. The colour checker patches might not be visualised if the colour checker detection failed. This is not going to affect the calibration. If the analysis wasn’t successful, reshoot the plates following the suggested corrections. 
    </td>
   </tr>
   <tr>
