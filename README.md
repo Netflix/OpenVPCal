@@ -152,13 +152,13 @@ Please use this guide for high-level instructions. For detailed information on t
   <tr>
    <td><code>3. EXPORT CALIBRATION PATCHES</code>
    </td>
-   <td>Export the calibration patches in the format of preference for your media player. You can change the default settings in the “Patch Generation” section, in the “Project Settings” widget. EXR files will be exported <strong>Linear at the Target Color Space </strong>(e.g. if you selected Rec2020 as target color space of the calibration, the EXR will be Linear Rec2020). Any other format will be exported as with the EOTF applied and in Target Color space (e.g. If you selected ST2084-Rec2020, the patches will be exported like that).
+   <td>Export the calibration patches in the format of preference for your media player. You can change the default settings in the “Patch Generation” section, in the “Project Settings” widget. EXR files will be exported <strong>Linear at the Target Colour Space </strong>(e.g. if you selected Rec2020 as the target colour space of the calibration, the EXR will be Linear Rec2020). Any other format will be exported as with the EOTF applied and in Target Colour space (e.g. if you selected ST2084-Rec2020, the patches will be exported like that).
    </td>
   </tr>
   <tr>
    <td><code>4. LOAD PATCHES ON YOUR MEDIA PLAYER</code>
    </td>
-   <td>Load the calibration patches on your media player, and <strong>bypass any color transform</strong>, as the calibration patches are already at the target color space. If you have exported EXRs, ensure only to apply the required EOTF transform (eg. from Linear Rec.2020 to ST2084-Rec2020, <strong>do not apply transforms that will modify the color of the charts from the target primaries</strong>. Make sure the patches play correctly, with no frame blending or loop playback. 
+   <td>Load the calibration patches on your media player, and <strong>bypass any colour transform</strong>, as the calibration patches are already at the target color space. If you have exported EXRs, ensure only to apply the required EOTF transform (eg. from Linear Rec 2020 to ST2084-Rec2020, <strong>do not apply transforms that will modify the color of the charts from the target primaries</strong>. Make sure the patches play correctly, with no frame blending or loop playback. 
    </td>
   </tr>
   <tr>
@@ -178,9 +178,9 @@ Please use this guide for high-level instructions. For detailed information on t
    </td>
   </tr>
   <tr>
-   <td><code>6. PRE-PROCESS PLATE</code>
+   <td><code>6. PRE-PROCESS PLATE (OPTIONAL) </code>
    </td>
-   <td>OpenVpCal accepts a variety of input files, such as DPX, TIFF, MOV, in conventional camera or didplay colur spaces, Linear EXR in ACES or conventional camera or display colour spaces, or SONY RAW, ARRIRAW or RED RAW in their respective file formats and colour spaces. If your camera records in a non-supported format, you will be required to pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native. We recommend Linear/AP0 (default for the tool). The tool accepts custom Input Device Transforms (IDTs) for non conventional input colour spaces.
+   <td>OpenVpCal accepts a variety of input files, such as DPX, TIFF, MOV, in conventional camera or display colour spaces, Linear EXR in ACES or conventional camera or display colour spaces, or SONY RAW, ARRIRAW or RED RAW in their respective file formats and colour spaces. If your camera records in a non-supported format, you will be required to pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native. We recommend Linear/AP0 (default for the tool). The tool accepts custom Input Device Transforms (IDTs) for non-conventional input colour spaces.
    </td>
   </tr>
   <tr>
@@ -231,6 +231,12 @@ Please use this guide for high-level instructions. For detailed information on t
    <td>If you are happy, export your calibration transforms by hitting the “Export” button. 
    </td>
   </tr>
+    <tr>
+   <td><code>15. VERIFY</code>
+   </td>
+   <td>Load the calibration on your media player and shoot the calibration patches again. Run the analysis and check if your LED wall accuracy improved!
+   </td>
+  </tr>
 </table>
 
 
@@ -247,10 +253,10 @@ We provide a “Sample Project” for you to test the functionalities of the sof
 There are a few terms used in this guide & in the UI which must be understood and correctly set. These colour spaces have different functions within the application: 
 
 * **Reference**: the reference colour space in which every calculation is performed. For now, this is fixed to be ACES 2065-1.
-* **Input**: the colour space in which the camera plate have been pre-processed in. This is default to ACES 2065-1.
+* **Input**: the colour space in which the camera plate is when imported. This defaults to ACES 2065-1.
 * **Target**: the target colour space of the calibration
 * **Screen**: the colour space of the screen/LED wall intended to be calibrated, as seen by the camera used to shoot the calibration patches
-* **Camera Native**: the native color space of the camera used to capture the plates
+* **Camera Native**: the native colour space of the camera used to capture the plates
 
 #### Create new project/Load existing project
 
@@ -289,7 +295,7 @@ A series of widgets and buttons are presented to the user:
   <tr>
    <td><code>REMOVE LED WALL</code>
    </td>
-   <td>Remove the selected LED WALL from the LES WALL BIN
+   <td>Remove the selected LED WALL from the LED WALL BIN
    </td>
   </tr>
   <tr>
@@ -313,7 +319,7 @@ A series of widgets and buttons are presented to the user:
   <tr>
    <td><code>(contextual menu) Load Plate Sequence</code>
    </td>
-   <td>Select a folder in which the pre-processed camera plate resides 
+   <td>Select from one of the file formats to load and the folder in which the camera plate file resides 
    </td>
   </tr>
   <tr>
@@ -330,9 +336,9 @@ For information on the “Colour Space Analysis CIE Gamut” widget, please see 
 
 ##### IMAGE SELECTION
 
-The image selection widget allows a viewer to the user to preview the calibration plate loaded for each wall. This widget allows the ability to select the ROI (Region of Interest) that the software will use to measure the values for each patch. The ROI is marked by a red rectangle that the user can drag and modify as required. Selecting the center of the ROI, allows it to be positionally dragged into place, whilst drag selecting the corners allows for resizing of the ROI. \
+The image selection widget allows a viewer to the user to preview the calibration plate loaded for each wall. This widget allows the ability to select the ROI (Region of Interest) that the software will use to measure the values for each patch. The ROI is marked by a red rectangle that the user can drag and modify as required. Selecting the centre of the ROI, allows it to be positionally dragged into place, whilst drag selecting the corners allows for resizing of the ROI. \
  \
-Right clicking offers a context menu which resets the ROI should you make a mistake.
+Right-clicking offers a context menu which resets the ROI should you make a mistake.
 
 
 <img src="docs/source/images/image27.png" alt="image_tooltip" width="50%" height="50%">
@@ -492,7 +498,7 @@ Right clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>NUMBER OF GREY PATCHES</code>
    </td>
-   <td>The number of grey steps to be generated/analysed (default 33)
+   <td>The number of grey steps to be generated/analysed (default 30)
    </td>
   </tr>
   <tr>
@@ -516,19 +522,19 @@ Right clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>INPUT PLATE GAMUT</code>
    </td>
-   <td>The Input colour space of the pre-processed camera plate sequence (default to ACES 2065-1)
+   <td>The Input colour space of the camera plate sequence (default to ACES 2065-1)
    </td>
   </tr>
   <tr>
    <td><code>NATIVE CAMERA GAMUT</code>
    </td>
-   <td>The native colour space of the camera used for the calibration
+   <td>The native linear colour space of the camera used for the calibration
    </td>
   </tr>
   <tr>
    <td><code>AUTO WB SOURCE</code>
    </td>
-   <td>If enabled, the input plate will be white-balanced prior to perform the analysis and calibration
+   <td>If enabled, the input plate will be white-balanced prior to performing the analysis and calibration
    </td>
   </tr>
   <tr>
@@ -544,7 +550,7 @@ Right clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>REFERENCE WALL</code>
    </td>
-   <td>A list of the available reference walls to match too
+   <td>A list of the available reference walls to match to
    </td>
   </tr>
   <tr>
@@ -554,13 +560,13 @@ Right clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>USE WHITE POINT OFFSET</code>
    </td>
-   <td>If checked, the plate original white point will be shofted towards the measured white point of the indicated file, prior to perform the analysis and the calibration 
+   <td>If checked, the plate's original white point will be shifted towards the measured white point of the indicated file, prior to performing the analysis and the calibration 
    </td>
   </tr>
   <tr>
    <td><code>WHITE POINT OFFSET SOURCE FILE</code>
    </td>
-   <td>A path to a file with the white point offset source
+   <td>A path to an image file with the white point offset source
    </td>
   </tr>
 </table>
@@ -582,15 +588,15 @@ Right clicking offers a context menu which resets the ROI should you make a mist
    </td>
   </tr>
   <tr>
-   <td><code>EXPORT LUT FOR ACESCCT</code>
+   <td><code>EXPORT LUT FOR ACESCCT In/Out</code>
    </td>
-   <td>It modifies the calibration LUT export so that the LUT expects ACEScct input and produces a calibrated ACEScct output. The user will have to apply the color space conversion and EOTF  transform from ACEScct to Target independently  
+   <td>It modifies the calibration LUT export so that the LUT expects ACEScct input and produces a calibrated ACEScct output. The user will have to apply the colour space conversion and EOTF transform from ACEScct to Target independently  
    </td>
   </tr>
   <tr>
    <td><code>EXPORT LUT FOR ACESCCT IN / TARGET OUT</code>
    </td>
-   <td>It modifies the calibration LUT export so that the LUT expects ACEScct input and produces a calibrated target output (with both the color space and EOTF transform to target applied). 
+   <td>It modifies the calibration LUT export so that the LUT expects ACEScct input and produces a calibrated target output (with both the colour space and EOTF transform to target applied). 
    </td>
   </tr>
   <tr>
@@ -600,7 +606,7 @@ Right clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>FILE FORMAT</code>
    </td>
-   <td>Choose file format for export. If EXR is chosen, the patches will export in linear, scaled such that 1=100 nits. Otherwise, patches will export in the target space. 
+   <td>Choose file format for export. If EXR is chosen, the patches will export in linear (eg Linear Rec 2020), scaled such that 1=100 nits. Otherwise, patches will export in the target space and EOTF (eg ST 2084 - Rec 2020). 
    </td>
   </tr>
   <tr>
@@ -618,7 +624,7 @@ Right clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>FRAMES PER PATCH</code>
    </td>
-   <td>How many frames per patches the tool will export
+   <td>How many frames per patch the tool will export
    </td>
   </tr>
   <tr>
@@ -648,13 +654,13 @@ The user is required to enter a name for the wall. Only alphanumeric characters 
 <img src="docs/source/images/image22.png" alt="image_tooltip" width="20%" height="50%">
 
 
-Once the wall is created (in this example called “Wall1CamA”), it will appear in the Led Wall bin. 
+Once the wall is created (in this example called “Wall1CamA”), it will appear in the LED Wall bin. 
 
 
 <img src="docs/source/images/image40.png" alt="image_tooltip" width="25%" height="50%">
 
 
-At this point, for each wall added, the user is required to define the target parameters. These settings will also influence the calibration patch generation, so make sure to set them correctly before exporting the patches. Select **“Add Custom Gamut”** to define a target color space such as the LED wall primaries.
+At this point, for each wall added, the user is required to define the target parameters. These settings will also influence the calibration patch generation, so make sure to set them correctly before exporting the patches. Select **“Add Custom Gamut”** to define a target colour space such as the LED wall primaries.
 
 
 
@@ -672,63 +678,57 @@ This feature is particularly useful when the user is required to calibrate the s
 
 ### Patch Generation
 
-In order to generate the calibration, the user must first export calibration patches that can be played back on the Media Player of preference and shot with the camera of choice. Once all walls are created, the user can generate the calibration patches via “File>Generate OpenVpCal Patterns” 
+In order to generate the calibration, the user must first export calibration patches that can be played back on the Media Player of preference. Once all walls are created, the user can generate the calibration patches via “File>Generate OpenVpCal Patterns” 
 
 <img src="docs/source/images/image10.png" alt="image_tooltip" width="30%" height="50%">
 
 
-Most of the color values of the calibration patches have absolute chromaticity (apart from the Macbeth chart) but require to be correctly encoded with the invEOTF that will be configured in the LED Wall image processor’s settings (Target Screen EOTF). **Therefore, the LED Settings in OpenVPCal must be correctly set up before exporting the calibration patches**. 
-
+**The LED Settings in OpenVPCal must be correctly set up before exporting the calibration patches**. 
+Most of the colour values of the calibration patches have absolute chromaticity (apart from the Macbeth colour checker chart) but need to be correctly encoded with the invEOTF that will be configured in the LED Wall image processor’s settings (Target Screen EOTF). 
 The user can set up the patch file format, resolution and number of frames per patch in the dedicated Patch Generation tab within the Project Settings widget. 
 
-Choose the correct file format and encoding described in the Patch Generation section for the media playback system. For example, if Unreal is used, exporting the patches as linear EXRs might be easier. However, if using a system such as Disguise or Plate Performer, export display-referred patches as DPX files. 
+Choose the correct file format and encoding described in the Patch Generation section for the media playback system. For example, if Unreal is used, exporting the patches as linear EXRs might be easier. However, if using a system such as Disguise or Plate Performer, we suggest exporting display-referred patches as DPX files. 
 
 
 
 <img src="docs/source/images/image32.png" alt="image_tooltip" width="30%" height="50%">
 
 
-Please note that if selecting EXR as File Format, the patch generation will ignore the EOTF and generate linear EXR patches, scaled so that the value of 1=100nits. These linear EXR are encoded in the Target Color space, so if you have selected Rec2020, the EXRs will be Linear Rec2020.
+Once again, please note that if selecting EXR as File Format, **the patch generation will ignore the EOTF and generate linear EXR patches**, scaled so that the value of 1=100nits. These linear EXR are encoded in the Target Colour space, so if you have selected Rec2020, the EXRs will be Linear Rec2020.
 
 When exporting the patches, OpenVPCal will also export a Pre_Calibration_OpenVPCal.ocio config that provides the user with the necessary transforms to apply to the patches. This is fundamental when exporting EXR. 
 
-The OCIO config will have a group of transforms called OpenVPCal, which will offer 3 color spaces:  \
-1. An EOTF Curve only transform
-
-2. A Color Space + EOTF
-
-3. A linear Color Space 
-
-As the EXRs are in Linear Color Space (e.g. Linear ROE_GAMUT, or Linear Rec2020), this is the Color space you should be selecting as Input color space in the OCIO configuration panel.
-(Note If You Are Using formats other than EXR you will need to selecxt the colour space + EOTF as the data in those files is not linear)
-
+The OCIO config will have a group of transforms called OpenVPCal, with two subgroups of colour spaces:  \
+- INPUT: The pure target colour spaces, in Linear and with the EOTF. These can be used as input colour space when processing the calibration patches. You will find two transforms:
+1. A Colour Space + EOTF (eg ST2084 Rec 2020): select this colour space as input colour space for DPX, TIFF, PNG patches
+2. A linear Colour Space (eg Linear Rec 2020): select this colour space as input colour space for EXR patches
+- UTILITY: A series of utility colour spaces required for the OCIO config to function (e.g. the EOTF curve, the calibration transforms, ...)
 
 <img src="docs/source/images/image28.png" alt="image_tooltip" width="70%" height="50%">
 
 
-Likewise, the OCIO config also offer an OpenVpCal group in the Display Views with options for the  Pre-Calibration Output. (used before calibration)
-And a Post-Calibration Output (used after calibration) used after the calibration process.
-
-This will be your output in the OCIO configuration panel.
+Additionally, the OCIO config will also contain OpenVpCal Display+Views, with a Pre-Calibration Output. This is the output colour space you need to choose for your LED wall to shoot the calibration patches. Once the calibration is completed, OpenVPCal will export a Post-Calibration OCIO, which will add Calibrated Views to the already existing LED Displays.
 
 
 
 <img src="docs/source/images/image9.png" alt="image_tooltip" width="70%" height="50%">
 
-
-Here’s an example of how the OCIO configuration panel will look like with the transforms selected above. 
+#TODO: replace this image with a Rec2020 Linear one
+Here’s an example of how the OCIO configuration panel will look with the transforms selected above. 
 
 <img src="docs/source/images/image11.png" alt="image_tooltip" width="100%" height="100%">
 
 
-In case your Media Playback cannot play each patch for a determined and consistent number of frames, set the “Frames per patch” option which will export the necessary frames to playback directly at your shooting FPS.
+In case your Media Playback cannot play each patch for a determined and consistent number of frames, set the “Frames per patch” option, which will export the necessary frames to playback directly at your shooting FPS.
 
 The user can also add a Custom Logo to the generation of the patches that will personalise the first Patch (Home patch) of the calibration sequence. 
 
 
 ### Camera / Lens Info
 
-As OpenVPCal uses the camera as a colorimeter, best practice is to capture the calibration patches with the exact camera model that will be used in production. If that is not possible, any lens can be used for the calibration, but the camera model and its firmware should be the same. The calibration tool will minimize the effect of the lens on the patches. A “clean” prime lens with a medium focal length (35-65mm) is recommended.
+As OpenVPCal uses the camera as a colourimeter, best practice is to capture the calibration patches with the exact camera that will be used in production. If that is not possible, make sure that the same camera model, running the same firmware as the production camera, is sourced to shoot the calibration. 
+
+The calibration tool will minimise the effect of the lens on the patches. However, a “clean” prime lens with a medium focal length (35-65mm) is recommended.
 
 
 ### Shoot
@@ -738,16 +738,15 @@ As OpenVPCal uses the camera as a colorimeter, best practice is to capture the c
 
 Use the media playback system of choice for the calibration patch playback, given it meets the following requirements:
 
-1. Connect to the LED Image Processor via the GPU
-2. Playback at a consistent FPS
-3. Enable transparency & customization for the color transform pipeline applied to the images
-4. Only the necessary transforms are applied to the patches: the color of the patches should not be modified, hence only the required EOTF should be applied when using EXR patches, otherwise, the patches should not require any color transform at all. 
-5. Bypass any OS color management (e.g. Windows ICC profiles) if using a non-standard Media Playback system (that should already bypass OS color management).
+1. Is capable of playing back the calibration patches at a consistent FPS
+2. Enable transparency & customisation for the colour transform pipeline applied to the images
+3. Only the necessary transforms are applied to the patches: the colour of the patches should not be modified, hence only the required EOTF should be applied when using EXR patches, otherwise, the patches should not require any colour transform at all. 
+4. Bypass any OS colour management (e.g. Windows ICC profiles) if using a non-standard Media Playback system (that should already bypass OS colour management).
 
 
 #### Patch Capture
 
-Follow the instructions on the first generated patch “Home Patch” to ensure the best possible capture for the calibration process. **Please note that incorrect capture will result in invalid calibration results.** 
+Follow the instructions on the first generated patch, “Home Patch”, to ensure the best possible capture for the calibration process. **Please note that incorrect capture will result in invalid calibration results.** 
 
 
 <img src="docs/source/images/image39.png" alt="image_tooltip" width="60%" height="50%">
@@ -762,7 +761,7 @@ Follow the instructions on the first generated patch “Home Patch” to ensure 
 
 
 * Turn off any part of the LED wall that is not directly in front of the camera and is required for the calibration. This is to avoid unnecessary flare.
-* Warm up the camera and LED panels: display a flat grey color on the LED panels for at least 20/40 minutes before capture. It’s good practice to note down the physical temperature of the panel prior to shoot the calibration patches. Most Image Processors should be able to provide this information.   
+* Warm up the camera and LED panels: display a flat grey colour on the LED panels for at least 20/40 minutes before capture. It’s good practice to note down the physical temperature of the panel prior to shooting the calibration patches. Most Image Processors should be able to provide this information.   
 * Set the LED panels to the maximum gain allowed by the Image processor calibration (do not override the gain).
 
 
@@ -770,18 +769,18 @@ Follow the instructions on the first generated patch “Home Patch” to ensure 
 
 
 
-* Set the camera as flat as possible to the wall, at a distance where it would be - on average - when shooting. Note that the distance from the camera and the wall should be so that the intensity of the light read from the wall into the camera doesn’t change anymore if the distance changes. Use a light meter to define the best distance or the camera’s false color (see below). 
-* Use the first patch to make sure the camera is centered to the wall. The square must look like a square and the circle must look like a circle.
-* Defocus in order to prevent moire. When defocusing, do it towards the camera (closer focus). Imagine that you need to focus on an actor that is sitting in front of the wall. Defocus should be JUST ENOUGH to make sure that the edge lines of the center square are blurred and blend with the edge of the center square. Too little will cause moire, too much might confuse the analysis.
+* Set the camera as flat as possible to the wall, at a distance where it would be - on average - when shooting on production. Note that the distance from the camera and the wall should be so that the intensity of the light read from the wall into the camera doesn’t change anymore if the distance changes. Use a light meter to define the best distance or the camera’s false colour (see below). 
+* Use the first patch to make sure the camera is centred on the wall. The central grey square has a square and a circle inside to help you understand the perspective. 
+* Defocus in order to prevent moire. When defocusing, do it towards the camera (closer focus). Imagine that you need to focus on an actor who is sitting in front of the wall. Defocus should be JUST ENOUGH to make sure that the edge lines of the centre square are blurred and blend with the external edge of the centre square. Too little will cause moire, too much might confuse the analysis.
 
 Example Defocus
 
 <img src="docs/source/images/image36b.png" alt="image_tooltip" width="20%" height="50%">
 
-* Record multiple frames for each patch, the suggested amount is 10 each. When exporting the patches there is an option to export one frame per patch or multiple frames.
+* Record multiple frames for each patch; the suggested amount is 10 for each. When exporting the patches, there is an option to export one frame per patch or multiple frames.
 * Set the camera recording mode to RAW (if possible).
-* Set the camera at the color temperature of choice. We suggest setting it to the white point of the LED wall (normally 65000Kelvin) or Auto white-balance the camera towards the center target gray square. This choice is important as it will generate different calibrations. For more information about the different use cases see below in the “Calibration Use cases'' section.  
-* Set the exposure so that the center square hits 18% of the camera’s sensitivity. Use the camera's false color tool or a light meter to set the exposure until the whole square is set to 18% (e.g. the box becomes green on an Alexa, Red or Venice).  Use the 17% and 19% small patches at the bottom of the frame to make sure your exposure sits “in the middle”, as false colors can have quite of a broad range, relatively speaking. Ideally, use a t-stop that would be used on production. Otherwise, a good range is between T2>T5.6. ND filters might be required to hit that exposure. Preferably do not use shutter angle or camera FPS to adjust the exposure (it might create multiplexing issues). Get as close as possible to what will be used during production and/or is required for a correct genlock between the camera and the LED wall. If the distance between the wall and the camera is correct, moving the camera slightly closer or further away from the wall should not generate a drop/increase in the exposure (the false color should stay consistent). 
+* Set the camera at the colour temperature of choice. We suggest setting it to the white point of the LED wall (normally 65000Kelvin) or Auto white-balance the camera towards the center target grey square. This choice is important as it will generate different calibrations. For more information about the different use cases, see below in the “Calibration Use Cases'' section.  
+* Set the exposure so that the center square hits 18% of the camera’s sensitivity. Use the camera's false colour tool or a light meter to set the exposure until the whole square is set to 18% (e.g. the box becomes green on an Alexa, Red or Venice).  Use the 17% and 19% small patches at the bottom of the frame to make sure your exposure sits “in the middle”, as false colours can have quite a broad range, relatively speaking. Ideally, use a t-stop that would be used on production. Otherwise, a good range is between T2>T5.6. ND filters might be required to hit that exposure. Preferably, do not use shutter angle or camera FPS to adjust the exposure (it might create multiplexing issues). Get as close as possible to what will be used during production and/or is required for a correct genlock between the camera and the LED wall. If the distance between the wall and the camera is correct, moving the camera slightly closer or further away from the wall should not generate a drop/increase in the exposure (the false colour should stay consistent). 
 
 <img src="docs/source/images/image36.png" alt="image_tooltip" width="20%" height="50%">
 
@@ -789,11 +788,11 @@ Example Defocus
 
 
 * If the sequence has only one frame per patch, play it with a frame rate equal to 1/10 of the camera recording's FPS: if the camera records at 25 FPS, set the playback to 2.5FPS.
-* If the exact number of patches are available, the playback speed should be set at the camera FPS. 
-* Disable any frame blending and playback loop, the sequence should stop at its last frame.
+* If the exact number of patches is available, the playback speed should be set at the camera FPS. 
+* Disable any frame blending and playback loop; the sequence should stop at its last frame.
 * Check the video data range (Legal/Full) throughout the pipeline. If a difference can be perceived between the four squares (image below), it is correctly set. Note that when in an ST2084 pipeline, the differences in the black might be slightly less perceivable than the ones in the white squares. 
 * If the difference between squares is imperceptible, check the video pipeline from the media player to the wall (Media Player settings, GPU settings, Image processor settings) and make sure that the video range is set consistently throughout the pipeline. Don’t trust HDMI metadata, force all settings manually if possible.
-* Scale the content until the center target gray square covers 60/70% of the vertical camera field of view
+* Scale the content until the center target grey square covers 60/70% of the vertical camera field of view
 
 <img src="docs/source/images/image31.png" alt="image_tooltip" width="60%" height="50%">
 
