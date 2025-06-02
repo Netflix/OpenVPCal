@@ -2224,6 +2224,12 @@ Thank you all for your support and collaboration.
    <td colspan="2" ><strong><code>CHANGELOG</code></strong>
    </td>
   </tr>
+    <tr>
+   <td>
+   </td>
+   <td>Added new changes for release of OpenVPCal 2.0
+   </td>
+  </tr>
   <tr>
    <td>
    </td>
