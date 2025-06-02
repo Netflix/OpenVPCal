@@ -115,7 +115,6 @@ OpenVPCal is not currently available on PyPi, given OpenImageIO is now available
 
 ## Additional Requirements
 
-
 * An image processing software to debayer or pre-process the plate and convert it to Linear EXRs (eg Assimilate, Davinci, Baselight, Colorfront, Mistika etc.)
 
 
@@ -180,13 +179,13 @@ Please use this guide for high-level instructions. For detailed information on t
   <tr>
    <td><code>6. PRE-PROCESS PLATE</code>
    </td>
-   <td>OpenVpCal only accepts Linear EXR as input: pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native. We recommend Linear/AP0 (default for the tool).
+   <td>OpenVpCal only accepts linear EXR as input: pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native. We recommend Linear/AP0 (default for the tool). Raw OCF file conversion is supported via third party tools see loading OCF, and loading dpx and tiff are supported see loading dpx and tiff.)
    </td>
   </tr>
   <tr>
-   <td><code>7. LOAD PLATE EXR SEQUENCE ON WALL</code>
+   <td><code>7. LOAD PLATE SEQUENCE ON WALL</code>
    </td>
-   <td>In OpenVpCal, right-click on the LED WALL and select “Load Plate Sequence”. Select the folder where the pre-processed camera plate is. 
+   <td>In OpenVpCal, right-click on the LED WALL and select “Load Plate Sequence”. Select the input source, when loading EXR, an RGB File Sequence, and select folder where the pre-processed camera plate is. 
    </td>
   </tr>
   <tr>
@@ -330,7 +329,7 @@ For information on the “Colour Space Analysis CIE Gamut” widget, please see 
 
 ##### IMAGE SELECTION
 
-The image selection widget allows a viewer to the user to preview the calibration plate loaded for each wall. This widget allows the ability to select the ROI (Region of Interest) that the software will use to measure the values for each patch. The ROI is marked by a red rectangle that the user can drag and modify as required. Selecting the center of the ROI, allows it to be positionally dragged into place, whilst drag selecting the corners allows for resizing of the ROI. \
+The image selection widget allows a viewer to the user to preview the calibration plate loaded for each wall. This widget allows the ability to select the ROI (Region of Interest) that the software will use to measure the values for each patch. The ROI is marked by a green rectangle that the user can modify the corner points as required. Drag selecting the corners allows for resizing/shaping of the ROI. \
  \
 Right clicking offers a context menu which resets the ROI should you make a mistake.
 
@@ -520,9 +519,9 @@ Right clicking offers a context menu which resets the ROI should you make a mist
    </td>
   </tr>
   <tr>
-   <td><code>NATIVE CAMERA GAMUT</code>
+   <td><code>SHOOTING CAMERA GAMUT</code>
    </td>
-   <td>The native colour space of the camera used for the calibration
+   <td>The colour space of the camera used on the led stage for the shoot, and also used to shoot the calibration patches
    </td>
   </tr>
   <tr>
@@ -582,12 +581,6 @@ Right clicking offers a context menu which resets the ROI should you make a mist
    </td>
   </tr>
   <tr>
-   <td><code>EXPORT LUT FOR ACESCCT</code>
-   </td>
-   <td>It modifies the calibration LUT export so that the LUT expects ACEScct input and produces a calibrated ACEScct output. The user will have to apply the color space conversion and EOTF  transform from ACEScct to Target independently  
-   </td>
-  </tr>
-  <tr>
    <td><code>EXPORT LUT FOR ACESCCT IN / TARGET OUT</code>
    </td>
    <td>It modifies the calibration LUT export so that the LUT expects ACEScct input and produces a calibrated target output (with both the color space and EOTF transform to target applied). 
@@ -619,6 +612,13 @@ Right clicking offers a context menu which resets the ROI should you make a mist
    <td><code>FRAMES PER PATCH</code>
    </td>
    <td>How many frames per patches the tool will export
+   </td>
+  </tr>
+  <tr>
+  <tr>
+   <td><code>CONTENT MAX LUM</code>
+   </td>
+   <td>The maximum luminance of the content, this is used to produce variations of creative rolloff, which gently rolls off the maximum value specified to the peak luminance of the led wall. We default to 10,000 nits which is the maximum of PQ 
    </td>
   </tr>
   <tr>
@@ -856,6 +856,66 @@ OpenVpCal will automatically ingest the plate and attempt to determine which are
 Suppose OpenVPCal fails to determine the correct ROI. In that case, the user must use the first patch center square as a reference, and align the red ROI rectangle in the viewer: the reference square has some target crosses on the corners and a center target. This area should be sufficient for the analysis if the camera was set up correctly. 
 
 
+#### Load Plate From Raw OCF (Original Camera Footage)
+Open VP Cal 2.x supports the ability to extract the input plate directly from the OCF. This utilizes third party applications provided by several of the common camera manufacturers, as well as ffmpeg
+
+This allows the user to skip the process of manually converting the OCF into an ACES EXR which is often prone to human error, as well as removing an additional step in the process.
+
+#### OCF Prerequisites
+Depending on your camera you will need to install the manufacturers relevent utility
+
+#### RED
+Support For Reds .R3D format is provided via the REDCINE-X PRO application which can be downloaded from the RED website.
+https://www.red.com/downloads
+
+#### SONY
+Support For Sonys .mxf format is provided via the Sony RAW Viewer which can be downloaded from the Sony website.
+https://www.sony.com/electronics/support/software/00339639
+
+#### ARRI
+Support For ARRIs .ari, .arx and .mxf format is provided via the ART-CMD application which can be downloaded from the ARRI website.
+https://www.arri.com/en/learn-help/learn-help-camera-system/tools/arri-reference-tool
+
+NOTE: Ensure is the CMD application, not the GUI Application
+NOTE: The art-cmd needs to be on the $PATH variable or directly configured in the pre_process_config
+
+#### FFMpeg
+Support for .mov files for cameras which record in a native colour space directly to .mov
+https://ffmpeg.org/download.html
+
+#### Pre Process Config
+For applications which do not come with a native installer, or for applications which are installed into non default locations the user needs to ensure that the executable is either on the $PATH or set into the pre_process_config.
+
+This can be found in the OpenVPCal Prefs folder which can be opened via the UI.
+
+File > Open Prefs In Folder Viewer
+
+<img src="docs/source/images/user_prefs.png" alt="image_tooltip" width="40%" height="50%">
+<img src="docs/source/images/user_prefs2.png" alt="image_tooltip" width="40%" height="50%">
+
+
+As an example for the ARRI, art-cmd this can be installed elsewhere on the system, OpenVPCal will default to the $PATH variable first and fall back to the "command_path_overrides" for each platform
+``` json
+                "commandName": "art-cmd",
+                "command_path_overrides": {
+                    "darwin": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd",
+                    "win32": "C:\\ARRI\\bin\\art-cmd.exe",
+                    "linux": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd"
+                },
+```
+
+#### Loading OCF
+From then menu rather than select the "RGB_Sequence" select the relevant importer for your camera format.
+
+<img src="docs/source/images/ocf_import.png" alt="image_tooltip" width="40%" height="50%">
+
+From the file dialogue select your OCF file or folder.
+OpenVPCal will now call the commands to the installed and configured third party applications and convert the footage into an image sequence in the correct format, either EXRs in ACES or DPX files in shooting camera gamut
+After the footage has been extracted it is loaded into VPCal as if you had selected the pre converted image sequence.
+
+Where the OCF format is known, the Input Plate Gamut will be set to the correct value, however the user should check this is correct before proceeding.
+Especially in the case of ffmpeg where we are unable to auto detect
+
 #### Plate Settings
 
 From the Plate Settings tab, you must set the color space of the Linear EXR file (e.g. ACES 2065-1), as well as the native color space of the camera used to capture the plate. 
@@ -877,9 +937,9 @@ Please refer to the “Common Use-cases” section to learn more about the diffe
    </td>
   </tr>
   <tr>
-   <td><code>NATIVE CAMERA GAMUT</code>
+   <td><code>SHOOTING CAMERA GAMUT</code>
    </td>
-   <td>The native colour space of the camera used for the calibration
+   <td>The colour space of the camera used on the led stage for the shoot, and also used to shoot the calibration patches
    </td>
   </tr>
   <tr>
@@ -1467,6 +1527,34 @@ whole chain is correct and performing as expected.
 These patterns should be judged via the camera output primarily however some patterns exhibit problems to the naked eye.
 
 The default sequence will contain the following patterns:
+
+### Content Max Lum & Rolloffs
+LED Walls are only capable of displaying a given range of brightness, as defined by their peak luminance.
+Often content has values which go beyond this range which can produce harsh clips in the footage.
+
+A number of Media Servers offer grading controls to apply a creatively controllable roll off to maintain the linearity of the content on the led wall, but gently roll the highlights above a certain level to within the capabilities of the led wall.
+For systems which do not provide this functionality, OpenVPCal outputs additional calibration displays within the OCIO config which can be used to apply a soft, medium and hard roll off of the content, whilst still applying the calibration.
+
+By default the Content Max Lum is set to 10,000 nits, which is the maximum which can be encoded into PQ (ST2084).  
+This tells OpenVPCal to roll off values from 10k nits to the peak lum of the led wall.
+
+Given your content may not reach 10k nits, you can set this to a sensible value for the maximum brightness of your content
+
+For instance if the user where to set 5000 nits, a value in the content would be rolled off to the peak_lum rather than be clipped.
+
+Within the OCIO config you will see 3 options per wall similarly named as
+
+``` json
+
+  Calibrated ROE_CSonly - ROE - REDWideGamutRGB - CS_EOTF - Soft_Rolloff_s1155-10000_to_1650_nits
+  Calibrated ROE_CSonly - ROE - REDWideGamutRGB - CS_EOTF - Medium_Rolloff_s1320-10000_to_1650_nits
+  Calibrated ROE_CSonly - ROE - REDWideGamutRGB - CS_EOTF - Hard_Rolloff_s1485-10000_to_1650_nits
+
+```
+  
+
+
+
 
 
 ### **SPG - Frame Sync Count** 
