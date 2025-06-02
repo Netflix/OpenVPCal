@@ -779,18 +779,18 @@ Example Defocus
 
 * Record multiple frames for each patch; the suggested amount is 10 for each. When exporting the patches, there is an option to export one frame per patch or multiple frames.
 * Set the camera recording mode to RAW (if possible).
-* Set the camera at the colour temperature of choice. We suggest setting it to the white point of the LED wall (normally 65000Kelvin) or Auto white-balance the camera towards the center target grey square. This choice is important as it will generate different calibrations. For more information about the different use cases, see below in the “Calibration Use Cases'' section.  
-* Set the exposure so that the center square hits 18% of the camera’s sensitivity. Use the camera's false colour tool or a light meter to set the exposure until the whole square is set to 18% (e.g. the box becomes green on an Alexa, Red or Venice).  Use the 17% and 19% small patches at the bottom of the frame to make sure your exposure sits “in the middle”, as false colours can have quite a broad range, relatively speaking. Ideally, use a t-stop that would be used on production. Otherwise, a good range is between T2>T5.6. ND filters might be required to hit that exposure. Preferably, do not use shutter angle or camera FPS to adjust the exposure (it might create multiplexing issues). Get as close as possible to what will be used during production and/or is required for a correct genlock between the camera and the LED wall. If the distance between the wall and the camera is correct, moving the camera slightly closer or further away from the wall should not generate a drop/increase in the exposure (the false colour should stay consistent). 
+* Set the camera at the colour temperature of choice. We suggest setting it to the white point of the LED wall (normally 65000 Kelvin) or Auto white-balance the camera towards the centre target grey square. This choice is important as it will generate different calibrations. For more information about the different use cases, see below in the “Calibration Use Cases'' section.  
+* Set the exposure so that the centre square hits 18% of the camera’s sensitivity. Use the camera's false colour tool or a light meter to set the exposure until the whole square is set to 18% (e.g. the box becomes green on an Alexa, Red or Venice).  Use the 17% and 19% small patches at the bottom of the frame to make sure your exposure sits “in the middle”, as false colours can have quite a broad range, relatively speaking. Ideally, use a t-stop that would be used on production. Otherwise, a good range is between T4>T8. ND filters might be required to hit that exposure. Preferably, do not use shutter angle or camera FPS to adjust the exposure (it might create multiplexing issues). Get as close as possible to what will be used during production and/or is required for a correct genlock between the camera and the LED wall. If the distance between the wall and the camera is correct, moving the camera slightly closer or further away from the wall should not generate a drop/increase in the exposure (the false colour should stay consistent). 
 
 <img src="docs/source/images/image36.png" alt="image_tooltip" width="20%" height="50%">
 
 ###### Playback/Processor
 
 
-* If the sequence has only one frame per patch, play it with a frame rate equal to 1/10 of the camera recording's FPS: if the camera records at 25 FPS, set the playback to 2.5FPS.
+* If the sequence has only one frame per patch, play it with a frame rate equal to 1/10 of the camera recording's FPS: if the camera records at 25 FPS, set the playback to 2.5 FPS.
 * If the exact number of patches is available, the playback speed should be set at the camera FPS. 
 * Disable any frame blending and playback loop; the sequence should stop at its last frame.
-* Check the video data range (Legal/Full) throughout the pipeline. If a difference can be perceived between the four squares (image below), it is correctly set. Note that when in an ST2084 pipeline, the differences in the black might be slightly less perceivable than the ones in the white squares. 
+* Check the video data range (Legal/Full) throughout the pipeline. If a difference can be perceived between the four squares (image below), it is correctly set. Note that when in an ST2084 pipeline, the differences in the black might be slightly less perceivable than the ones in the white squares. Use the SPG Patterns to have a better overview.
 * If the difference between squares is imperceptible, check the video pipeline from the media player to the wall (Media Player settings, GPU settings, Image processor settings) and make sure that the video range is set consistently throughout the pipeline. Don’t trust HDMI metadata, force all settings manually if possible.
 * Scale the content until the center target grey square covers 60/70% of the vertical camera field of view
 
@@ -800,14 +800,13 @@ Example Defocus
 ### Load and Set Calibration Plates
 
 
-#### PreProcess Plate
+#### (OPTION 1) Pre-Process Plate 
 
-Once the patches are captured, download the footage and load it into a DCC of preference. OpenVpCal only accepts Linear EXR as input: pre-process your camera plate to be either Linear/AP0 (ACES 2065-1) or Linear/Camera Native.  The plate should be therefore first converted or debayered directly to Linear ACES AP0 (ACES 2065-1) or Camera Native.
+Once the patches are captured, you can either decide to pre-process the plate using your DCC of preference, or -if one of the supported formats- load it directly within OpenVpCal (see below, OPTION 2). When pre-processing, we suggest converting the plate to Linear EXR in ACES 2065-1 (AP0) colour space. OpenVpCal does support other input colour spaces, linear and non-linear, but due to the internal processing being all based on the Linear Reference Colour space (which defaults to ACES 2065-1), it's suggested to pre-process directly to that. 
+For that reason, the default input for OpenVpCal is Linear ACES AP0 (ACES 2065-1). Make sure to change it if different.
 
-The default input for OpenVpCal is Linear ACES AP0 (ACES 2065-1). 
 
-
-Plate sequences should follow the naming convention
+IMPORTANT NOTE: **Plate sequences should follow the naming convention, otherwise it won't be imported.**
 
 
 _ &lt;FileName>.&lt;FramePadding>.&lt;FileExt>_
@@ -818,7 +817,7 @@ There are several DCCs that can be used for this scope. We are providing here a 
 
 
 1. Open Davinci Resolve and set a new project.
-2. Go to project settings (the cog on the bottom right of the screen) and set the color science to ACES (ACES 1.3>, ACEScct, Gamut-Compression disabled). Leave the ACES output transform set to “No Output Transform”. If you shot RAW, you can leave the input transform set as “No Input Transform” as well, or select the required color space for your camera. If your camera is not on the list and Davinci cannot convert it to ACES automatically, you must source an IDT for your camera that allows you to convert your input color space to ACES 2065-1.
+2. Go to project settings (the cog on the bottom right of the screen) and set the colour science to ACES (ACES 1.3>, ACEScct, Gamut-Compression disabled). Leave the ACES output transform set to “No Output Transform”. If you shot RAW, you can leave the input transform set as “No Input Transform” as well, or select the required colour space for your camera. If your camera is not on the list and Davinci cannot convert it to ACES automatically, you must source an IDT for your camera that allows you to convert your input colour space to ACES 2065-1. Please defer to the ACADEMY IDT Calculator: https://github.com/ampas/idt-calculator
 
 
 <img src="docs/source/images/image29.png" alt="image_tooltip" width="60%" height="50%">
@@ -826,9 +825,9 @@ There are several DCCs that can be used for this scope. We are providing here a 
 
 
 
-3. Load your calibration plate in a new timeline. Do not apply any color correction nor additional transforms to your plate.
-4. Go to the delivery menu and, in the Video tab, set up your export as: EXR RGB Half. You can keep the camera native resolution or reduce it to HD. Make sure that the resizing quality is set to max in the Advanced Settings. 
-5. In the File tab, select the Filename as Source Name. Add a Subfolder with the name of the clip by typing “%Clip Name” in the “File Subfolder” section.
+3. Load your calibration plate in a new timeline. Do not apply any colour correction or additional transforms to your plate.
+4. Go to the delivery menu and, in the Video tab, set up your export as: EXR RGB Half. You can keep the camera's native resolution or reduce it to HD. Make sure that the resizing quality is set to max in the Advanced Settings. 
+5. In the File tab, select the Filename as "Source Name". Add a Subfolder with the name of the clip by typing “%Clip Name” in the “File Subfolder” section.
 
 
 
