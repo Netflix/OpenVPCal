@@ -839,19 +839,145 @@ There are several DCCs that can be used for this scope. We are providing here a 
 6. Render the plate and load the resulting EXR in OpenVpCal. 
 
 
-#### Load Plate
+#### Load a Pre-Processed or native Plate in OpenVpCal
 
-From the Stage View>Led Wall Bin you can now load your calibration plate associated with the LED wall it was shot for. 
+From the Stage View>Led Wall Bin, you can load the calibration plate associated with the LED wall it was shot for. From OpenVpCal 2.0 we support a larger set of file formats, boh RAW or RGB, both clip-based or frame-based.
 
-Once selected the LED wall you want to load the plate for, right click on it and select “Load Plate Sequence”  or select from File>Load Plate Sequence.
+<table>
+  <tr>
+   <td colspan="2" ><strong><code>SUPPORTED FILE FORMAT</code></strong>
+   </td>
+      <td colspan="2" ><strong><code>FILE TYPE</code></strong>
+   </td>
+       </td>
+      <td colspan="2" ><strong><code>IMAGE TYPE</code></strong>
+   </td>
+     </td>
+       </td>
+      <td colspan="2" ><strong><code>DEPENDACY</code></strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>EXR</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RGB
+   </td>
+    </td>
+    <td>None
+   </td>
+  </tr>
+   <tr>
+   <td><code>DPX</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RGB
+   </td>
+    </td>
+    <td>None
+   </td>
+     <td><code>TIFF</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RGB
+   </td>
+    </td>
+    <td>None
+   </td>
+     <td><code>PNG</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RGB
+   </td>
+    </td>
+    <td>None
+   </td>
+     <td><code>MOV</code>
+   </td>
+   <td>Clip file
+   </td>
+    <td>RGB
+   </td>
+    </td>
+    <td>FFMPEG
+   </td>
+  </tr>
+  <td><code>MP4</code>
+   </td>
+   <td>Clip file
+   </td>
+    <td>RGB
+   </td>
+    </td>
+    <td>FFMPEG
+   </td>
+  </tr>
+   <td><code>ARX</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RAW
+   </td>
+    </td>
+    <td>ART CMD (Arri Reference Tool)  
+   </td>
+  </tr>
+    </tr>
+   <td><code>ARI</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RAW
+   </td>
+    </td>
+    <td>ART CMD (Arri Reference Tool)  
+   </td>
+  </tr>
+     <td><code>MXF (ARRIRAW)</code>
+   </td>
+   <td>Clip File
+   </td>
+    <td>RAW
+   </td>
+    </td>
+    <td>ART CMD (Arri Reference Tool)  
+   </td>
+  </tr>
+       <td><code>MXF (SONY)</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RAW
+   </td>
+    </td>
+    <td>ART CMD (Arri Reference Tool)  
+   </td>
+  </tr>
+   <td><code>R3D</code>
+   </td>
+   <td>File sequence
+   </td>
+    <td>RAW
+   </td>
+    </td>
+    <td>RedCineX 
+   </td>
+  </tr>  
+</table>
+
+
+Once selected the LED wall you want to load the plate for, right click on it and select “Load Plate Sequence” or select from File>Load Plate Sequence.
 
 OpenVpCal will automatically ingest the plate and attempt to determine which area of the calibration plate will be utilised for the analysis, the region of interest (ROI), and the separation between each patch (separation). Repeat this process for each LED wall that requires calibration.
-
 
 <img src="docs/source/images/image37.png" alt="image_tooltip" width="40%" height="50%">
 
 
-Suppose OpenVPCal fails to determine the correct ROI. In that case, the user must use the first patch center square as a reference, and align the red ROI rectangle in the viewer: the reference square has some target crosses on the corners and a center target. This area should be sufficient for the analysis if the camera was set up correctly. 
+Suppose OpenVPCal fails to determine the correct ROI. In that case, the user must use the first patch centre square as a reference, and align the red ROI rectangle in the viewer: the reference square has some target crosses on the corners and a centre target. This area should be sufficient for the analysis if the camera was set up correctly. 
 
 
 #### Plate Settings
