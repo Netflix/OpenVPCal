@@ -8,10 +8,10 @@ It is written in Python3, and consists of a number of packages for different lev
 Most end-users will utilize the precompiled application which consists of a PySide UI and CLI, however the source code 
 can be used for direct integration into existing software/pipelines, as well as a base to build new applications on top of.
 
-OpenVPCal calibration library creates a series of color space corrections to be applied to the content-to-LED pipeline, 
+OpenVPCal calibration library creates a series of colour space corrections to be applied to the content-to-LED pipeline, 
 which aims to correct the resulting image based on the observer camera in use. 
 
-The calibration can be exported as an OpenColorIO Config and/or "Display-to-Display" 3D LUT.
+The calibration can be exported as an OpencolourIO Config and/or "Display-to-Display" 3D LUT.
 
 OpenVpCal was originally introduced at SIGGRAPH 2022, with a [paper](https://history.siggraph.org/learning/open-source-in-camera-visual-effects-calibration-workflow-by-payne-and-giardiello/) and a [presentation](https://dl.acm.org/doi/10.1145/3532836.3536265). 
 
@@ -116,7 +116,7 @@ OpenVPCal is not currently available on PyPi, given OpenImageIO is now available
 ## Additional Requirements
 
 
-* A generic image processing software to debayer RAW calibration plates and convert them to Linear EXRs (eg Assimilate, Davinci, Baselight, Colorfront, Mistika etc.) or camera manufacturers reference software for RED (REDCINEX), ARRI (ART), SONY (RAW VIEWER) that can be used directly from within OpenVPCal, see below for more information.
+* A generic image processing software to debayer RAW calibration plates and convert them to Linear EXRs (eg Assimilate, Davinci, Baselight, colourfront, Mistika etc.) or camera manufacturers reference software for RED (REDCINEX), ARRI (ART), SONY (RAW VIEWER) that can be used directly from within OpenVPCal, see below for more information.
 
 
 ## Hardware Requirements
@@ -158,7 +158,7 @@ Please use this guide for high-level instructions. For detailed information on t
   <tr>
    <td><code>4. LOAD PATCHES ON YOUR MEDIA PLAYER</code>
    </td>
-   <td>Load the calibration patches on your media player, and <strong>bypass any colour transform</strong>, as the calibration patches are already at the target color space. If you have exported EXRs, ensure only to apply the required EOTF transform (eg. from Linear Rec 2020 to ST2084-Rec2020, <strong>do not apply transforms that will modify the color of the charts from the target primaries</strong>. Make sure the patches play correctly, with no frame blending or loop playback. 
+   <td>Load the calibration patches on your media player, and <strong>bypass any colour transform</strong>, as the calibration patches are already at the target colour space. If you have exported EXRs, ensure only to apply the required EOTF transform (eg. from Linear Rec 2020 to ST2084-Rec2020, <strong>do not apply transforms that will modify the colour of the charts from the target primaries</strong>. Make sure the patches play correctly, with no frame blending or loop playback. 
    </td>
   </tr>
   <tr>
@@ -482,7 +482,7 @@ Right-clicking offers a context menu which resets the ROI should you make a mist
   <tr>
    <td><code>(in ADD CUSTOM GAMUT) CUSTOM NAME</code>
    </td>
-   <td>Define the name of your custom target color space.
+   <td>Define the name of your custom target colour space.
    </td>
   </tr>
   <tr>
@@ -627,6 +627,13 @@ Right-clicking offers a context menu which resets the ROI should you make a mist
    <td>How many frames per patch the tool will export
    </td>
   </tr>
+    <tr>
+   <td><code>CONTENT MAX LUM</code>
+   </td>
+   <td>The maximum luminance of the content, which is used to produce three variations of creative rolloff, which gently rolls off the maximum value specified to the peak luminance of the LED wall. We default to 10,000 nits, which is the maximum for PQ. 
+   </td>
+  </tr>
+  <tr>
   <tr>
    <td><code>CUSTOM LOGO</code>
    </td>
@@ -845,16 +852,16 @@ From the Stage View>Led Wall Bin, you can load the calibration plate associated 
 
 <table>
   <tr>
-   <td colspan="2" ><strong><code>SUPPORTED FILE FORMAT</code></strong>
+   <td><strong><code>SUPPORTED FILE FORMAT</code></strong>
    </td>
-      <td colspan="2" ><strong><code>FILE TYPE</code></strong>
+      <td><strong><code>FILE TYPE</code></strong>
    </td>
        </td>
-      <td colspan="2" ><strong><code>IMAGE TYPE</code></strong>
+      <td><strong><code>IMAGE TYPE</code></strong>
    </td>
      </td>
        </td>
-      <td colspan="2" ><strong><code>DEPENDACY</code></strong>
+      <td><strong><code>DEPENDENCY</code></strong>
    </td>
   </tr>
   <tr>
@@ -975,21 +982,82 @@ From the Stage View>Led Wall Bin, you can load the calibration plate associated 
 </table>
 
 
-Once selected the LED wall you want to load the plate for, right click on it and select “Load Plate Sequence” or select from File>Load Plate Sequence.
+To load a plate, select the LED wall, right click on it and select “Load Plate Sequence” or select from File>Load Plate Sequence.
 
 OpenVpCal will automatically ingest the plate and attempt to determine which area of the calibration plate will be utilised for the analysis, the region of interest (ROI), and the separation between each patch (separation). Repeat this process for each LED wall that requires calibration.
 
 <img src="docs/source/images/image37.png" alt="image_tooltip" width="40%" height="50%">
 
 
-Suppose OpenVPCal fails to determine the correct ROI. In that case, the user must use the first patch centre square as a reference, and align the red ROI rectangle in the viewer: the reference square has some target crosses on the corners and a centre target. This area should be sufficient for the analysis if the camera was set up correctly. 
+Suppose OpenVPCal fails to determine the correct ROI. In that case, the user must use the first patch centre square as a reference, and align the red ROI shape in the viewer: the reference square has some target crosses on the corners and a centre target. This area should be sufficient for the analysis if the camera was set up correctly. 
+
+
+#### Load Plate From Raw OCF (Original Camera Footage)
+Open VP Cal 2.x supports the ability to extract the input plate directly from the OCF. This utilises third-party applications provided by several of the common camera manufacturers, as well as ffmpeg for decoding conventional file formats such as HEVC or MP4.
+
+This allows the user to skip the process of manually converting the OCF into an EXR, which is often prone to human error, as well as removing an additional step in the process. OpenVPCal will use the supported third-party application to pre-render the OCF into either ACES2065-1 EXR or Camera Native DPX files. The renders will be placed in a RENDER project subfolder and automatically loaded upon finish.  
+
+#### OCF Prerequisites
+Depending on your camera, you will need to install the manufacturer's relevant utility.
+
+#### RED
+Support for Reds .R3D format is provided via the REDCINE-X PRO application, which can be downloaded from the RED website.
+https://www.red.com/downloads
+
+#### SONY
+Support for Sony's .mxf format is provided via the Sony RAW Viewer, which can be downloaded from the Sony website.
+https://www.sony.com/electronics/support/software/00339639
+
+#### ARRI
+Support for ARRIs .ari, .arx and .mxf formats is provided via the ART-CMD application, which can be downloaded from the ARRI website.
+https://www.arri.com/en/learn-help/learn-help-camera-system/tools/arri-reference-tool
+
+NOTE: Ensure is the CMD application, not the GUI Application
+NOTE: The art-cmd needs to be on the $PATH variable or directly configured in the pre_process_config (see below for more info). 
+
+#### FFMpeg
+Support for .mov, .mp4 files for cameras which record only RGB using a .mov or .mp4 container
+https://ffmpeg.org/download.html
+
+#### Pre-Process Config
+For applications which do not come with a native installer or for applications which are installed into non-default locations, the user needs to ensure that the executable is either on the $PATH or set into the pre_process_config.
+
+This can be found in the OpenVPCal Prefs folder, which can be opened via the UI.
+
+File > Open Prefs In Folder Viewer
+
+<img src="docs/source/images/user_prefs.png" alt="image_tooltip" width="40%" height="50%">
+<img src="docs/source/images/user_prefs2.png" alt="image_tooltip" width="40%" height="50%">
+
+
+As an example for the ARRI, art-cmd, this can be installed elsewhere on the system. OpenVPCal will default to the $PATH variable first and fall back to the "command_path_overrides" for each platform
+``` json
+                "commandName": "art-cmd",
+                "command_path_overrides": {
+                    "darwin": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd",
+                    "win32": "C:\\ARRI\\bin\\art-cmd.exe",
+                    "linux": "~/Downloads/art-cmd_0.3.0_macos_universal/bin/art-cmd"
+                },
+```
+
+#### Loading OCF
+From the menu, rather than select the "RGB_Sequence", select the relevant importer for your camera format.
+
+<img src="docs/source/images/ocf_import.png" alt="image_tooltip" width="40%" height="50%">
+
+From the file dialogue, select your OCF file or folder.
+OpenVPCal will now call the commands to the installed and configured third-party applications and convert the footage into an image sequence in the correct format, either EXRs in ACES or DPX files in native camera gamut.
+After the footage has been extracted, it is loaded into OpenVPCal as if you had selected the pre-converted image sequence.
+
+Where the OCF format is known, the Input Plate Gamut will be set to the correct colour space, however, please double-check this is correct before proceeding.
+Especially in the case of ffmpeg, where metadatas usually default to Rec709, even when the files are encoded as native camera colour spaces.
 
 
 #### Plate Settings
 
-From the Plate Settings tab, you must set the color space of the Linear EXR file (e.g. ACES 2065-1), as well as the native color space of the camera used to capture the plate. 
+From the Plate Settings tab, you must set the colour space of the pre-processed plate file (default to ACES 2065-1), as well as the native colour space of the camera used to capture the plate. 
 
-If your workflow requires to auto-wb the plate and you could not perform this operation in camera, or you require a more accurate white balance, select Auto WB source.
+If your workflow requires to auto-wb the plate and you cannot perform this operation in camera, or you require a more accurate white balance, select Auto WB source.
 
 Please refer to the “Common Use-cases” section to learn more about the different types of calibration workflows. 
 
@@ -1014,7 +1082,7 @@ Please refer to the “Common Use-cases” section to learn more about the diffe
   <tr>
    <td><code>AUTO WB SOURCE</code>
    </td>
-   <td>If enabled, the input plate will be white-balanced prior to perform the analysis and calibration
+   <td>If enabled, the input plate will be white-balanced prior to performing the analysis and calibration
    </td>
   </tr>
 </table>
@@ -1040,9 +1108,9 @@ Once the analysis is completed, the tool will prompt a pop-up window with a desc
 
 #### Swatch Analysis
 
-In the Analysis Layout, a Swatch Analysis viewer will appear to facilitate the user's appreciation of the status of the wall and its calibration. The viewer is run by OpenColor IO (OCIO) and therefore can map the swatches to any colour space available from the default OCIO config shipped with the tool, the ACES 1.3 Studio Config.  
+In the Analysis Layout, a Swatch Analysis viewer will appear to facilitate the user's appreciation of the status of the wall and its calibration. The viewer is run by Opencolour IO (OCIO) and therefore can map the swatches to any colour space available from the default OCIO config shipped with the tool, the ACES 1.3 Studio Config.  
 
-The viewer plots each patch of the calibration sequence as a square swatch, in which the outer part shows the target color and the inner part shows the actual patch observed by the camera.  
+The viewer plots each patch of the calibration sequence as a square swatch, in which the outer part shows the target colour and the inner part shows the actual patch observed by the camera.  
 
 <img src="docs/source/images/image21.png" alt="image_tooltip" width="20%" height="50%">
 
@@ -1064,7 +1132,7 @@ The widget offers a series of tools:
   <tr>
    <td><code>Display</code>
    </td>
-   <td>A dropdown menu with all available OCIO DIsplays
+   <td>A dropdown menu with all available OCIO Displays
    </td>
   </tr>
   <tr>
@@ -1101,7 +1169,7 @@ A series of diagnostic widgets are presented to the user to help determine the s
 
 ##### Max Distance Analysis
 
-This widget shows the extent of the out-of-gamut colors measured in relation to the target color space of the calibration.
+This widget shows the extent of the out-of-gamut colours measured in relation to the target colour space of the calibration.
 
 
 <img src="docs/source/images/image6.png" alt="image_tooltip" width="50%" height="50%">
@@ -1122,7 +1190,7 @@ This widget shows the extent of the out-of-gamut colors measured in relation to 
   <tr>
    <td><code>Post-Cal</code>
    </td>
-   <td>The potential outcome of the calibration, digitally applied to the calibration plate to emulate what the results might be once the calibration is applied to the LED wall. Be mindful that this is just a simulation and the actual results might be different. 
+   <td>The potential outcome of the calibration, digitally applied to the calibration plate to emulate what the results might be once the calibration is applied to the LED wall. Be mindful that this is just a simulation, and the actual results might be different. 
    </td>
   </tr>
 </table>
@@ -1152,7 +1220,7 @@ This widget tracks the linear response of the LED wall.
   <tr>
    <td><code>Post-Cal</code>
    </td>
-   <td>The potential outcome of the calibration, digitally applied to the calibration plate to emulate what the results might be once the calibration is applied to the LED wall. Be mindful that this is just a simulation and the actual results might be different. 
+   <td>The potential outcome of the calibration, digitally applied to the calibration plate to emulate what the results might be once the calibration is applied to the LED wall. Be mindful that this is just a simulation, and the actual results might be different. 
    </td>
   </tr>
   <tr>
@@ -1206,7 +1274,7 @@ This widget shows the observed white point of the LED wall, as seen by the camer
   <tr>
    <td><code>Post-Cal</code>
    </td>
-   <td>The potential outcome of the calibration, digitally applied to the calibration plate to emulate what the results might be once the calibration is applied to the LED wall. Be mindful that this is just a simulation and the actual results might be different. 
+   <td>The potential outcome of the calibration, digitally applied to the calibration plate to emulate what the results might be once the calibration is applied to the LED wall. Be mindful that this is just a simulation, and the actual results might be different. 
    </td>
   </tr>
   <tr>
@@ -1270,7 +1338,7 @@ The calibration settings offer a series of options that allow different calibrat
   <tr>
    <td><code>REFERENCE TO TARGET CAT</code>
    </td>
-   <td>Choose from a standard list of Chromatic Adaptation Transforms or select NONE for the Reference to Target 3x3 matrix. Bradford is set as default
+   <td>Choose from a standard list of Chromatic Adaptation Transforms or select NONE for the Reference to Target 3x3 matrix. Bradford is set as the default
    </td>
   </tr>
   <tr>
@@ -1353,7 +1421,7 @@ Available formats:
 
 ## IPT-DeltaE Analysis Widget
 
-OpenVpCal tries to determine the status of the LED wall by using DeltaE IPT measurements, among other factors. This widget shows the measured IPT DeltaE between the reference target color and the one observed by the camera. It’s separated into groups of patches and offers the ability to select and compare multiple walls, estimating the “best wall” based on the average of deltaE measurements that fall under the just noticeable difference (JND) threshold. This feature is handy when comparing different calibration approaches or verifying a calibration's success against the wall's original status. 
+OpenVpCal tries to determine the status of the LED wall by using DeltaE IPT measurements, among other factors. This widget shows the measured IPT DeltaE between the reference target colour and the one observed by the camera. It’s separated into groups of patches and offers the ability to select and compare multiple walls, estimating the “best wall” based on the average of deltaE measurements that fall under the just noticeable difference (JND) threshold. This feature is handy when comparing different calibration approaches or verifying a calibration's success against the wall's original status. 
 
 <img src="docs/source/images/image5.png" alt="image_tooltip" width="50%" height="50%">
 
@@ -1368,16 +1436,16 @@ A specific note is required to clarify the Calculations order, which determines 
 
 . These options present three different paths: 
 
-* EOTF CORRECTION DISABLED, the calibration will only be performed by a 3x3 matrix applied straight to the incoming RGB data converted to the Target color space. This approach assumes that the LED wall behaves linearly.
-* 1D → 3x3, where the calibration process assumes that the LED wall doesn’t behave linearly. In this path, the non-linearity is assumed to happen at the end of the image processing chain (before the EOTF but after any color mapping within the LED chain). Hence the EOTF correction and RGB balancing are measured before the 3x3 calibration matrix
-* 3x3 → 1D, where again, the calibration process assumes that the LED wall doesn’t behave linearly; however, in this case the non-linearity is assumed to happen at the beginning of the image processing chain (before or during the pipeline color mapping, before the EOTF). Therefore, the EOTF correction and RGB balancing are measured after the 3x3 calibration matrix.
+* EOTF CORRECTION DISABLED, the calibration will only be performed by a 3x3 matrix applied straight to the incoming RGB data converted to the Target colour space. This approach assumes that the LED wall behaves linearly.
+* 1D → 3x3, where the calibration process assumes that the LED wall doesn’t behave linearly. In this path, the non-linearity is assumed to happen at the end of the image processing chain (before the EOTF but after any colour mapping within the LED chain). Hence, the EOTF correction and RGB balancing are measured before the 3x3 calibration matrix
+* 3x3 → 1D, where again, the calibration process assumes that the LED wall doesn’t behave linearly; however, in this case, the non-linearity is assumed to happen at the beginning of the image processing chain (before or during the pipeline colour mapping, before the EOTF). Therefore, the EOTF correction and RGB balancing are measured after the 3x3 calibration matrix.
 
-Which one is the correct one? It depends: different pipelines might have different issues, however when the analysis process determines that the wall is not linear, the OpenVPCal default wil is the **<span style="text-decoration:underline;">1D>3x3</span>** order.
+Which one is the correct one? It depends: different pipelines might have different issues; however, when the analysis process determines that the wall is not linear, the OpenVPCal default is the **<span style="text-decoration:underline;">1D>3x3</span>** order.
 
 
 ##### CHROMATIC ADAPTATION TRANSFORM (CAT)
 
-Chromatic Adaptation Transforms are designed to maintain the appearance of colors under different lighting conditions or white points. In order to assure the best possible calibration, OpenVPCal goes through a number of different conversions between color spaces and white points, this means a number of CAT transforms are applied forward and inverted within each block of the calibration transforms. Because mixing CAT within a set of transformations is bad practice, we provide the user only two places where to select different CATs, as these transform blocks are essentially independent of each other. Selecting NONE will bypass any Chromatic adaptation and will therefore modify the appearance of colors and white points when changing color space.  Depending on your workflow, different CATs may be appropriate. The OpenVPCal defaults are:
+Chromatic Adaptation Transforms are designed to maintain the appearance of colours under different lighting conditions or white points. In order to assure the best possible calibration, OpenVPCal goes through a number of different conversions between colour spaces and white points, which means a number of CAT transforms are applied forward and inverted within each block of the calibration transforms. Because mixing CAT within a set of transformations is bad practice, we provide the user only two places where to select different CATs, as these transform blocks are essentially independent of each other. Selecting NONE will bypass any Chromatic adaptation and will therefore modify the appearance of colours and white points when changing colour space.  Depending on your workflow, different CATs may be appropriate. The OpenVPCal defaults are:
 
 
 <table>
@@ -1386,7 +1454,7 @@ Chromatic Adaptation Transforms are designed to maintain the appearance of color
    </td>
    <td>BRADFORD
    </td>
-   <td>As we use ACES in OCIO as the default color framework, Bradford is the default CAT used for their output transforms, hence we adopted it as our default as well to map ACES to the target LED wall. 
+   <td>As we use ACES in OCIO as the default colour framework, Bradford is the default CAT used for their output transforms, hence we adopted it as our default as well to map ACES to the target LED wall. 
    </td>
   </tr>
   <tr>
@@ -1432,13 +1500,13 @@ For simplicity, we suggest setting the camera at the wall’s native white point
   <tr>
    <td><code>Pros</code>
    </td>
-   <td>Simple, moves the content’s color temperature problem to the media player
+   <td>Simple, moves the content’s colour temperature problem to the media player
    </td>
   </tr>
   <tr>
    <td><code>Cons</code>
    </td>
-   <td>The effect of the lens on the calibration is baked in the calibration, so it might be required to run different calibrations for different lenses
+   <td>The effect of the lens on the calibration is baked into the calibration, so it might be required to run different calibrations for different lenses
    </td>
   </tr>
 </table>
@@ -1450,7 +1518,7 @@ For simplicity, we suggest setting the camera at the wall’s native white point
 
 ##### AUTO WHITE BALANCE CALIBRATION: A shortcut to remove the lens effect
 
-In this use case, we ask to perform an auto white-balance in the camera on the first patch of the calibration sequence, prior to shoot the plate (or to the plate, if the camera does not allow to auto-white balance, using the AUTO-WB option in the PLATE SETTINGS widget, when loading the calibration plate). The calibration will not change the white point of the wall. It will only adjust the color mapping, the EOTF balancing (if enabled) and the out of gamut colors (if enabled). This calibration is less subject to potential color shifts created by the lenses used to shoot, but it will not address the camera’s metameric failure of the white point, forcing the cinematographer to shoot at a specific white point setting (suggested by the auto-white balance in camera) or always to adjust the in-camera white point to obtain the intended result.
+In this use case, we ask to perform an auto white-balance in the camera on the first patch of the calibration sequence, prior to shoot the plate (or to the plate, if the camera does not allow to auto-white balance, using the AUTO-WB option in the PLATE SETTINGS widget, when loading the calibration plate). The calibration will not change the white point of the wall. It will only adjust the colour mapping, the EOTF balancing (if enabled) and the out-of-gamut colours (if enabled). This calibration is less subject to potential colour shifts created by the lenses used to shoot, but it will not address the camera’s metameric failure of the white point, forcing the cinematographer to shoot at a specific white point setting (suggested by the auto-white balance in camera) or always to adjust the in-camera white point to obtain the intended result.
 
 
 <table>
@@ -1467,7 +1535,7 @@ In this use case, we ask to perform an auto white-balance in the camera on the f
   <tr>
    <td><code>Pros</code>
    </td>
-   <td>Simple, more solid with lens color shifts
+   <td>Simple, more solid with lens colour shifts
    </td>
   </tr>
   <tr>
@@ -1494,15 +1562,15 @@ When your stage has multiple LED wall types (brands/models) and you want to matc
 
 ##### WHITE POINT OFFSET CALIBRATION: Decoupling lenses or shifting to external white points
 
-Like the auto-wb option, this option allows to correct the plate prior to be passed to the analysis. 
+Like the auto-wb option, this option allows for correcting the plate prior to being passed to the analysis. 
 
-However, in this case the calibration plate is white balanced towards a different white point, instead of the target white point. There are different use cases for this workflow, but it has mostly been designed to decouple the effect of the lens or filters used to shoot the calibration plate. When enabeling this option, OpenVpCal requires the user to select a frame from which it will calculate the white balance matrix to apply to the calibration patches. When aiming to decouple the effect of the lens, we perform the workflow in these simple steps:
+However, in this case, the calibration plate is white balanced towards a different white point, instead of the target white point. There are different use cases for this workflow, but it has mostly been designed to decouple the effect of the lens or filters used to shoot the calibration plate. When enabling this option, OpenVpCal requires the user to select a frame from which it will calculate the white balance matrix to apply to the calibration patches. When aiming to decouple the effect of the lens, we perform the workflow in these simple steps:
 
 
 
-1. Shoot the calibration patches as per **<code>SIMPLE CALIBRATION</code></strong> workflow, setting the camera to the LED wall white point. Once finish to shoot, roll back the sequence to the first frame, where the grey square and circle are;
+1. Shoot the calibration patches as per **<code>SIMPLE CALIBRATION</code></strong> workflow, setting the camera to the LED wall white point. Once finished shooting, roll back the sequence to the first frame, where the grey square and circle are;
 2. Remove the lens from the camera, don’t change anything else;
-3. The incoming light from the LED wall to the sensor will be bright without a lens, so change the shutter speed and/or fps of the camera to make sure that the blurred image doesn’t clip. Ideally it should be exposed correctly (using the false color of the camera, should get to the 18% level). 
+3. The incoming light from the LED wall to the sensor will be bright without a lens, so change the shutter speed and/or fps of the camera to make sure that the blurred image doesn’t clip. Ideally, it should be exposed correctly (using the false colour of the camera, it should get to the 18% level). 
 4. Shoot just a second (a single frame is necessary) of the first patch of the calibration sequence only. You don’t need to run the entire sequence. 
 5. Use one frame of the clip shot without a lens as White Point Offset Source File
 
@@ -1515,7 +1583,7 @@ However, in this case the calibration plate is white balanced towards a differen
   <tr>
    <td><code>Use case</code>
    </td>
-   <td>The calibration aims to a specific white point, removing the effect of the lens 
+   <td>The calibration aims at a specific white point, removing the effect of the lens 
    </td>
   </tr>
   <tr>
@@ -1527,7 +1595,7 @@ However, in this case the calibration plate is white balanced towards a differen
   <tr>
    <td><code>Cons</code>
    </td>
-   <td>It require to shoot additional plates without the lens and its prone to more errors
+   <td>It requires shooting additional plates without the lens, and it's prone to more errors
    </td>
   </tr>
 </table>
@@ -1536,7 +1604,7 @@ However, in this case the calibration plate is white balanced towards a differen
 <img src="docs/source/images/image18.png" alt="image_tooltip" width="60%" height="50%">
 
 
-Once applied, the gray patches on the right hand of the viewer will show the before and after the white point offset calibration. 
+Once applied, the grey patches on the right hand of the viewer will show the before and after the white point offset calibration. 
 
 
 #### EXPORT CALIBRATION
@@ -1548,7 +1616,7 @@ The calibration is complete! The final step is to export the transforms. OpenVPC
 
 The OCIO config file will be saved in the calibration folder within the exports folder of the project. Named Post_Calibration_OpenVPCal.ocio, and contains the calibration transforms as new Displays and Views. The OCIO config will embed transforms for each LED wall if multiple walls were calibrated. 
 
-As per the Pre-Calibration config, the OCIO config exported from the calibration will offer color spaces under the OpenVpCal group. You can now choose the calibrated LED wall in the Display color spaces under this naming convention: 
+As per the Pre-Calibration config, the OCIO config exported from the calibration will offer colour spaces under the OpenVpCal group. You can now choose the calibrated LED wall in the Display colour spaces under this naming convention: 
 
 OpenVPCal [WALL_NAME] - [CAMERA NATIVE GAMUT]
 
@@ -1563,9 +1631,9 @@ The 3D LUT exported by OpenVPCal is normally a display-to-display LUT. However, 
 
 ### Validation
 
-Once the calibration is completed and exported, we suggest validating it by re-shooting the original plate on the wall with the calibration transforms applied. OpenVpCal offers the ability to  “Add Validation Wall”, that allows the user to compare the status of the wall prior and post calibration.
+Once the calibration is completed and exported, we suggest validating it by re-shooting the original plate on the wall with the calibration transforms applied. OpenVpCal offers the ability to “Add Validation Wall”, which allows the user to compare the status of the wall prior to and post calibration.
 
-Once loading the verification wall plates, run the Analysis. OpenVpCal will essentially consider the verification wall as a slave wall of its source; hence, it will copy all the target settings and show itl as an additional wall in the Stage View bin. 
+Once the verification wall plates are loaded, run the Analysis. OpenVpCal will essentially consider the verification wall as a slave wall of its source; hence, it will copy all the target settings and show it as an additional wall in the Stage View bin. 
 
 
 
@@ -1580,20 +1648,44 @@ If successful, the analysis of the validation wall should report that the verifi
 
 <img src="docs/source/images/image5.png" alt="image_tooltip" width="60%" height="50%">
 
+### Content Max Lum & Rolloffs
+LED Walls are only capable of displaying a given range of brightness, as defined by their peak luminance.
+Often, content has values which go beyond this range, which can produce harsh clips in the footage.
+
+A number of Media Servers offer grading controls to apply a creatively controllable roll-off to maintain the linearity of the content on the LED wall while gently rolling the highlights above a certain level to within the capabilities of the LED wall.
+For systems which do not provide this functionality, OpenVPCal outputs additional calibration displays within the OCIO config, which can be used to apply a soft, medium and hard roll off of the content, whilst still applying the calibration.
+
+By default, the Content Max Lum is set to 10,000 nits, which is the maximum which can be encoded into PQ (ST2084).  
+This tells OpenVPCal to roll off values from 10k nits to the peak lum of the LED wall.
+
+Given that your content may not reach 10k nits, you can set this to a sensible value for the maximum brightness of your content
+
+For instance, if the user were to set 5000 nits, a value in the content would be rolled off to the peak_lum rather than be clipped.
+
+Within the OCIO config, you will see 3 options per wall similarly named as
+
+``` json
+
+  Calibrated ROE_CSonly - ROE - REDWideGamutRGB - CS_EOTF - Soft_Rolloff_s1155-10000_to_1650_nits
+  Calibrated ROE_CSonly - ROE - REDWideGamutRGB - CS_EOTF - Medium_Rolloff_s1320-10000_to_1650_nits
+  Calibrated ROE_CSonly - ROE - REDWideGamutRGB - CS_EOTF - Hard_Rolloff_s1485-10000_to_1650_nits
+
+```
+  
 
 
 ### SPG Test patterns
 
 OpenVpCal is shipped with a version of the synthetic pattern generator for ICVFX tool (SPG). 
-From File>Generate SPG Patterns, the images are generated in the same color space and eotf as the led wall.
+From File>Generate SPG Patterns, the images are generated in the same colour space and EOTF as the LED wall.
 
 <img src="docs/source/images/image10.png" alt="image_tooltip" width="40%" height="50%">
 
 The user can export a series of reference images that can be used to verify and debug 
-the image chain from the media player to the LED wall and use this prior to running a calibration to ensure that the 
+the image chain from the media player to the LED wall, and use this prior to running a calibration to ensure that the 
 whole chain is correct and performing as expected.
 
-These patterns should be judged via the camera output primarily however some patterns exhibit problems to the naked eye.
+These patterns should be judged via the camera output primarily however, some patterns exhibit problems to the naked eye.
 
 The default sequence will contain the following patterns:
 
@@ -1652,7 +1744,7 @@ If there are more or less bands either above or below the peak of the wall there
 
 ### **SPG - Exposure Stops**
 
-A series of exposure stops, when displayed on the calibrated wall, by exposing the camera using the false color of the 
+A series of exposure stops, when displayed on the calibrated wall, by exposing the camera using the false colour of the 
 camera, moving up and down a stop of exposure either of the content of the media server or via the camera itself, will highlight each exposure stop on the wall confirming a linear lighting response
 between the camera and the wall.
 
@@ -1696,8 +1788,8 @@ any vertical banding indicates the imaging chain is not 10 bit.
 <img src="docs/source/images/spg/10_bit.png" alt="image_tooltip" width="50%" height="50%">
 
 
-### **SPG - Color Steps**
-A series of color steps to indicate any color clipping issues, similar to the Linear Steps 
+### **SPG - colour Steps**
+A series of colour steps to indicate any colour clipping issues, similar to the Linear Steps 
 there should be nice even steps with no black bands or indistinguishable bands. 
 This occurs when calibrated correctly to use the custom achievable primaries of the led wall.
 
@@ -1805,7 +1897,7 @@ project_settings.export_lut_for_aces_cct_in_target_output = False
 project_settings.frame_rate = constants.FrameRates.FPS_25
 ```
 
-## Add A Custom Color Space
+## Add A Custom colour Space
 ```python
 custom_primaries = [(0.70800, 0.29200), (0.17000, 0.79700), (0.13100, 0.04600), (0.31270, 0.32900)l]
 custom_gamut_name = "LedWall_Custom_Gamut"
