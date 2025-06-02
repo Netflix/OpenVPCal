@@ -878,7 +878,8 @@ From the Stage View>Led Wall Bin, you can load the calibration plate associated 
     </td>
     <td>None
    </td>
-     <td><code>TIFF</code>
+  <tr>
+   <td><code>TIFF</code>
    </td>
    <td>File sequence
    </td>
@@ -887,7 +888,9 @@ From the Stage View>Led Wall Bin, you can load the calibration plate associated 
     </td>
     <td>None
    </td>
-     <td><code>PNG</code>
+  </tr>
+  <tr>
+    <td><code>PNG</code>
    </td>
    <td>File sequence
    </td>
@@ -896,7 +899,9 @@ From the Stage View>Led Wall Bin, you can load the calibration plate associated 
     </td>
     <td>None
    </td>
-     <td><code>MOV</code>
+  </tr>
+  <tr>
+    <td><code>MOV</code>
    </td>
    <td>Clip file
    </td>
