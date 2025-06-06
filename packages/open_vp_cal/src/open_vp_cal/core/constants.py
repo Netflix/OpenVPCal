@@ -394,6 +394,7 @@ class ValidationStatus:
     PASS = "PASS"
     WARNING = "WARNING"
     FAIL = "FAIL"
+    INFO = "INFO"
 
 
 class ProjectFolders:

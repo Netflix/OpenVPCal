@@ -32,6 +32,7 @@ class Validation:
     """
     def __init__(self):
         self._validation = [
+            self.check_macbeth_chart_detected,
             self.exposure_validation,
             self.check_max_screen_white_vs_max_eotf_ramp,
             self.check_scaled_18_percent,
@@ -54,6 +55,26 @@ class Validation:
             validation_result = validation(calibration_results)
             results.append(validation_result)
         return results
+
+
+    @staticmethod
+    def check_macbeth_chart_detected(calibration_results: Dict):
+        result = ValidationResult()
+        result.name = "ColourChecker Detection Failed"
+        result.status = ValidationStatus.PASS
+        pre_macbeth_samples = calibration_results[Results.PRE_MACBETH_SAMPLES_XY]
+        if np.allclose(pre_macbeth_samples, 0.0, atol=1e-6):
+            result.status = ValidationStatus.INFO
+            result.message = (
+                "It appears that we were unable to detect the colour checker chart; this is not a "
+                "major concern as it will not affect the calibration process. However, it is likely "
+                "that you have over-defocussed the first patch. If you want to see the colour "
+                "checker data, try again with slightly less defocus.\n"
+            )
+            return result
+
+        return result
+
 
     @staticmethod
     def exposure_validation(calibration_results: Dict) -> ValidationResult:

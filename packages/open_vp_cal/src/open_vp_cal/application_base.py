@@ -310,6 +310,7 @@ class OpenVPCalBase:
 
         """
         validation = Validation()
+        validation_info = []
         validation_results = []
         validation_status = constants.ValidationStatus.PASS
         for led_wall in led_walls:
@@ -318,6 +319,9 @@ class OpenVPCalBase:
                 if result.status != constants.ValidationStatus.PASS:
                     validation_status = utils.calculate_validation_status(validation_status, result.status)
                     validation_results.append(f"{led_wall.name} - {result.name}\n{result.message}\n")
+
+                if result.status == constants.ValidationStatus.INFO:
+                    validation_info.append(f"{led_wall.name} - {result.name}\n{result.message}\n")
 
         if validation_status == constants.ValidationStatus.FAIL:
             validation_results_message = "\n".join(validation_results)
@@ -330,6 +334,10 @@ class OpenVPCalBase:
             if not self.warning_message(f"Validation Warning:\n{validation_results_message}",
                                         yes_text="Continue", no_text="Abort"):
                 return False
+
+        if validation_info:
+            validation_info_message = "\n".join(validation_info)
+            self.info_message(f"Validation Info:\n{validation_info_message}")
         return True
 
     def apply_post_analysis_configuration(self, led_walls: List[LedWallSettings]) -> Dict:

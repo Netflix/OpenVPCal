@@ -310,6 +310,7 @@ def calculate_validation_status(current_status, result):
 
     """
     values = {
+        constants.ValidationStatus.INFO: 2,
         constants.ValidationStatus.PASS: 2,
         constants.ValidationStatus.WARNING: 1,
         constants.ValidationStatus.FAIL: 0
