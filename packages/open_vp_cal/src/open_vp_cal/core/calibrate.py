@@ -621,13 +621,13 @@ def check_eotf_max_values(measured_samples):
 
     # If we see a huge delta in the last frame of the EOTF ramp, we likely have a genlock, frame rate, sync issue
     # which has caused us to sample the end slate frame vs the EOTF ramp frame
-    if last_frame_delta > 0.6:
+    if last_frame_delta > 1.0:
         raise OpenVPCalException(
             "\nThe EOTF Ramp Samples Show A Large Difference Between The Last "
             "Two Patches.\nMost Likely Due Sampling The End Slate Instead Of The Last EOTF Ramp."
             "\nThis Is Likely Due To A Genlock, Frame Rate Mismatch, Sync Issue, "
             "Or Inconsistent Playback Rates."
-            "Ensure You Playback & Capture Setup Is Correct")
+            "Ensure Your Playback & Capture Setup Is Correct")
 
 def run(
         measured_samples_in: Dict,
@@ -837,10 +837,7 @@ def run(
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
     grey_measurements_white_balanced_native_gamut_green = grey_measurements_white_balanced_native_gamut[1]
 
-    green_value_for_last_eotf_patch = eotf_ramp_camera_native_gamut[-1][1]
-    target_over_white = 1 / green_value_for_last_eotf_patch
-    exposure_scaling_factor = 1.0 / (peak_lum * target_over_white)
-
+    exposure_scaling_factor = 1.0 / peak_lum
     max_white_delta = max_white_camera_native_gamut[1] / eotf_ramp_camera_native_gamut[-1][1]
 
     rgbw_measurements_camera_native_gamut = rgbw_measurements_camera_native_gamut / exposure_scaling_factor

@@ -35,7 +35,7 @@ class Validation:
             self.check_macbeth_chart_detected,
             self.exposure_validation,
             self.check_max_screen_white_vs_max_eotf_ramp,
-            self.check_scaled_18_percent,
+            self.check_measured_peak_vs_target_peak,
             self.eotf_validation,
             self.eotf_clamping_validation,
             self.check_gamut_delta_E
@@ -55,6 +55,32 @@ class Validation:
             validation_result = validation(calibration_results)
             results.append(validation_result)
         return results
+
+    @staticmethod
+    def check_measured_peak_vs_target_peak(calibration_results: Dict):
+        result = ValidationResult()
+        result.name = "Measured EOTF Peak vs Target Peak Failed"
+        result.status = ValidationStatus.PASS
+
+        measured_peak = calibration_results[Results.MEASURED_MAX_LUM_NITS][1]
+        target_peak = calibration_results[Results.TARGET_MAX_LUM_NITS]
+        delta = abs(measured_peak - target_peak) / target_peak
+
+        if delta > 0.1:  # If the delta exceeds 10%, throw an error
+            result.status = ValidationStatus.FAIL
+            result.message = (
+                f"The measured peak luminance ({measured_peak} nits) deviates significantly from the target peak luminance "
+                f"({target_peak} nits) by {round(delta * 100, 2)}%. Please check your imaging chain and re-shoot the plates."
+            )
+        elif delta > 0.05:  # If the delta exceeds 5%, throw a warning
+            result.status = ValidationStatus.WARNING
+            result.message = (
+                f"The measured peak luminance ({measured_peak} nits) deviates from the target peak luminance "
+                f"({target_peak} nits) by {round(delta * 100, 2)}%. This may affect calibration accuracy."
+            )
+
+        return result
+
 
 
     @staticmethod
@@ -95,7 +121,7 @@ class Validation:
         if measured_18_percent < quarter_stop_down_18_percent or measured_18_percent > quarter_stop_up_18_percent:
             result.status = ValidationStatus.FAIL
             result.message = (
-                f"The Exposure of the 18% Patch is measured at {round(measured_18_percent, 1) * 100}%\n"
+                f"The Exposure of the 18% Patch is measured at {round(measured_18_percent, 2) * 100}%\n"
                 "It seems that you have not exposed the calibration patches correctly. "
                 "Please ensure to expose the first 18% patch correctly using the camera false colour or light meter."
             )
@@ -108,7 +134,7 @@ class Validation:
         else:
             result.status = ValidationStatus.WARNING
             result.message = (
-                f"The Exposure of the 18% Patch is measured at {round(measured_18_percent, 1) * 100}%, this is not ideal.\n"
+                f"The Exposure of the 18% Patch is measured at {round(measured_18_percent, 2) * 100}%, this is not ideal.\n"
                 "Please ensure to expose the first 18% patch correctly using the camera false colour or light meter."
             )
 
@@ -194,38 +220,6 @@ class Validation:
                 " Please check that the wall settings match the actual peak luminance of your wall also check your "
                 "imaging chain from content engine to LED processor and re shoot the plates"
                 )
-        return result
-
-    @staticmethod
-    def check_scaled_18_percent(calibration_results: Dict) -> ValidationResult:
-        """ This validation checks that the scaled 18% patch is within a reasonable range. The measured 18%
-            patch will never be exactly 18%, so when we correct this we want to make sure that the scaled version
-            has not been scaled to an extreme value due to incorrect equipment setup
-
-        Args:
-            calibration_results: The calibration results
-
-        Returns: The result of the validation check
-
-        """
-        result = ValidationResult()
-        result.name = "Check Scaled 18% Validation"
-        measured_18_percent = calibration_results[Results.MEASURED_18_PERCENT_SAMPLE]
-        scaling_factor = calibration_results[Results.EXPOSURE_SCALING_FACTOR]
-        target_max_lum_nits = calibration_results[Results.TARGET_MAX_LUM_NITS]
-
-        scaled_18_percent_nits = (measured_18_percent / scaling_factor) * 100
-        min_nits_threshold = target_max_lum_nits * 0.16
-        max_nits_threshold = target_max_lum_nits * 0.20
-
-        is_between = min_nits_threshold <= scaled_18_percent_nits <= max_nits_threshold
-        if not is_between:
-            result.status = ValidationStatus.FAIL
-            result.message = (
-                f"When scaled the measured 18 percent patch is not within a reasonable range: {round(scaled_18_percent_nits, 1)} nits."
-                " Please check that the wall settings match the actual peak luminance of your wall also check your "
-                "imaging chain from content engine to LED processor and re shoot the plates"
-            )
         return result
 
     @staticmethod
