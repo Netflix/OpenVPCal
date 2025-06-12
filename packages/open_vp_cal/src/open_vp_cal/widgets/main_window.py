@@ -28,6 +28,7 @@ from open_vp_cal.application_base import OpenVPCalBase
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME
 from open_vp_cal.core.resource_loader import ResourceLoader
+from open_vp_cal.imaging.preprocessing import PreProcessConvert
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.framework.processing import Processing
 from open_vp_cal.project_settings import ProjectSettings
@@ -213,6 +214,8 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.project_settings_model = ProjectSettingsModel(self, led_wall_class=LedWallTimelineLoader)
         self.project_settings_model.data_changed.connect(self.project_settings_changed)
         self.project_settings_model.error_occurred.connect(self.error_message)
+        # We ensure that our config is all created for handling raw media
+        PreProcessConvert(self.project_settings_model)
 
         self.led_settings_view = LEDSettingsView()
         self.calibration_settings_view = CalibrationSettingsView()
