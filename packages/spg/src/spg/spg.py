@@ -294,7 +294,7 @@ class PatternGenerator(object):
                 raster_image, mapping.raster_u, mapping.raster_v, 0, 0, wall_segment_rotated, roi=oiio.ROI.All
             )
 
-        file_name = "{0}.{1}.{2}".format(
+        file_name = "{0}.{1}{2}".format(
             raster_name,
             str(full_sequence_frame_num).zfill(self.project_settings.frame_padding), self.project_settings.image_file_format
         )

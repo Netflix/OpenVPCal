@@ -568,7 +568,7 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
         :param name: the name of the image
         :return: the full file path to the image we want to write to disk
         """
-        file_name = "{0}_{1}.{2}.{3}".format(
+        file_name = "{0}_{1}.{2}{3}".format(
             name,
             cls.name, str(frame_num).zfill(cls.spg.project_settings.frame_padding),
             cls.spg.project_settings.image_file_format
