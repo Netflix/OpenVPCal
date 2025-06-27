@@ -47,7 +47,8 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False,
-            constants.ProjectSettingsKeys.PROJECT_ID: utils.generate_truncated_hash()
+            constants.ProjectSettingsKeys.PROJECT_ID: utils.generate_truncated_hash(),
+            constants.ProjectSettingsKeys.LUT_SIZE: constants.DEFAULT_LUZ_SIZE,
         }
 
         self._project_settings = copy.deepcopy(self._default_project_settings)
@@ -358,6 +359,27 @@ class ProjectSettings:
             value (int): The content max luminance for the project
         """
         self._project_settings[constants.ProjectSettingsKeys.CONTENT_MAX_LUM] = value
+
+    @property
+    def lut_size(self):
+        """Get the size of the lut for the project
+
+        Returns:
+            int: The size of the luz for the project
+        """
+        # To maintain backwards compatability with v1.x we check to see if it exists and if not we call the setter before we return the value
+        if constants.ProjectSettingsKeys.LUT_SIZE not in self._project_settings:
+            self.lut_size = constants.DEFAULT_LUZ_SIZE
+        return self._project_settings[constants.ProjectSettingsKeys.LUT_SIZE]
+
+    @lut_size.setter
+    def lut_size(self, value: int):
+        """Set the size of the lut for the project
+
+        Args:
+            value (int): The size of the lut for the project
+        """
+        self._project_settings[constants.ProjectSettingsKeys.LUT_SIZE] = value
 
     @classmethod
     def from_json(cls, json_file: str):

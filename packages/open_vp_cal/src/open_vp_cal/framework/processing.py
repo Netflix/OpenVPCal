@@ -388,7 +388,7 @@ class Processing:
                     led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
                     ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
-                    ocio_config_output_file, lut_output_file
+                    ocio_config_output_file, lut_output_file, cube_size=led_wall.project_settings.lut_size
                 )
 
             if do_aces_cct_ocio_export and export_lut_for_aces_cct_in_target_out:
@@ -396,7 +396,7 @@ class Processing:
                     constants.CameraColourSpace.CS_ACES_CCT,
                     led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
                     ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
-                    ocio_config_output_file, lut_output_file
+                    ocio_config_output_file, lut_output_file, cube_size=led_wall.project_settings.lut_size
                 )
 
             if do_aces_cct_ocio_export and not export_lut_for_aces_cct_in_target_out:
@@ -404,7 +404,7 @@ class Processing:
                     constants.CameraColourSpace.CS_ACES_CCT,
                     led_wall.processing_results.led_wall_colour_spaces.aces_cct_display_colour_space_cs.getName(),
                     led_wall.processing_results.led_wall_colour_spaces.aces_cct_calibration_view_transform.getName(),
-                    ocio_config_output_file, lut_output_file
+                    ocio_config_output_file, lut_output_file, cube_size=led_wall.project_settings.lut_size
                 )
 
             led_wall.processing_results.lut_output_file = lut_output_file
