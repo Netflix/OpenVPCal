@@ -315,6 +315,13 @@ class OcioConfigWriter:
                         direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
                     )
                 )
+            elif tgt_eotf == EOTF.EOTF_HLG:
+                inverse_eotf_group_transform.appendTransform(
+                    ocio.BuiltinTransform(
+                        "CURVE - HLG-OETF-INVERSE",
+                        direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
+                    )
+                )
             else:
                 raise RuntimeError("Unknown EOTF: " + tgt_eotf)
         return inverse_eotf_group_transform
