@@ -53,7 +53,7 @@ class TestCalibrate(TestProject):
             led_wall.processing_results.samples = self.get_samples(self.led_wall)
             led_wall.processing_results.reference_samples = self.get_reference_samples(self.led_wall)
 
-        self.project_settings.project_id = "test_ocio"
+        self.project_settings.project_id = "test2_ocio"
         actual_file_path = self.config_writer.generate_post_calibration_ocio_config(self.led_walls)
         expected_file_path = self.get_post_calibration_ocio_config()
         self.files_are_equal(actual_file_path, expected_file_path)

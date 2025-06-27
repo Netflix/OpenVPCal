@@ -90,7 +90,7 @@ class TestUtils(unittest.TestCase):
 
     def files_are_equal(self, file1_path, file2_path):
         with open(file1_path, 'r', encoding="utf8") as file1, open(file2_path, 'r', encoding="utf8") as file2:
-            self.assertEqual(file1.readlines(), file2.readlines())
+            self.assertEqual(file1.readlines(), file2.readlines(), msg=f"Files {file1_path} and {file2_path} are not equal.")
 
 
     @classmethod
