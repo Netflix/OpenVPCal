@@ -48,9 +48,9 @@ _FORMAT_MAP = {
         {
             "commandName": ART_CMD,
             "command_path_overrides": {
-                "darwin": "",
-                "win32": "",
-                "linux": ""
+                "darwin": "~/ARRI/bin/art-cmd",
+                "win32": "C:\\ARRI\\bin\\art-cmd.exe",
+                "linux": "~/ARRI/bin/art-cmd"
             },
             "formats": InputFormats.ARRI_FORMATS,
             "args": [("--mode", "process"), ("--input", "<FILEPATH_IN>"), ("--output", "<OUTPUT_FOLDER>/<OUTPUT_FILENAME>.%07d.exr"), ("--video-codec", "exr_uncompressed/f16"), ("--target-colorspace", "AP0/D60/linear"), ("--letterbox-size", "<RESOLUTION_X>x<RESOLUTION_Y>")],

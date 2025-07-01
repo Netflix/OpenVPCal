@@ -1013,6 +1013,7 @@ Support for ARRIs .ari, .arx and .mxf formats is provided via the ART-CMD applic
 https://www.arri.com/en/learn-help/learn-help-camera-system/tools/arri-reference-tool
 
 NOTE: Ensure is the CMD application, not the GUI Application
+NOTE: The ART CMD should be placed by default in C:/ARRI or ~/ARRI on macOS/Linux.
 NOTE: The art-cmd needs to be on the $PATH variable or directly configured in the pre_process_config (see below for more info). 
 
 #### FFMpeg

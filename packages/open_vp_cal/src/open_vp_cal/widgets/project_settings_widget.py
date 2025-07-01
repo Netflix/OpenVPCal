@@ -167,6 +167,9 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.DEFAULT: self.content_max_lum,
                 "min": 0.0, "max": constants.PQ.PQ_MAX_NITS, "step": 50, "decimals": 2
             },
+            constants.ProjectSettingsKeys.LUT_SIZE: {
+                constants.DEFAULT: self.lut_size, "min": 1, "max": 66, "step": 1
+            },
         }
 
     def set_data(self, key: str, value: object):
@@ -624,6 +627,7 @@ class ProjectSettingsView(LockableWidget):
 
         self.frame_rate = None
         self.content_max_lum = None
+        self.lut_size = None
         self.export_lut_for_aces_cct_in_target_out = None
         self.export_lut_for_aces_cct = None
         self.reference_gamut = None
@@ -681,6 +685,7 @@ class ProjectSettingsView(LockableWidget):
         self.frames_per_patch = QSpinBox()
         self.frame_rate = QComboBox()
         self.content_max_lum = QDoubleSpinBox()
+        self.lut_size = QSpinBox()
 
         custom_logo_layout = QHBoxLayout()
         self.custom_logo_path = QLineEdit()
@@ -696,6 +701,7 @@ class ProjectSettingsView(LockableWidget):
         patch_generation_layout.addRow(QLabel("Frames Per Patch:"), self.frames_per_patch)
         patch_generation_layout.addRow(QLabel("Frame Rate:"), self.frame_rate)
         patch_generation_layout.addRow(QLabel("Content Max Lum:"), self.content_max_lum)
+        patch_generation_layout.addRow(QLabel("Lut Size:"), self.lut_size)
         patch_generation_layout.addRow(QLabel("Custom Logo:"), custom_logo_layout)
         patch_generation_group.setLayout(patch_generation_layout)
 
@@ -1017,6 +1023,12 @@ class ProjectSettingsController(QObject):
             lambda: self.model.set_data(
                 constants.ProjectSettingsKeys.CONTENT_MAX_LUM,
                 self.project_settings_view.content_max_lum.value())
+        )
+
+        self.project_settings_view.lut_size.valueChanged.connect(
+            lambda: self.model.set_data(
+                constants.ProjectSettingsKeys.LUT_SIZE,
+                self.project_settings_view.lut_size.value())
         )
 
         self.project_settings_view.frame_rate.currentIndexChanged.connect(
