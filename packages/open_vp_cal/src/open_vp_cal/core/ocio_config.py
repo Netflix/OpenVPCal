@@ -16,10 +16,12 @@ limitations under the License.
 This module contains the classes to write the OCIO configuration file.
 """
 import os
+import shutil
 import typing
 from typing import List
 
 import PyOpenColorIO as ocio
+import numpy as np
 from PyOpenColorIO import ColorSpace
 from colour import RGB_COLOURSPACES, matrix_RGB_to_RGB
 
@@ -273,8 +275,7 @@ class OcioConfigWriter:
         target_gamut_and_tf_cs.setTransform(inverse_eotf_group_transform, ocio.COLORSPACE_DIR_FROM_REFERENCE)
         return target_gamut_and_tf_cs
 
-    @staticmethod
-    def create_inverse_eotf_group(tgt_eotf: str) -> ocio.GroupTransform:
+    def create_inverse_eotf_group(self, tgt_eotf: str) -> ocio.GroupTransform:
         """ Create an OCIO group transform for the inverse EOTF
 
         Args:
@@ -316,15 +317,70 @@ class OcioConfigWriter:
                     )
                 )
             elif tgt_eotf == EOTF.EOTF_HLG:
-                inverse_eotf_group_transform.appendTransform(
-                    ocio.BuiltinTransform(
-                        "CURVE - HLG-OETF-INVERSE",
-                        direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
-                    )
+                cst = ocio.ColorSpaceTransform(
+                    src="ACES2065-1",
+                    dst="HLG to Linear - 0 - 100"
                 )
+                inverse_eotf_group_transform.appendTransform(cst)
+
+                # TODO when we migrate to OCIO 2.4 when its widly supported
+                # inverse_eotf_group_transform.appendTransform(
+                #     ocio.BuiltinTransform(
+                #         "CURVE - HLG-OETF-INVERSE",
+                #         direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
+                #     )
+                # )
             else:
                 raise RuntimeError("Unknown EOTF: " + tgt_eotf)
         return inverse_eotf_group_transform
+
+    @staticmethod
+    def create_hlg_to_linear_colorspace(cube_path: str) -> ocio.ColorSpace:
+        """
+        Return an OCIO ColorSpace that converts BT.2100 HLG (OETF) to a
+        scene-referred linear reference space by means of an external *.cube* LUT.
+
+        Parameters
+        ----------
+        cube_path : str
+            Absolute or config-relative path to the 1D/3D LUT file
+            (e.g. "luts/HLG_to_Linear.cube").
+
+        Returns
+        -------
+        ocio.ColorSpace
+            A fully populated ColorSpace object ready to be added to an OCIO
+            Config via `config.addColorSpace()`.
+        """
+        # 1. Create the colour space container
+        cs = ocio.ColorSpace(name="HLG to Linear - 0 - 100")
+        cs.setFamily("HLG")
+        cs.setDescription(
+            "Converts ITU-R BT.2100 HLG OETF to scene-linear using external LUT"
+        )
+        cs.setBitDepth(ocio.BIT_DEPTH_F32)  # or BIT_DEPTH_F16 for half-float
+        cs.setAllocation(ocio.Allocation.ALLOCATION_UNIFORM)
+
+        group = ocio.GroupTransform()
+        lut = ocio.FileTransform()
+        lut.setSrc(cube_path)
+        lut.setInterpolation(ocio.INTERP_LINEAR)
+        lut.setDirection(ocio.TransformDirection.TRANSFORM_DIR_FORWARD)
+        group.appendTransform(lut)
+
+        scale = 8.3334
+        rgb_scale_matrix = np.eye(3) * scale
+
+        scaling_matrix = ocio.MatrixTransform(
+            ocio_utils.numpy_matrix_to_ocio_matrix(rgb_scale_matrix.tolist()),
+            direction=ocio.TransformDirection.TRANSFORM_DIR_FORWARD
+        )
+        group.appendTransform(scaling_matrix)
+
+
+        cs.setTransform(group, ocio.COLORSPACE_DIR_TO_REFERENCE)
+
+        return cs
 
     def get_transfer_function_only_cs(self, led_wall_settings: LedWallSettings) -> ColorSpace:
         """ Get the transfer function only colour space for the given led wall
@@ -1136,6 +1192,20 @@ class OcioConfigWriter:
         parent_dir = os.path.dirname(filename)
         if parent_dir:
             os.makedirs(parent_dir, exist_ok=True)
+
+        # TODO Ensure we copy the HLG LUT if we are using HLG, this can all go away once we can migrate
+        # TODO to OCIO 2.4 configs widley
+        for name, cs in colour_spaces.items():
+            if cs.led_wall_settings.target_eotf == constants.EOTF.EOTF_HLG:
+                hlg_cube = ResourceLoader.hlg_to_linear_cube()
+                hlg_cube_name = os.path.basename(hlg_cube)
+                output_lut_file_name = os.path.join(parent_dir, hlg_cube_name)
+                shutil.copy(hlg_cube, output_lut_file_name)
+
+                cs = OcioConfigWriter.create_hlg_to_linear_colorspace(output_lut_file_name)
+                config.addColorSpace(cs)
+                break
+
 
         with open(filename, "w", encoding="utf-8") as file:
             file.write(config.serialize())
