@@ -76,6 +76,13 @@ class LedWallSettings:
         for key, value in self._default_led_settings.items():
             self._set_property(key, value)
 
+    def clear(self):
+        """Clears the roi, processing and separation results. So that we can start fresh with
+        a new sequence being loaded"""
+        self.processing_results = ProcessingResults()
+        self.separation_results = None
+        self.roi = []
+
     def _set_property(self, field_name: str, value: Any) -> None:
         """ Sets the internal property data stores for the given field name, and given value.
             If the led wall is a verification wall, it will not set the verification wall's settings
