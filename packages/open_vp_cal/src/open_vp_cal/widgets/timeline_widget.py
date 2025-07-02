@@ -175,6 +175,12 @@ class TimelineModel(QObject):
             self.project_settings.set_data(LedWallSettingsKeys.INPUT_PLATE_GAMUT,
                                            input_plate_gamut)
 
+    def reset(self) -> None:
+        """
+        Resets the sequence loader and clears any cached frames or results.
+        """
+        self.project_settings.current_wall.sequence_loader.reset()
+
     def load_all_sequences_for_led_walls(self) -> None:
         """ Loads all sequences for all led walls
 
@@ -472,6 +478,14 @@ class TimelineWidget(LockableWidget):
 
         self.model.set_current_frame(frame + 1)
         self.model.set_current_frame(frame)
+
+    @Slot()
+    def reset(self):
+        """
+        Calls the reset on the model which resets the sequence loader. So we clear any old caches
+        and results from previous analysis
+        """
+        self.model.reset()
 
     @Slot()
     def update_slider_value(self, value):

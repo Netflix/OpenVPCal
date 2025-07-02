@@ -111,6 +111,7 @@ class StageView(QWidget):
     led_wall_removed = Signal()
     led_wall_reset = Signal()
     led_wall_load_sequence = Signal()
+    led_wall_clear_sequence = Signal()
     verification_wall_added = Signal()
 
     def __init__(self, model: StageModel):
@@ -148,14 +149,32 @@ class StageView(QWidget):
         copy_action = QAction("Copy LED Wall", context_menu)
         remove_action = QAction("Remove LED Wall", context_menu)
         load_sequence_action = QAction("Load Plate Sequence", context_menu)
+        clear_sequence_action = QAction("Clear Plate Sequence", context_menu)
         verification_add_action = QAction("Add Verification Wall", context_menu)
         reset_settings_action = QAction("Reset Wall Settings", context_menu)
+
+        index = self.list_view.indexAt(position)
+        if index.isValid():
+            display = index.data(Qt.DisplayRole)
+            original_name = display.split(" -> ")[0]
+            led_wall = self.model.project_settings.get_led_wall(original_name)
+            has_sequence = bool(led_wall.sequence_loader.file_name)
+
+            load_sequence_action.setEnabled(not has_sequence)
+            clear_sequence_action.setEnabled(has_sequence)
+        else:
+            # No valid item: disable context actions
+            for act in (copy_action, remove_action, load_sequence_action,
+                        clear_sequence_action, verification_add_action,
+                        reset_settings_action):
+                act.setEnabled(False)
 
         context_menu.addAction(add_action)
         context_menu.addAction(copy_action)
         context_menu.addAction(remove_action)
         context_menu.addSeparator()
         context_menu.addAction(load_sequence_action)
+        context_menu.addAction(clear_sequence_action)
         context_menu.addSeparator()
         context_menu.addAction(verification_add_action)
         context_menu.addSeparator()
@@ -167,6 +186,7 @@ class StageView(QWidget):
         load_sequence_action.triggered.connect(self.load_sequence)
         verification_add_action.triggered.connect(self.add_verification_wall)
         reset_settings_action.triggered.connect(self.reset_settings)
+        clear_sequence_action.triggered.connect(self.clear_sequence)
 
         # Map the position to global coordinates for the menu
         global_position = self.list_view.viewport().mapToGlobal(position)
@@ -177,6 +197,12 @@ class StageView(QWidget):
         """ Emits a signal when the reset LED wall settings action is triggered
         """
         self.led_wall_reset.emit()
+
+    @Slot()
+    def clear_sequence(self) -> None:
+        """ Emits a signal when the reset LED wall settings action is triggered
+        """
+        self.led_wall_clear_sequence.emit()
 
     @Slot()
     def copy_led_wall(self) -> None:

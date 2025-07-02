@@ -232,6 +232,7 @@ class MainWindow(QMainWindow, OpenVPCalBase):
         self.stage_controller.led_wall_verification_added.connect(self.project_settings_model.add_verification_wall)
         self.stage_controller.led_wall_reset.connect(self.project_settings_model.reset_led_wall)
         self.stage_view.led_wall_load_sequence.connect(self.load_sequence)
+        self.stage_view.led_wall_clear_sequence.connect(self.clear_sequence)
 
         self.project_settings_model.led_wall_added.connect(self.stage_controller.add_led_wall)
         self.project_settings_controller = ProjectSettingsController(
@@ -706,12 +707,31 @@ class MainWindow(QMainWindow, OpenVPCalBase):
 
     def load_sequence(self) -> None:
         """ Loads the sequence from the selected folder, if no LED wall is selected, it asks the user to select one.
+
+        If a sequence is already loaded for the current LED wall, it asks the user to clear the sequence before loading
         """
         if not self.project_settings_model.current_wall:
             self.error_message("No Led Wall Selected To Associate Sequence With")
             return
 
+        if self.project_settings_model.current_wall.sequence_loader.folder_path is not None:
+            self.error_message(
+                "A Sequence Is Already Loaded For This Wall, Please Clear The Sequence Before Loading A New One"
+            )
+            return
         self.timeline_view.load_sequence()
+
+    def clear_sequence(self) -> None:
+        """ Clears the sequence for the current LED wall, if no LED wall is selected, it asks the user to select one.
+        """
+        if not self.project_settings_model.current_wall:
+            self.error_message("No Led Wall Selected To Clear Sequence With")
+            return
+
+        name = self.project_settings_model.current_wall.name
+        self.timeline_view.reset()
+        self.stage_controller.select_led_walls([])
+        self.stage_controller.select_led_walls([name])
 
     def sequence_loaded(self, led_wall):
         """ Called when a sequence has been loaded, we force the timeline widget to the start frame, we then run the

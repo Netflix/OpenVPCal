@@ -41,6 +41,9 @@ class SequenceLoader:
     def __init__(self, led_wall_settings: "LedWallSettings"):
         """Initializes a SequenceLoader instance."""
         self.led_wall_settings = led_wall_settings
+        self.init()
+
+    def init(self):
         self.cache = OrderedDict()
         self._current_frame = -1
         self._start_frame = -1
@@ -51,6 +54,13 @@ class SequenceLoader:
         self.file_type = constants.FileFormats.FF_EXR
         self.frames = []
         self.frame_class = Frame
+
+    def reset(self):
+        """Resets the SequenceLoader instance to its initial state. And clears anything cached
+        in the led wall from previous runs"""
+        self.init()
+        self.led_wall_settings.clear()
+
 
     def set_start_frame(self, frame: int) -> bool:
         """
