@@ -153,6 +153,22 @@ class StageView(QWidget):
         verification_add_action = QAction("Add Verification Wall", context_menu)
         reset_settings_action = QAction("Reset Wall Settings", context_menu)
 
+        index = self.list_view.indexAt(position)
+        if index.isValid():
+            display = index.data(Qt.DisplayRole)
+            original_name = display.split(" -> ")[0]
+            led_wall = self.model.project_settings.get_led_wall(original_name)
+            has_sequence = bool(led_wall.sequence_loader.file_name)
+
+            load_sequence_action.setEnabled(not has_sequence)
+            clear_sequence_action.setEnabled(has_sequence)
+        else:
+            # No valid item: disable context actions
+            for act in (copy_action, remove_action, load_sequence_action,
+                        clear_sequence_action, verification_add_action,
+                        reset_settings_action):
+                act.setEnabled(False)
+
         context_menu.addAction(add_action)
         context_menu.addAction(copy_action)
         context_menu.addAction(remove_action)
