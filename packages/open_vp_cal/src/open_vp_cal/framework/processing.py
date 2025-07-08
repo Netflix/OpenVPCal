@@ -361,11 +361,11 @@ class Processing:
 
             led_wall.processing_results.ocio_config_output_file = ocio_config_output_file
             if led_wall.calculation_order == constants.CalculationOrder.CO_CS_EOTF:
-                calc_order_string = constants.CalculationOrder.CO_CS_EOTF_STRING
+                calc_order_string = constants.CalculationOrder.get_cs_eotf_string()
             else:
-                calc_order_string = constants.CalculationOrder.CO_EOTF_CS_STRING
+                calc_order_string = constants.CalculationOrder.get_eotf_cs_string()
             if not led_wall.enable_eotf_correction:
-                calc_order_string = constants.CalculationOrder.CS_ONLY_STRING
+                calc_order_string = constants.CalculationOrder.get_cs_only_string()
 
             aces_cct_desc = ""
             if do_aces_cct_ocio_export:
