@@ -642,7 +642,7 @@ def run(
         enable_plate_white_balance: bool = True,
         enable_gamut_compression: bool = True,
         enable_EOTF_correction: bool = True,
-        calculation_order: Union[str, CalculationOrder] = CalculationOrder.CO_DEFAULT,
+        calculation_order: Union[str, CalculationOrder] = CalculationOrder.default(),
         gamut_compression_shadow_rolloff: float = constants.GAMUT_COMPRESSION_SHADOW_ROLLOFF,
         reference_wall_external_white_balance_matrix: Union[None, List] = None,
         decoupled_lens_white_samples: Union[None, List] = None,

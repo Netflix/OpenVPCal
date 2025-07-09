@@ -178,7 +178,7 @@ def generate_patterns_for_led_walls(project_settings: 'ProjectSettings', led_wal
 
     for led_wall in led_walls:
         patch_generator = PatchGeneration(led_wall)
-        patch_generator.generate_patches(constants.PATCHES.PATCH_ORDER)
+        patch_generator.generate_patches(constants.PATCHES.patch_order())
 
     _, ocio_config_path = export_pre_calibration_ocio_config(project_settings, led_walls)
     return ocio_config_path

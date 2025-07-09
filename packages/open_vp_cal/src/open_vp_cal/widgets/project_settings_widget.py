@@ -85,7 +85,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         """
         Refreshes the default data dictionary with the current default values from the LedWallSettings class
         """
-        target_gamut_options = constants.ColourSpace.CS_ALL.copy()
+        target_gamut_options = constants.ColourSpace.all().copy()
         target_gamut_options.pop(target_gamut_options.index(constants.ColourSpace.CS_ACES))
         target_gamut_options.extend(self.project_custom_primaries.keys())
         default_led_wall = LedWallSettings(self, constants.DEFAULT)
@@ -96,21 +96,21 @@ class ProjectSettingsModel(ProjectSettings, QObject):
                 constants.OPTIONS: target_gamut_options,
                 constants.DEFAULT: default_led_wall.target_gamut},
             constants.LedWallSettingsKeys.TARGET_EOTF: {
-                constants.OPTIONS: constants.EOTF.EOTF_ALL, constants.DEFAULT: default_led_wall.target_eotf
+                constants.OPTIONS: constants.EOTF.all(), constants.DEFAULT: default_led_wall.target_eotf
             },
             constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT: {
                 constants.OPTIONS: self.get_ocio_colorspace_names(), constants.DEFAULT: default_led_wall.input_plate_gamut
             },
             constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: {
-                constants.OPTIONS: constants.CameraColourSpace.CS_ALL,
+                constants.OPTIONS: constants.CameraColourSpace.all(),
                 constants.DEFAULT: default_led_wall.native_camera_gamut
             },
             constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: {
-                constants.OPTIONS: constants.CAT.CAT_ALL_WITH_NONE,
+                constants.OPTIONS: constants.CAT.all_with_none(),
                 constants.DEFAULT: default_led_wall.target_to_screen_cat
             },
             constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT: {
-                constants.OPTIONS: constants.CAT.CAT_ALL,
+                constants.OPTIONS: constants.CAT.all(),
                 constants.DEFAULT: default_led_wall.reference_to_target_cat
             },
             constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: {
@@ -145,16 +145,16 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             constants.ProjectSettingsKeys.REFERENCE_GAMUT: {
                 constants.OPTIONS: [constants.ColourSpace.CS_ACES], constants.DEFAULT: constants.ColourSpace.CS_ACES},
             constants.ProjectSettingsKeys.FILE_FORMAT: {
-                constants.OPTIONS: constants.FileFormats.FF_ALL_WRITE, constants.DEFAULT: constants.FileFormats.FF_DEFAULT},
+                constants.OPTIONS: constants.FileFormats.all_write(), constants.DEFAULT: constants.FileFormats.default() },
             constants.LedWallSettingsKeys.CALCULATION_ORDER: {
-                constants.OPTIONS: constants.CalculationOrder.CO_ALL,
+                constants.OPTIONS: constants.CalculationOrder.all(),
                 constants.DEFAULT: default_led_wall.calculation_order
             },
             constants.LedWallSettingsKeys.AVOID_CLIPPING: {
                 constants.DEFAULT: default_led_wall.avoid_clipping
             },
             constants.ProjectSettingsKeys.FRAME_RATE: {
-                constants.DEFAULT: self.frame_rate, constants.OPTIONS: constants.FrameRates.FPS_ALL
+                constants.DEFAULT: self.frame_rate, constants.OPTIONS: constants.FrameRates.all()
             },
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: {
                 constants.DEFAULT: self.export_lut_for_aces_cct

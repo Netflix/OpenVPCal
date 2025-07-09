@@ -195,9 +195,9 @@ class OcioConfigWriter:
         Returns: The calibration colour space name
 
         """
-        calc_order = CalculationOrder.CO_EOTF_CS_STRING
+        calc_order = CalculationOrder.eotf_cs_string()
         if led_wall_settings.calculation_order == CalculationOrder.CO_CS_EOTF:
-            calc_order = CalculationOrder.CO_CS_EOTF_STRING
+            calc_order = CalculationOrder.cs_eotf_string()
         calibration_cs_name = (f"Calibration CSC - {led_wall_settings.name} - "
                                f"{led_wall_settings.native_camera_gamut} - "
                                f"{calc_order}")
@@ -613,8 +613,8 @@ class OcioConfigWriter:
             ),
         )
 
-        EOTF_CS_string = CalculationOrder.CO_EOTF_CS_STRING
-        CS_EOTF_string = CalculationOrder.CO_CS_EOTF_STRING
+        EOTF_CS_string = CalculationOrder.eotf_cs_string()
+        CS_EOTF_string = CalculationOrder.cs_eotf_string()
         if results[Results.CALCULATION_ORDER] == CalculationOrder.CO_EOTF_CS:
 
             # matrix transform to screen colour space
@@ -745,9 +745,9 @@ class OcioConfigWriter:
         Returns: The post-calibration view transform name and description
 
         """
-        calc_order = CalculationOrder.CO_EOTF_CS_STRING
+        calc_order = CalculationOrder.eotf_cs_string()
         if led_wall_settings.calculation_order == CalculationOrder.CO_CS_EOTF:
-            calc_order = CalculationOrder.CO_CS_EOTF_STRING
+            calc_order = CalculationOrder.cs_eotf_string()
 
         target_colour_space = utils.get_target_colourspace_for_led_wall(led_wall_settings)
         view_transform_name = f"Calibrated {led_wall_settings.name} - {led_wall_settings.target_gamut} - {led_wall_settings.native_camera_gamut} - {calc_order}"
@@ -1140,9 +1140,9 @@ class OcioConfigWriter:
         """
         Get the name of the calibrated output for the view transform
         """
-        calc_order = CalculationOrder.CO_EOTF_CS_STRING
+        calc_order = CalculationOrder.eotf_cs_string()
         if lw_cs.led_wall_settings.calculation_order == CalculationOrder.CO_CS_EOTF:
-            calc_order = CalculationOrder.CO_CS_EOTF_STRING
+            calc_order = CalculationOrder.cs_eotf_string()
         calibrated_output_name = (f"{OcioConfigWriter.calibrated_output} - "
                                   f"{lw_cs.led_wall_settings.name} - "
                                   f"{lw_cs.led_wall_settings.target_gamut} - "
