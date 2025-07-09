@@ -188,7 +188,7 @@ class SequenceLoader:
             raise IOError("More Than One File Extension Found In Sequence Folder")
 
         for ext in file_extensions:
-            if ext not in constants.FileFormats.get_all_read():
+            if ext not in constants.FileFormats.all_read():
                 raise IOError(f"File Extension: .{ext}, not supported")
 
         if not files:

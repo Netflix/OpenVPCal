@@ -66,7 +66,7 @@ class TestLedWallSettings(TestBase):
         sample_keys = list(self.sample.keys())
         sample_keys.sort()
 
-        constants_all = constants.LedWallSettingsKeys.get_all().copy()
+        constants_all = constants.LedWallSettingsKeys.all().copy()
         constants_all.sort()
         self.assertEqual(sample_keys, constants_all)
 

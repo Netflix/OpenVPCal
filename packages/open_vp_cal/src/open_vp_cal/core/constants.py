@@ -16,8 +16,6 @@ limitations under the License.
 This file contains constants used throughout the openvpcal calibration process
 """
 from enum import Enum, StrEnum, IntEnum
-from typing import TypeVar, Type
-
 
 COLOR_WIDGET_GRAPH_SCALE = 1000
 
@@ -60,22 +58,6 @@ DEFAULT_OCIO_CONFIG = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1"
 ARC_CONFIG = "arc_config.xml"
 
 
-StrEnumClass = TypeVar('StrEnumClass', bound=StrEnum|IntEnum)
-def get_cached_list(type_class: Type[StrEnumClass]) -> list:
-    """
-    Helper function to get a cached list of the values in the given type_class
-    
-    Args:
-        type_class: The enum class type (e.g., EOTF, CAT, etc.)
-        
-    Returns:
-        A cached list of string values from the enum
-    """
-    if not hasattr(type_class, '_list_all_cache'):
-        type_class._list_all_cache = [member.value for member in type_class]
-    return type_class._list_all_cache
-
-
 class UILayouts(StrEnum):
     """
     Constants for defining the different layouts we want to use for the UI
@@ -84,7 +66,6 @@ class UILayouts(StrEnum):
     PROJECT_LAYOUT = "ProjectLayout.layout"
     ANALYSIS_LAYOUT_WINDOWS = "AnalysisLayout_Windows.layout"
     PROJECT_LAYOUT_WINDOWS = "ProjectLayout_Windows.layout"
-
 
 
 class DisplayFilters(StrEnum):
@@ -129,12 +110,9 @@ class ProjectSettingsKeys(StrEnum):
     LUT_SIZE = "lut_size"
 
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all project settings keys. This caches the list of project settings keys on first call
-
-        :return: The list of all project settings keys
-        """
-        return get_cached_list(ProjectSettingsKeys)
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in ProjectSettingsKeys]
 
 
 class FrameRates(IntEnum):
@@ -149,15 +127,12 @@ class FrameRates(IntEnum):
     FPS_60 = 60
 
     @staticmethod
-    def get_all() -> list[int]:
-        """ Returns the list of all frame rates. This caches the list of frame rates on first call
-
-        :return: The list of all frame rates
-        """
-        return get_cached_list(FrameRates)
+    def all() -> list[int]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in FrameRates]
 
     @staticmethod
-    def get_default() -> int:
+    def default() -> int:
         return FrameRates.FPS_24
 
 
@@ -191,17 +166,13 @@ class LedWallSettingsKeys(StrEnum):
     VERIFICATION_WALL = "verification_wall"
 
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all LED wall settings keys. This caches the list of LED wall settings keys on first call
-
-        :return: The list of all LED wall settings keys
-        """
-        return get_cached_list(LedWallSettingsKeys)
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in LedWallSettingsKeys]
 
 class PATCHES(StrEnum):
     """ Constants to define the names of the patches we use for the calibration, and a small helper function to get the
     order of the patches
-
     """
     SLATE = "Slate"
     RED_PRIMARY_DESATURATED = "Red_Primary_Desaturated"
@@ -220,21 +191,21 @@ class PATCHES(StrEnum):
     END_SLATE = "End_Slate"
 
     @staticmethod
-    def get_patch_order() -> list[str]:
-        """ Returns the order of patches. This caches the list of patches on first call
+    def patch_order() -> list[str]:
+        """ Returns the order of patches
 
-        :return: The order of patches
+        :return: The list of patch names in order
         """
-        return get_cached_list(PATCHES)
+        return [member.value for member in PATCHES]
 
     @staticmethod
-    def get_patch_index(patch_name: str) -> int:
+    def patch_index(patch_name: str) -> int:
         """ Gets the index for the given patch name, so we know what order the patches are in
 
         :param patch_name: The name of the patch
         :return: The index of the patch
         """
-        return PATCHES.get_patch_order().index(patch_name)
+        return PATCHES.patch_order().index(patch_name)
 
 
 class Measurements(StrEnum):
@@ -315,23 +286,23 @@ class CAT(StrEnum):
     CAT_XYZ_SCALING = "XYZ Scaling"
 
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all CATs. This caches the list of CATs on first call
+    def all() -> list[str]:
+        """ Returns the list of all CATs without the none option
 
-        :return: The list of all CATs
+        :return: The list of all CATs without the none option
         """
-        return CAT.get_all_with_none()[1:]
+        return CAT.all_with_none()[1:]
 
     @staticmethod
-    def get_all_with_none() -> list[str]:
-        """ Returns the list of all CATs with the none option. This caches the list of CATs on first call
+    def all_with_none() -> list[str]:
+        """ Returns the list of all CATs with the none option
 
         :return: The list of all CATs with the none option
         """
-        return get_cached_list(CAT)
+        return [member.value for member in CAT]
 
     @staticmethod
-    def get_default() -> str:
+    def default() -> str:
         return CAT.CAT_CAT02
 
 
@@ -345,19 +316,15 @@ class ColourSpace(StrEnum):
     CS_P3 = "DCI-P3"
 
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all colour spaces. This caches the list of colour spaces on first call
-
-        :return: The list of all colour spaces
-        """
-        return get_cached_list(ColourSpace)
+    def all() -> list[str]:
+        return [member.value for member in ColourSpace]
     
     @staticmethod
-    def get_default_target() -> str:
+    def default_target() -> str:
         return ColourSpace.CS_BT2020
     
     @staticmethod
-    def get_default_ref() -> str:
+    def default_ref() -> str:
         return ColourSpace.CS_ACES
         
 
@@ -385,17 +352,13 @@ class CameraColourSpace(StrEnum):
     VENICE_SGAMUT3 = "Venice S-Gamut3"
     VENICE_SGAMUT3_CINE = "Venice S-Gamut3.Cine"
 
-    # TODO: CS_ACES_CCT was not part of CS_ALL, but is now. Need to check if this is correct.
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all camera colour spaces. This caches the list of camera colour spaces on first call
-
-        :return: The list of all camera colour spaces
-        """
-        return get_cached_list(CameraColourSpace)
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in CameraColourSpace]
 
     @staticmethod
-    def get_default() -> str:
+    def default() -> str:
         return CameraColourSpace.CS_ACES
     
 
@@ -413,15 +376,12 @@ class EOTF(StrEnum):
     EOTF_ST2084 = "ST 2084"
 
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all EOTFs. This caches the list of EOTFs on first call
-
-        :return: The list of all EOTFs
-        """
-        return get_cached_list(EOTF)
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in EOTF]
     
     @staticmethod
-    def get_default() -> str:
+    def default() -> str:
         return EOTF.EOTF_ST2084
 
 
@@ -433,27 +393,24 @@ class CalculationOrder(StrEnum):
     CO_EOTF_CS = "EOTF > CS"
 
     @staticmethod
-    def get_all() -> list[str]:
-        """ Returns the list of all calculation orders. This caches the list of calculation orders on first call
-
-        :return: The list of all calculation orders
-        """
-        return get_cached_list(CalculationOrder)
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in CalculationOrder]
     
     @staticmethod
-    def get_default() -> str:
+    def default() -> str:
         return CalculationOrder.CO_EOTF_CS
 
     @staticmethod
-    def get_cs_only_string() -> str:
+    def cs_only_string() -> str:
         return  "CS_Only"
     
     @staticmethod
-    def get_cs_eotf_string() -> str:
+    def cs_eotf_string() -> str:
         return "CS_EOTF"
     
     @staticmethod
-    def get_eotf_cs_string() -> str:
+    def eotf_cs_string() -> str:
         return "EOTF_CS"
 
 
@@ -490,37 +447,28 @@ class FileFormats(StrEnum):
     FF_ARX = ".arx"
 
     @staticmethod
-    def get_all_read() -> list[str]:
-        """Returns the list of all readable file formats. This caches the list of file formats on first call
-
-        :return: The list of all readable file formats
+    def all_read() -> list[str]:
         """
-        if not hasattr(FileFormats, '_all_read_cache'):
-            FileFormats._all_read_cache = [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF, FileFormats.FF_PNG]
-        return FileFormats._all_read_cache
+        Returns the list of all readable file formats
+        """
+        return [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF, FileFormats.FF_PNG]
     
     @staticmethod
-    def get_all_write() -> list[str]:
-        """Returns the list of all writable file formats. This caches the list of file formats on first call
-
-        :return: The list of all writable file formats
+    def all_write() -> list[str]:
         """
-        if not hasattr(FileFormats, '_all_write_cache'):
-            FileFormats._all_write_cache = [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF]
-        return FileFormats._all_write_cache
+        Returns the list of all writable file formats
+        """
+        return [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF]
     
     @staticmethod
-    def get_all_convert() -> list[str]:
-        """Returns the list of all convertible file formats. This caches the list of file formats on first call
-
-        :return: The list of all convertible file formats
+    def all_convert() -> list[str]:
         """
-        if not hasattr(FileFormats, '_all_convert_cache'):
-            FileFormats._all_convert_cache = [FileFormats.FF_R3D, FileFormats.FF_MXF, FileFormats.FF_MOV, FileFormats.FF_ARI, FileFormats.FF_ARX, FileFormats.FF_MP4]
-        return FileFormats._all_convert_cache
+        Returns the list of all convertible file formats
+        """
+        return [FileFormats.FF_R3D, FileFormats.FF_MXF, FileFormats.FF_MOV, FileFormats.FF_ARI, FileFormats.FF_ARX, FileFormats.FF_MP4]
 
     @staticmethod
-    def get_default() -> str:
+    def default() -> str:
         return FileFormats.FF_EXR
 
 

@@ -32,7 +32,7 @@ class TestGeneration(TestBase):
         self.project_settings.project_id = project_id
 
         patch_generator = PatchGeneration(self.led_wall)
-        file_paths = patch_generator.generate_patches(constants.PATCHES.get_patch_order())
+        file_paths = patch_generator.generate_patches(constants.PATCHES.patch_order())
         expected_root_folder = os.path.join(
             self.get_test_output_folder(),
             constants.ProjectFolders.EXPORT,
