@@ -362,6 +362,18 @@ class CameraColourSpace(StrEnum):
         return CameraColourSpace.CS_ACES
     
 
+class LedColourSpace(StrEnum):
+    """
+    Class to hold the constants to describe the LED colour spaces we can use
+    """
+    CS_BT2020 = "ITU-R BT.2020"
+    CS_SRGB = "sRGB"
+    CS_P3 = "DCI-P3"
+
+    @staticmethod
+    def default_target() ->str:
+        return LedColourSpace.CS_BT2020
+
 
 class EOTF(StrEnum):
     """

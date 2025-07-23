@@ -283,7 +283,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         self.led_wall_added.emit(led_wall)
         for key in self._project_settings:
             self.data_changed.emit(key, self.get_data(key))
-        for key in self.current_wall.attrs:
+        for key in list(self.current_wall._led_settings.model_dump().keys()):
             self.data_changed.emit(key, self.get_data(key))
         return led_wall
 
@@ -348,8 +348,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
 
         for key in self._project_settings:
             self.data_changed.emit(key, self.get_data(key))
-
-        for key in self.current_wall.attrs:
+        for key in list(self.current_wall._led_settings.model_dump().keys()):
             self.data_changed.emit(key, self.get_data(key))
 
     def reset_led_wall(self, name: str) -> None:
