@@ -169,6 +169,9 @@ def update_iscc_app_version(filename: str, new_version: str, icon_path:str) -> N
     placeholder = 'SetupIconFile={}'.format(icon_path)
     updated_content = updated_content.replace('SetupIconFile=OPENVP_CAL_ICON_PATH', placeholder)
 
+    placeholder = '#define MyRepoPath "{}"'.format(get_current_folder())
+    updated_content = updated_content.replace('#define MyRepoPath "OPENVP_CAL_REPO_PATH"', placeholder)
+
     # Write the updated content back to the file
     with open(filename, 'w') as file:
         file.write(updated_content)
