@@ -2,10 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "OpenVPCal"
-#define MyAppVersion "0.0.1a"
 #define MyAppPublisher "Netflix"
 #define MyAppExeName "OpenVPCal.exe"
-#define MyRepoPath "OPENVP_CAL_REPO_PATH"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -24,7 +22,7 @@ OutputBaseFilename=OpenVPCal_Setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=OPENVP_CAL_ICON_PATH
+SetupIconFile={#MyAppIconPath}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]
