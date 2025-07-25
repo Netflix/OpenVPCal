@@ -21,6 +21,7 @@ import shutil
 import tempfile
 import unittest
 from typing import List
+from pathlib import Path
 
 import open_vp_cal.imaging.imaging_utils
 from open_vp_cal.core import constants
@@ -64,6 +65,23 @@ class TestUtils(unittest.TestCase):
             cls.get_folder_for_this_file(),
             "output",
         )
+    
+    @classmethod
+    def get_all_test_project_settings_path(cls) -> List[Path]:
+        """
+        Get all project settings files from the resources directory.
+        This is used to ensure that all sample projects are valid.
+        """
+        resource_dir:Path = Path(cls.get_test_resources_folder())
+        project_settings_filename:Path = Path("project_settings.json")
+        all_project_settings_path:List[Path] = []
+        for directory in os.listdir(resource_dir):
+            if not directory.startswith("Sample_Project"):
+                continue
+            project_settings_path:Path = resource_dir / Path(directory) / project_settings_filename
+            if(project_settings_path.exists()):
+                all_project_settings_path.append(project_settings_path)
+        return all_project_settings_path
 
     def compare_image_files(self, expected_image_file, actual_image_file, ext):
         expected_image = Oiio.ImageBuf(expected_image_file)

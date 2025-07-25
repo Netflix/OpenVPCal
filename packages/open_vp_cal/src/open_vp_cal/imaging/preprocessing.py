@@ -29,8 +29,8 @@ from packaging import version
 from pathlib import Path
 
 import open_vp_cal
-from open_vp_cal.core.constants import ProjectFolders, PRE_PROCESSING_FORMAT_MAP, \
-    VERSION, LedWallSettingsKeys
+from open_vp_cal.core.constants import (ProjectFolders, PRE_PROCESSING_FORMAT_MAP,
+    OpenVPCalSettingsKeys, LedWallSettingsKeys)
 from open_vp_cal.core.resource_loader import ResourceLoader
 from open_vp_cal.imaging._preprocessing_formats import PREPROCESSING_CONFIG
 from open_vp_cal.project_settings import ProjectSettings
@@ -191,7 +191,7 @@ class PreProcessConvert:
 
         if self.pre_process_config:
             current_version = version.parse(open_vp_cal.__version__)
-            config_version = version.parse(self.pre_process_config.get(VERSION))
+            config_version = version.parse(self.pre_process_config.get(OpenVPCalSettingsKeys.VERSION.value))
             if current_version > config_version:
                 generate_new = True
 

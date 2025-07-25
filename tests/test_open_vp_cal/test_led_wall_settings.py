@@ -25,19 +25,6 @@ from open_vp_cal.core import constants
 from test_utils import TestBase
 
 
-def get_all_test_project_settings_path() -> List[Path]:
-    resource_dir:Path = Path(__file__).parent / "resources"
-    project_settings_filename:Path = Path("project_settings.json")
-
-    all_project_settings_path:List[Path] = []
-    for directory in os.listdir(Path(resource_dir)):
-        if not directory.startswith("Sample_Project"):
-            continue
-        project_settings_path:Path = resource_dir / Path(directory) / project_settings_filename
-        if(project_settings_path.exists()):
-            all_project_settings_path.append(project_settings_path)
-    return all_project_settings_path
-
 def upgrade_legacy_roi(roi:List[int]) -> List[List[int]]:
     """
     Upgrade logic to convert roi from v1.x to v2.x.
@@ -653,12 +640,15 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(led_wall._led_settings.roi, self.sample_expected[constants.LedWallSettingsKeys.ROI])
 
     def test_all_sample_project_json(self):
-        for project_settings_path in get_all_test_project_settings_path():
+        for project_settings_path in self.get_all_test_project_settings_path():
             with open(project_settings_path, 'r', encoding='utf-8') as file:
                 loaded_data:dict = json.load(file)
-                led_walls = loaded_data[constants.ProjectSettingsKeys.PROJECT_SETTINGS][constants.ProjectSettingsKeys.LED_WALLS]
+                led_walls = loaded_data[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS][constants.ProjectSettingsKeys.LED_WALLS]
                 for led_wall in led_walls:
                     self.assertIsNotNone(led_wall)
                     # Check no throw
-                    led_wall_settings = LedWallSettings.from_dict(self.project_settings, led_wall)
+                    try:
+                        led_wall_settings = LedWallSettings.from_dict(self.project_settings, led_wall)
+                    except Exception as e:
+                        self.fail(f"Failed to load LedWallSettings from {project_settings_path}: {e}")
                     self.assertIsInstance(led_wall_settings, LedWallSettings)
