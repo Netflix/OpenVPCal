@@ -20,11 +20,13 @@ import os
 import shutil
 import tempfile
 import unittest
+from typing import List
 
 import open_vp_cal.imaging.imaging_utils
 from open_vp_cal.core import constants
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.project_settings import ProjectSettings
+from open_vp_cal.led_wall_settings import LedWallSettingsModel
 from open_vp_cal.main import run_cli
 
 import OpenImageIO as Oiio
@@ -102,7 +104,7 @@ class TestUtils(unittest.TestCase):
         open_vp_cal.imaging.imaging_utils.write_image(image, file_name, bit_depth)
         return file_name
 
-    def recalc_old_roi(self, roi):
+    def recalc_old_roi(self, roi:List[int]) -> List[List[int]]:
         """
         Convert an ROI given as [x, y, width, height] as described in version 1.x
         and convert it to a list of four corners for 2.x
@@ -114,16 +116,7 @@ class TestUtils(unittest.TestCase):
             list: A list of four tuples representing the corners in the following order:
                   top left, top right, bottom right, bottom left.
         """
-        if not roi:
-            return []
-        left, right, top, bottom = roi
-        top_left = [left, top]
-        top_right = [right, top]
-        bottom_right = [right, bottom]
-        bottom_left = [left, bottom]
-
-        corners =  [top_left, top_right, bottom_right, bottom_left]
-        return corners
+        return LedWallSettingsModel.upgrade_roi(roi)
 
     def pre_process_vp_cal_1x(self, project_settings, output_folder, input_colour_space="ACES2065-1"):
         """ For all unit tests which where created using v1.x we need to double the

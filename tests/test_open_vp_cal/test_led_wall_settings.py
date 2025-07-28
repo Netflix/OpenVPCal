@@ -24,6 +24,7 @@ from open_vp_cal.core import constants
 
 from test_utils import TestBase
 
+
 def get_all_test_project_settings_path() -> List[Path]:
     resource_dir:Path = Path(__file__).parent / "resources"
     project_settings_filename:Path = Path("project_settings.json")
@@ -36,6 +37,20 @@ def get_all_test_project_settings_path() -> List[Path]:
         if(project_settings_path.exists()):
             all_project_settings_path.append(project_settings_path)
     return all_project_settings_path
+
+def upgrade_legacy_roi(roi:List[int]) -> List[List[int]]:
+    """
+    Upgrade logic to convert roi from v1.x to v2.x.
+    This was directly copied from <test_utils.recalc_old_roi>
+    """
+    if not roi:
+        return []
+    left, right, top, bottom = roi
+    top_left = [left, top]
+    top_right = [right, top]
+    bottom_right = [right, bottom]
+    bottom_left = [left, bottom]
+    return [top_left, top_right, bottom_right, bottom_left]
 
 
 class TestLedWallSettings(TestBase):
@@ -72,6 +87,10 @@ class TestLedWallSettings(TestBase):
             constants.LedWallSettingsKeys.VERIFICATION_WALL: "",
             constants.LedWallSettingsKeys.AVOID_CLIPPING: True
         }
+
+        self.sample_expected = self.sample.copy()
+        self.sample_expected[constants.LedWallSettingsKeys.ROI] = upgrade_legacy_roi(
+            self.sample_expected[constants.LedWallSettingsKeys.ROI])
 
         self.legacy_default = {
             constants.LedWallSettingsKeys.NAME: "Wall1",
@@ -152,7 +171,7 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(self.wall._led_settings, LedWallSettingsModel(name=self.wall.name))
 
     def test_clear(self):
-        self.wall.roi = [1, 2, 3, 4]
+        self.wall.roi = upgrade_legacy_roi([1, 2, 3, 4])
         self.wall.processing_results.sample_buffers = ['dummy']  # Overwrite for test
         self.wall.separation_results = SeparationResults()
         self.wall.clear()
@@ -278,7 +297,7 @@ class TestLedWallSettings(TestBase):
 
     def test_roi(self):
         roi = [1, 2, 3, 4]
-        self.wall.roi = roi
+        self.wall.roi = upgrade_legacy_roi(roi)
         self.assertEqual(self.wall.roi, roi)
         self.assertEqual(self.wall._led_settings.roi, roi)
 
@@ -336,14 +355,14 @@ class TestLedWallSettings(TestBase):
         new_wall = self.project_settings.add_led_wall("NewWall")
         self.wall.reference_wall = new_wall
         self.assertEqual(self.wall.reference_wall, new_wall.name)
-        self.assertEqual(self.wall.reference_wall_as_wall.name, new_wall.name)
+        self.assertEqual(self.wall.reference_wall_as_wall.name, new_wall.name) # type: ignore
         self.assertEqual(self.wall._led_settings.reference_wall, new_wall.name)
 
         # Check we can set a new wall by name
         another_wall = self.project_settings.add_led_wall("AnotherWall")
         self.wall.reference_wall = another_wall.name
         self.assertEqual(self.wall.reference_wall, another_wall.name)
-        self.assertEqual(self.wall.reference_wall_as_wall.name, another_wall.name)
+        self.assertEqual(self.wall.reference_wall_as_wall.name, another_wall.name) # type: ignore
         self.assertEqual(self.wall._led_settings.reference_wall, another_wall.name)
 
         # Setting reference_wall to itself should raise ValueError (by instance)
@@ -529,19 +548,19 @@ class TestLedWallSettings(TestBase):
 
         new_wall2 = LedWallSettings.from_json_file(self.project_settings, self.json_path)
         for key in self.sample:
-            self.assertEqual(getattr(new_wall2._led_settings, key), self.sample[key])
+            self.assertEqual(getattr(new_wall2._led_settings, key), self.sample_expected[key])
     
     def test_from_json_string(self):
         json_str = json.dumps(self.sample)
 
         new_wall = LedWallSettings.from_json_string(self.project_settings, json_str)
         for key in self.sample:
-            self.assertEqual(getattr(new_wall._led_settings, key), self.sample[key])
+            self.assertEqual(getattr(new_wall._led_settings, key), self.sample_expected[key])
 
     def test_from_dict(self):
         new_wall = LedWallSettings.from_dict(self.project_settings, self.sample)
         for key in self.sample:
-            self.assertEqual(getattr(new_wall._led_settings, key), self.sample[key])
+            self.assertEqual(getattr(new_wall._led_settings, key), self.sample_expected[key])
 
     def test_to_dict(self):
         json_str = json.dumps(self.sample)
@@ -554,7 +573,7 @@ class TestLedWallSettings(TestBase):
         # Order of dict changed
         for key in self.sample:
             self.assertTrue(key in dict)
-            self.assertEqual(dict[key], self.sample[key])
+            self.assertEqual(dict[key], self.sample_expected[key])
 
     def test_to_json(self):
         """Test the to_json method saves the LED wall settings to a JSON file."""
@@ -629,6 +648,10 @@ class TestLedWallSettings(TestBase):
         # Test that different walls have different sequence loaders
         self.assertIsNot(loader, verif_loader)
 
+    def test_roi_upgrade(self):
+        led_wall = LedWallSettings.from_dict(self.project_settings, self.sample)
+        self.assertEqual(led_wall._led_settings.roi, self.sample_expected[constants.LedWallSettingsKeys.ROI])
+
     def test_all_sample_project_json(self):
         for project_settings_path in get_all_test_project_settings_path():
             with open(project_settings_path, 'r', encoding='utf-8') as file:
@@ -636,5 +659,6 @@ class TestLedWallSettings(TestBase):
                 led_walls = loaded_data[constants.ProjectSettingsKeys.PROJECT_SETTINGS][constants.ProjectSettingsKeys.LED_WALLS]
                 for led_wall in led_walls:
                     self.assertIsNotNone(led_wall)
+                    # Check no throw
                     led_wall_settings = LedWallSettings.from_dict(self.project_settings, led_wall)
                     self.assertIsInstance(led_wall_settings, LedWallSettings)

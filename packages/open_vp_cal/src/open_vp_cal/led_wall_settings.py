@@ -19,7 +19,7 @@ setting
 import json
 from typing import List, Union, Any
 from typing import TYPE_CHECKING
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.structures import ProcessingResults
@@ -56,6 +56,31 @@ class LedWallSettingsModel(BaseModel):
     use_white_point_offset: bool = Field(default=False)
     is_verification_wall: bool = Field(default=False)
     verification_wall: str = Field(default="")
+
+    @field_validator(
+        "roi",
+        mode="before",
+        json_schema_input_type=Union[List[int], List[List[int]]]
+    )
+    @classmethod
+    def upgrade_roi(cls, value: Any) -> List[List[int]]:
+        """
+        Upgrade roi data structure
+        - version 1.x: [x, y, width, height]
+        - version 2.x: [[tl.x, tl.y], [tr.x, tr.y], [br.x, br.y], [bl.x, bl.y]]
+        
+        Returns:
+            list: A list of four lists representing the corners in the following order:
+                  top left, top right, bottom right, bottom left.
+        """
+        if isinstance(value, list) and len(value) == 4 and all(isinstance(e, int) for e in value):
+            left, right, top, bottom = value
+            top_left:List[int] = [left, top]
+            top_right:List[int] = [right, top]
+            bottom_right:List[int] = [right, bottom]
+            bottom_left:List[int] = [left, bottom]
+            return [top_left, top_right, bottom_right, bottom_left]
+        return value
 
 
 class LedWallSettings:
@@ -344,7 +369,7 @@ class LedWallSettings:
         self._set_property(constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT, value)
 
     @property
-    def roi(self) -> List[int]:
+    def roi(self) -> List[List[int]]:
         """Return the region of interest (ROI).
 
         Verification walls have to have unique ROI, so we access the led_settings directly
@@ -355,7 +380,7 @@ class LedWallSettings:
         return self._led_settings.roi
 
     @roi.setter
-    def roi(self, value: List[int]):
+    def roi(self, value: List[List[int]]):
         """ Set the region of interest (ROI). We do not set this on the verification wall as this needs to be unique
 
         Args:
