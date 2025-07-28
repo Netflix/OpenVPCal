@@ -16,11 +16,26 @@ limitations under the License.
 
 import os
 import json
+from pathlib import Path
+from typing import List
 from open_vp_cal.framework.identify_separation import SeparationResults
 from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsModel, ProcessingResults
 from open_vp_cal.core import constants
 
 from test_utils import TestBase
+
+def get_all_test_project_settings_path() -> List[Path]:
+    resource_dir:Path = Path(__file__).parent / "resources"
+    project_settings_filename:Path = Path("project_settings.json")
+
+    all_project_settings_path:List[Path] = []
+    for directory in os.listdir(Path(resource_dir)):
+        if not directory.startswith("Sample_Project"):
+            continue
+        project_settings_path:Path = resource_dir / Path(directory) / project_settings_filename
+        if(project_settings_path.exists()):
+            all_project_settings_path.append(project_settings_path)
+    return all_project_settings_path
 
 
 class TestLedWallSettings(TestBase):
@@ -613,3 +628,13 @@ class TestLedWallSettings(TestBase):
         
         # Test that different walls have different sequence loaders
         self.assertIsNot(loader, verif_loader)
+
+    def test_all_sample_project_json(self):
+        for project_settings_path in get_all_test_project_settings_path():
+            with open(project_settings_path, 'r', encoding='utf-8') as file:
+                loaded_data:dict = json.load(file)
+                led_walls = loaded_data[constants.ProjectSettingsKeys.PROJECT_SETTINGS][constants.ProjectSettingsKeys.LED_WALLS]
+                for led_wall in led_walls:
+                    self.assertIsNotNone(led_wall)
+                    led_wall_settings = LedWallSettings.from_dict(self.project_settings, led_wall)
+                    self.assertIsInstance(led_wall_settings, LedWallSettings)
