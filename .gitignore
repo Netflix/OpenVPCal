@@ -11,3 +11,4 @@ dist/**
 openvpcal.egg-info/**
 .pytest_cache/**
 .DS_Store
+/Output

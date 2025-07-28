@@ -2,7 +2,6 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "OpenVPCal"
-#define MyAppVersion "0.0.1a"
 #define MyAppPublisher "Netflix"
 #define MyAppExeName "OpenVPCal.exe"
 
@@ -23,7 +22,7 @@ OutputBaseFilename=OpenVPCal_Setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=OPENVP_CAL_ICON_PATH
+SetupIconFile={#MyAppIconPath}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]
@@ -33,8 +32,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\dev\openvpcal\dist\OpenVPCal\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\dev\openvpcal\dist\OpenVPCal\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyRepoPath}\dist\OpenVPCal\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyRepoPath}\dist\OpenVPCal\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
