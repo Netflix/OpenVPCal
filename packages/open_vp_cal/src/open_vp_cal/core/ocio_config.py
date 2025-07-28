@@ -368,7 +368,8 @@ class OcioConfigWriter:
         lut.setDirection(ocio.TransformDirection.TRANSFORM_DIR_FORWARD)
         group.appendTransform(lut)
 
-        scale = 8.3334
+        # Calculated to take the peak output in linear space to 10
+        scale = 0.83334
         rgb_scale_matrix = np.eye(3) * scale
 
         scaling_matrix = ocio.MatrixTransform(
@@ -1202,7 +1203,7 @@ class OcioConfigWriter:
                 output_lut_file_name = os.path.join(parent_dir, hlg_cube_name)
                 shutil.copy(hlg_cube, output_lut_file_name)
 
-                cs = OcioConfigWriter.create_hlg_to_linear_colorspace(output_lut_file_name)
+                cs = OcioConfigWriter.create_hlg_to_linear_colorspace(hlg_cube_name)
                 config.addColorSpace(cs)
                 break
 

@@ -55,7 +55,7 @@ TARGET_MAX_LUM_NITS_HLG = 1000
 DEFAULT_RESOLUTION_WIDTH = 1920
 DEFAULT_RESOLUTION_HEIGHT = 1080
 
-DEFAULT_OCIO_CONFIG = "studio-config-v2.2.0_aces-v1.3_ocio-v2.4"
+DEFAULT_OCIO_CONFIG = "studio-config-v2.1.0_aces-v1.3_ocio-v2.3"
 ARC_CONFIG = "arc_config.xml"
 
 

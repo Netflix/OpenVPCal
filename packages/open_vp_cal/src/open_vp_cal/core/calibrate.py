@@ -627,6 +627,7 @@ def check_eotf_max_values(measured_samples):
             "Two Patches.\nMost Likely Due Sampling The End Slate Instead Of The Last EOTF Ramp."
             "\nThis Is Likely Due To A Genlock, Frame Rate Mismatch, Sync Issue, "
             "Or Inconsistent Playback Rates."
+            "It could also indicate an incorrect gamme mismatch the processor and the output of the media server.\n"
             "Ensure Your Playback & Capture Setup Is Correct")
 
 def run(
