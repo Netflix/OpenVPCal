@@ -46,10 +46,6 @@ class TestReferenceImage(utils.TestGenerator):
     def setUp(self):
         super(TestReferenceImage, self).setUp()
 
-        # There is a tiny change between windows and mac which even when compared at max exposure in nuke cant even be
-        # seen, so we set the failure count to account
-        self.image_fail_count = 3
-
     def test_fromJson(self):
         super(TestReferenceImage, self).test_fromJson()
 

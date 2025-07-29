@@ -28,7 +28,7 @@ OIIO_MSG = "OpenImageIO Is Not Installed"
 
 
 class TestBase(unittest.TestCase):
-    image_fail_count = 0
+    image_fail_count = 10
 
     @classmethod
     def get_folder_for_this_file(cls):

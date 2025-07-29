@@ -109,10 +109,10 @@ jobs:
       - name: Run tests (verbose, stop on fail)
         run: uv run pytest ./tests -vv --junitxml=test-results/junit-report.xml
 
-      - name: Report test results
+      - name: Report test results (${{ matrix.os }})
         if: always()
         uses: dorny/test-reporter@v1
         with:
-          name: pytest results
+          name: pytest results (${{matrix.os }})
           path: test-results/junit-report.xml
           reporter: java-junit
