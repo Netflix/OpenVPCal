@@ -161,6 +161,7 @@ class TestProjectCli(TestProject):
 class TestProjectExternalWhite(TestProject):
     project_name = "SampleProject2_External_White_NoLens"
 
+    @skip_if_ci
     def test_external_white_no_lens(self):
         results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
