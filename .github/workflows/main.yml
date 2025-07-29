@@ -9,56 +9,17 @@ on:
       - feature/ci
 
 jobs:
-  build_macos:
+  build:
     runs-on: macos-latest
 
     steps:
-      # Restore the .git directory from the cache
-      - name: Cache repository
-        uses: actions/cache@v3
-        with:
-          path: .git
-          key: ${{ runner.os }}-git-${{ hashFiles('.git/HEAD') }}
-          restore-keys: |
-            ${{ runner.os }}-git-
-
-      # Restore vcpkg folder from the cache
-      - name: Cache vcpkg
-        uses: actions/cache@v3
-        with:
-          path: ~/vcpkg
-          key: ${{ runner.os }}-another-folder-${{ hashFiles('~/vcpkg/**/*') }}
-          restore-keys: |
-            ${{ runner.os }}-another-folder-
-
-      # Check out the repository without LFS support
-      - name: Check out repository
+      - name: Checkout repository (no LFS)
         uses: actions/checkout@v3
         with:
-          lfs: false  # Disable Git LFS
+          lfs: false
 
-      # Set up Python 3.11
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v2
-        with:
-            python-version: 3.11
+      - name: Build Python environment
+        run: uv build
 
-      # Install dependencies
-      # Step 1: Install dependencies
-      - name: Install dependencies
-        run: |
-          brew update
-          brew install pkg-config autoconf automake autoconf-archive
-        
-      # Run build_dev.sh script
-      - name: Run build_dev.sh script
-        run: |
-          chmod +x build_dev.sh
-          ./build.sh
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./dist/OpenVPCal-1.2.0-universal.dmg
-
+      - name: Run tests
+        run: uv run pytest ./tests
