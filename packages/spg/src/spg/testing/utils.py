@@ -74,9 +74,12 @@ class TestBase(unittest.TestCase):
 
     @classmethod
     def get_test_result_folder(cls):
-        return os.path.join(
+        results_folder = os.path.join(
             cls.get_folder_for_this_file(),
             'results')
+        if not os.path.exists(results_folder):
+            os.makedirs(results_folder)
+        return results_folder
 
     @classmethod
     def get_test_result(cls, resource_name, ext):
