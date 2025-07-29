@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
 #        os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
@@ -111,7 +112,7 @@ jobs:
         run: uv run ruff check ./packages ./tests
 
       - name: Run tests (verbose, stop on fail)
-        run: uv run pytest ./tests -vv --maxfail=1 --junitxml=test-results/junit-report.xml
+        run: uv run pytest ./tests -vv --junitxml=test-results/junit-report.xml
 
       - name: Report test results
         if: always()
