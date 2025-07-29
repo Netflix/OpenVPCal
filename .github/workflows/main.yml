@@ -10,29 +10,57 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
     env:
       CI: true
+
     steps:
       - name: Checkout repository (no LFS)
         uses: actions/checkout@v3
         with:
           lfs: false
 
-      # 2. Install Git LFS and disable automatic smudge (download)
-      - name: Install Git LFS & disable auto-smudge
+      # Install Git LFS and disable auto-smudge on each OS
+      - name: Install Git LFS & disable auto-smudge (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install git-lfs -y
+          git lfs install --skip-smudge
+
+      - name: Install Git LFS & disable auto-smudge (macOS)
+        if: runner.os == 'macOS'
         run: |
           brew install git-lfs
           git lfs install --skip-smudge
 
-      # 3. Fetch only the LFS files you need
-      - name: Fetch specific LFS folder
+      - name: Install Git LFS & disable auto-smudge (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install git-lfs -y
+          git lfs install --skip-smudge
+
+      # Fetch only the LFS objects you need
+      - name: Fetch specific LFS folders (non-Windows)
+        if: runner.os != 'Windows'
         run: |
           git lfs fetch \
             --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**,packages/open_vp_cal/src/open_vp_cal/resources/**"
 
-      # 4. Checkout fetched LFS files (by glob pattern)
-      - name: Checkout LFS files in our two test-resource folders
+      - name: Fetch specific LFS folders (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          git lfs fetch --include='tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**,packages/open_vp_cal/src/open_vp_cal/resources/**'
+
+      # Checkout only those paths
+      - name: Checkout LFS files (non-Windows)
+        if: runner.os != 'Windows'
         run: |
           git lfs checkout \
             tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/** \
@@ -40,6 +68,17 @@ jobs:
             tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/** \
             packages/open_vp_cal/src/open_vp_cal/resources/**
 
+      - name: Checkout LFS files (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          git lfs checkout `
+            tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/** `
+            tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/** `
+            tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/** `
+            packages/open_vp_cal/src/open_vp_cal/resources/**
+
+      # Common Python setup + build + test
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
@@ -53,5 +92,5 @@ jobs:
       - name: Build Python environment
         run: uv build
 
-      - name: Run tests
+      - name: Run tests (verbose, stop on fail)
         run: uv run pytest ./tests -v --maxfail=1
