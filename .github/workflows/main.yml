@@ -27,12 +27,15 @@ jobs:
       # 3. Fetch only the LFS files you need
       - name: Fetch specific LFS folder
         run: |
-          git lfs fetch --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**"
+          git lfs fetch \
+            --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**"
 
       # 4. Checkout fetched LFS files (by glob pattern)
-      - name: Checkout LFS files in TEST_EXR_OPENVPCAL_balanced
+      - name: Checkout LFS files in our two test-resource folders
         run: |
-          git lfs checkout tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**
+          git lfs checkout \
+            tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/** \
+            tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
