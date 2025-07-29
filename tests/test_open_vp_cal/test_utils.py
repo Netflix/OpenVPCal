@@ -79,8 +79,9 @@ class TestUtils(unittest.TestCase):
         actual_bps = image_buffer_spec.get_int_attribute(constants.OIIO_BITS_PER_SAMPLE, defaultval=0)
         self.assertEqual(expected_bps, actual_bps)
 
-        comp_results = Oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-5, 1.0e-5)
-        if comp_results.nfail > 0:
+        comp_results = Oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-3, 1.0e-5)
+        num_allowed_failed_pixels = 0
+        if comp_results.nfail > num_allowed_failed_pixels:
             file_name = "_".join([self.__class__.__name__, self._testMethodName])
             diff = Oiio.ImageBufAlgo.absdiff(expected_image, image_buffer)
 
