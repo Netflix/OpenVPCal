@@ -105,7 +105,7 @@ class TestStitching_Multiple_Walls_Single_Raster_All_Fit(utils.SpgTestBase):
     def setUp(self):
         super(TestStitching_Multiple_Walls_Single_Raster_All_Fit, self).setUp()
 
-        self.project_settings_config["image_file_format"] = "dpx"
+        self.project_settings_config["image_file_format"] = ".dpx"
         self.pattern_settings_config = [
             {
                 "name": "FrameSync",
