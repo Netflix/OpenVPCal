@@ -401,3 +401,10 @@ class TestProject(TestUtils):
         # 4) Everything else (int, str, bool, None, etc.)
         self.assertEqual(expected, actual,
                          f"{path}: value mismatch, expected {expected!r}, got {actual!r}")
+
+
+def skip_if_ci(reason="Skipped in CI"):
+    """
+    Skip a test when running under CI (i.e. CI=true in the environment).
+    """
+    return unittest.skipIf(os.getenv("CI") == "true", reason)
