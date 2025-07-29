@@ -318,15 +318,15 @@ class ColourSpace(StrEnum):
     @staticmethod
     def all() -> list[str]:
         return [member.value for member in ColourSpace]
-    
+
     @staticmethod
     def default_target() -> str:
         return ColourSpace.CS_BT2020
-    
+
     @staticmethod
     def default_ref() -> str:
         return ColourSpace.CS_ACES
-        
+
 
 class CameraColourSpace(StrEnum):
     """
@@ -360,7 +360,7 @@ class CameraColourSpace(StrEnum):
     @staticmethod
     def default() -> str:
         return CameraColourSpace.CS_ACES
-    
+
 
 
 class EOTF(StrEnum):
@@ -379,7 +379,7 @@ class EOTF(StrEnum):
     def all() -> list[str]:
         """ Returns the list of all Enum values"""
         return [member.value for member in EOTF]
-    
+
     @staticmethod
     def default() -> str:
         return EOTF.EOTF_ST2084
@@ -396,7 +396,7 @@ class CalculationOrder(StrEnum):
     def all() -> list[str]:
         """ Returns the list of all Enum values"""
         return [member.value for member in CalculationOrder]
-    
+
     @staticmethod
     def default() -> str:
         return CalculationOrder.CO_EOTF_CS
@@ -404,11 +404,11 @@ class CalculationOrder(StrEnum):
     @staticmethod
     def cs_only_string() -> str:
         return  "CS_Only"
-    
+
     @staticmethod
     def cs_eotf_string() -> str:
         return "CS_EOTF"
-    
+
     @staticmethod
     def eotf_cs_string() -> str:
         return "EOTF_CS"
@@ -452,14 +452,14 @@ class FileFormats(StrEnum):
         Returns the list of all readable file formats
         """
         return [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF, FileFormats.FF_PNG]
-    
+
     @staticmethod
     def all_write() -> list[str]:
         """
         Returns the list of all writable file formats
         """
         return [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF]
-    
+
     @staticmethod
     def all_convert() -> list[str]:
         """
