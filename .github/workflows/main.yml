@@ -18,21 +18,21 @@ jobs:
         with:
           lfs: false
 
-      # Install Git LFS and disable automatic smudge (download)
+      # 2. Install Git LFS and disable automatic smudge (download)
       - name: Install Git LFS & disable auto-smudge
         run: |
           brew install git-lfs
           git lfs install --skip-smudge
 
-      # Fetch only the LFS files that we use across lots of tests as the whole set is too large
+      # 3. Fetch only the LFS files you need
       - name: Fetch specific LFS folder
         run: |
           git lfs fetch --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**"
 
-      # Replace pointers with real files for that folder
-      - name: Checkout fetched LFS files
+      # 4. Checkout fetched LFS files (by glob pattern)
+      - name: Checkout LFS files in TEST_EXR_OPENVPCAL_balanced
         run: |
-          git lfs checkout --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**"
+          git lfs checkout tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
