@@ -51,13 +51,13 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           git lfs fetch \
-            --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**,packages/open_vp_cal/src/open_vp_cal/resources/**"
+            --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**,packages/open_vp_cal/src/open_vp_cal/resources/**,tests/test_open_vp_cal/resources/SampleProject1_PreTest/**"
 
       - name: Fetch specific LFS folders (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          git lfs fetch --include='tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**,packages/open_vp_cal/src/open_vp_cal/resources/**'
+          git lfs fetch --include='tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**,packages/open_vp_cal/src/open_vp_cal/resources/**,tests/test_open_vp_cal/resources/SampleProject1_PreTest/**'
 
       # Checkout only those paths
       - name: Checkout LFS files (non-Windows)
@@ -67,6 +67,7 @@ jobs:
             tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/** \
             tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/** \
             tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/** \
+            tests/test_open_vp_cal/resources/SampleProject1_PreTest/** \
             packages/open_vp_cal/src/open_vp_cal/resources/**
 
       - name: Checkout LFS files (Windows)
@@ -77,6 +78,7 @@ jobs:
             tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/** `
             tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/** `
             tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/** `
+            tests/test_open_vp_cal/resources/SampleProject1_PreTest/**  `
             packages/open_vp_cal/src/open_vp_cal/resources/**
 
       # Install EGL dependency on Ubuntu so libEGL.so.1 is available
