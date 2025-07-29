@@ -11,7 +11,8 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-
+    env:
+      CI: true
     steps:
       - name: Checkout repository (no LFS)
         uses: actions/checkout@v3
@@ -28,14 +29,15 @@ jobs:
       - name: Fetch specific LFS folder
         run: |
           git lfs fetch \
-            --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**"
+            --include="tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/**,tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**,tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/**"
 
       # 4. Checkout fetched LFS files (by glob pattern)
       - name: Checkout LFS files in our two test-resource folders
         run: |
           git lfs checkout \
             tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_balanced/** \
-            tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/**
+            tests/test_open_vp_cal/resources/TEST_EXR_OPENVPCAL_UNBALANCED_WHITE/** \
+            tests/test_open_vp_cal/resources/export/patches/OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084/ **
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
