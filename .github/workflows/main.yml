@@ -111,4 +111,12 @@ jobs:
         run: uv run ruff check ./packages ./tests
 
       - name: Run tests (verbose, stop on fail)
-        run: uv run pytest ./tests -vv --maxfail=1
+        run: uv run pytest ./tests -vv --maxfail=1 --junitxml=test-results/junit-report.xml
+
+      - name: Report test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: pytest results
+          path: test-results/junit-report.xml
+          reporter: junit
