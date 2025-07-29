@@ -32,7 +32,7 @@ class TestStitching_WithSegment_Rotation(utils.SpgTestBase):
     def setUp(self):
         super(TestStitching_WithSegment_Rotation, self).setUp()
 
-        self.project_settings_config["image_file_format"] = "dpx"
+        self.project_settings_config["image_file_format"] = ".dpx"
         self.pattern_settings_config = [
             {
                 "name": "FrameSync",
