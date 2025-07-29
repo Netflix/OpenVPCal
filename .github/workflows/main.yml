@@ -107,4 +107,4 @@ jobs:
         run: uv run ruff check ./packages ./tests
 
       - name: Run tests (verbose, stop on fail)
-        run: uv run pytest ./tests -v --maxfail=1
+        run: uv run pytest ./tests -vv --maxfail=1
