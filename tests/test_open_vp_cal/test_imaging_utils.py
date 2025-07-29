@@ -23,7 +23,7 @@ from open_vp_cal.imaging import imaging_utils
 class TestProjectExternalWhite(TestProject):
     project_name = "SampleProject2_External_White_NoLens"
 
-    @skip_if_ci
+    @skip_if_ci()
     def test_standard_deviation(self):
         file_path = self.get_external_white_plates()
         result = imaging_utils.get_decoupled_white_samples_from_file(file_path)

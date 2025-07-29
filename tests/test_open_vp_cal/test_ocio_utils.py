@@ -130,7 +130,7 @@ class TestCalibrate(TestProject):
         os.remove(temp_project_settings)
         return results
 
-    @skip_if_ci
+    @skip_if_ci()
     def test_run_cli_ocio_post_config(self):
         self.project_settings.project_id = "test_ocio"
         expected_file = self.get_post_calibration_ocio_config()
