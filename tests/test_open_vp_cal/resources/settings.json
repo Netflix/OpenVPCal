@@ -1,11 +1,12 @@
 {
     "project_settings": {
-        "file_format": "exr",
+        "file_format": ".exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
         "output_folder": "",
         "custom_logo_path": "",
         "ocio_config_path": "",
+        "reference_gamut": "ACES2065-1",
         "frames_per_patch": 1,
         "led_walls" : [
             {

@@ -1,35 +1,36 @@
-if [ -d "myenv" ]; then
-  sudo rm -rf myenv
-fi
+#!/bin/bash
+set -e
 
-if [ -d "dist" ]; then
-  sudo rm -rf dist
-fi
+# ---------------------------
+# Cleanup Code (Unchanged)
+# ---------------------------
+echo "Starting build process..."
+rm -rf build/ dist/ */**/*.egg-info OpenVPCal.spec
+echo "Cleanup complete."
 
-if [ -d "build" ]; then
-  sudo rm -rf dist
-fi
+# ---------------------------
+# Remove existing uv environment directory (if applicable)
+# ---------------------------
+echo "Removing existing uv environment..."
+rm -rf .uv .venv  # or the specific directory uv uses
 
-if [ -d "OpenVPCal.spec" ]; then
-  sudo rm -rf "OpenVPCal.spec"
-fi
+# ---------------------------
+# Build Environment with uv
+# ---------------------------
+echo "Building environment with uv..."
+uv build
 
-python3 -m venv myenv
-source myenv/bin/activate
-pip install -r requirements.txt
-pip freeze > requirements.txt
-python3 compile.py
-deactivate
+# ---------------------------
+# Run the compile.py script using uv
+# ---------------------------
+echo "Running compile.py using uv..."
+uv run python compile.py
 
-if [ -d "build" ]; then
-  sudo rm -rf build
-fi
+echo "Build process finished successfully."
 
-if [ -d "myenv" ]; then
-  sudo rm -rf myenv
-fi
-
-if [ -f "OpenVPCal.spec" ]; then
-  sudo rm -rf "OpenVPCal.spec"
-fi
-
+# ---------------------------
+# Cleanup Code (Unchanged)
+# ---------------------------
+echo "Post build cleanup"
+rm -rf build/ */**/*.egg-info OpenVPCal.spec
+echo "Post Cleanup complete."

@@ -36,13 +36,13 @@ def get_current_folder() -> str:
     return os.path.dirname(os.path.realpath(__file__))
 
 
-def get_src_folder() -> str:
+def get_packages_folder() -> str:
     """ Get the src folder of this project
 
     Returns: The src folder of this project
 
     """
-    return os.path.join(get_current_folder(), "src")
+    return os.path.join(get_current_folder(), "packages")
 
 
 def get_python_package_folder() -> str:
@@ -51,7 +51,7 @@ def get_python_package_folder() -> str:
     Returns: The python package folder of this project
 
     """
-    return os.path.join(get_src_folder(), "open_vp_cal")
+    return os.path.join(get_packages_folder(), "open_vp_cal", "src", "open_vp_cal")
 
 
 def import_module_from_filepath(filepath: str) -> ModuleType:
@@ -150,27 +150,23 @@ def add_key_value_to_plist(plist_path: str, key_name: str, bool_value: bool) -> 
     # We can write the data back out to the Info.plist file
     tree.write(plist_path)
 
-def update_iscc_app_version(filename: str, new_version: str) -> None:
+def get_iscc_app_vars(new_version: str, icon_path:str) -> dict[str, str]:
     """ Updates the version in the ISS file which is used to define the build process for the installer on windows
 
     Args:
         filename: The filename of the .iss filepath
         new_version: The new version we want to update too
+        icon_path: The path to the icon file
+
+    Returns: A dictionary of the variables to be used in the .iss file
     """
-    # Read the content of the file
-    with open(filename, 'r') as file:
-        content = file.read()
+    return {
+        "MyAppVersion" : new_version,
+        "MyAppIconPath" : icon_path,
+        "MyRepoPath" : get_current_folder(),
+    }
 
-    # Replace the placeholder with the new version
-    placeholder = '#define MyAppVersion "{}"'.format(new_version)
-    updated_content = content.replace('#define MyAppVersion "0.0.1a"', placeholder)
-
-    # Write the updated content back to the file
-    with open(filename, 'w') as file:
-        file.write(updated_content)
-
-
-def create_windows_installer(iss_file_path: str) -> int:
+def create_windows_installer(iss_file_path: str, iss_vars: dict[str, str]) -> int:
     """ Based on the given .iss file path, we run the inno setup compiler to create the window's installer
 
     Args:
@@ -183,7 +179,7 @@ def create_windows_installer(iss_file_path: str) -> int:
     inno_compiler_path = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 
     # Create the command
-    command = f'"{inno_compiler_path}" "{iss_file_path}"'
+    command = f'"{inno_compiler_path}" "{iss_file_path}" ' + " ".join([f"-D{key}={value}" for key, value in iss_vars.items()])
 
     # Execute the command
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
@@ -233,45 +229,6 @@ def is_git_installed() -> bool:
     except Exception:
         return False
 
-
-def git_clone(repo_url: str, target_dir: str) -> None:
-    """ Clones the given git repo to the given target directory
-
-    Args:
-        repo_url: The url of the git repo to clone
-        target_dir: The target directory to clone the repo to
-
-    """
-    try:
-        # Check if target_dir exists, if not, create it
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        # Run the git clone command
-        subprocess.check_call(['git', 'clone', repo_url, target_dir])
-    except subprocess.CalledProcessError as exception:
-        raise RuntimeError(f"Git clone failed with error: {exception.output}")
-
-
-def run_vcpkg_bootstrap(folder_path: str) -> None:
-    """ Runs the vcpkg bootstrap command for the given platform
-
-    Args:
-        folder_path: The path to the vcpkg folder
-    """
-    try:
-        # The command must be a list of strings, where each string is a command or argument
-        # The "./vcpkg/bootstrap-vcpkg.bat" path should be adjusted to the correct path of your bat file
-        if platform.system() == 'Windows':
-            script_name = "bootstrap-vcpkg.bat"
-        else:
-            script_name = "bootstrap-vcpkg.sh"
-
-        boot_strap_file = os.path.join(folder_path, script_name)
-        subprocess.run([boot_strap_file], check=True)
-    except subprocess.CalledProcessError as exception:
-        raise RuntimeError("Vcpkg bootstrap failed: " + exception.output)
-
-
 def is_pkgconfig_installed() -> bool:
     """ Checks if pkg-config is installed on platforms which are not windows
 
@@ -289,37 +246,6 @@ def is_pkgconfig_installed() -> bool:
     return True
 
 
-def run_vcpkg_install(folder_path: str) -> None:
-    """ Runs the vcpkg install command for the given platform
-
-    Args:
-        folder_path: The path to the vcpkg folder
-    """
-    try:
-        # Each part of the command is a separate item in the list
-        # The "./vcpkg/vcpkg.exe" path should be adjusted to the correct path of your exe file
-        args = []
-        if platform.system() == 'Windows':
-            script_name = "vcpkg.exe"
-            triplet = 'x64-windows-release'
-        elif platform.system() == 'Darwin':
-            script_name = "vcpkg"
-            triplet = 'x64-osx'
-            if platform.processor() == 'arm':
-                triplet = 'arm64-osx'
-        else:
-            script_name = "vcpkg"
-            triplet = 'x64-linux'
-
-        vcpkg = os.path.join(folder_path, script_name)
-        args.extend([vcpkg, 'install', 'openimageio[opencolorio,pybind11, freetype]', '--recurse', '--triplet', triplet])
-        subprocess.run(
-            args,
-            check=True)
-    except subprocess.CalledProcessError as exception:
-        raise RuntimeError("Vcpkg install failed:" + exception.output)
-
-
 def main() -> int:
     """ The main function which is called when this script is run
 
@@ -327,10 +253,6 @@ def main() -> int:
 
     """
     check_dependencies()
-
-    vcpkg_folder = get_vcpkg_root()
-
-    setup_and_install_vcpkgs(vcpkg_folder)
 
     debug = False
     app_name = "OpenVPCal"
@@ -342,9 +264,9 @@ def main() -> int:
     platform_sep = get_additional_data_seperator()
 
     additional_python_modules = {
-        "spg": os.path.join(get_src_folder(), "spg"),
-        "stageassets": os.path.join(get_src_folder(), "stageassets"),
-        "spg_icvfxpatterns": os.path.join(get_src_folder(), "spg_icvfxpatterns")
+        "spg": os.path.join(get_packages_folder(), "spg", "src", "spg"),
+        "stageassets": os.path.join(get_packages_folder(), "stageassets", "src", "stageassets"),
+        "spg_icvfxpatterns": os.path.join(get_packages_folder(), "spg_icvfxpatterns", "src", "spg_icvfxpatterns"),
     }
 
     if debug:
@@ -368,11 +290,6 @@ def main() -> int:
         cmds.append("--add-data")
         cmds.append(add_data)
 
-    manual_paths = get_additional_library_paths(vcpkg_folder)
-    for manual_path in manual_paths:
-        cmds.append("--add-data")
-        cmds.append(f"{manual_path}{platform_sep}.")
-
     cmds.append(entry_script)
     process = subprocess.Popen(cmds, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     print(process.stdout.read())
@@ -388,59 +305,19 @@ def main() -> int:
             print("WARNING - No CODE_SIGNING_CERTIFICATE environment variable set. Skipping code signing.")
 
     if platform.system() == 'Windows':
-        return_code = build_windows_installer(manual_paths, version)
+        return_code = build_windows_installer([], version, icon_file_path)
 
     print('Return code:', return_code)
     return return_code
 
 
-def get_additional_library_paths(vcpkg_folder: str) -> List[str]:
-    """ Gets the additional library paths we need to include in the distribution
-
-    Args:
-        vcpkg_folder: The path to the vcpkg folder
-
-    Returns: A list of additional library paths we need to include in the distribution
-
-    """
-    manual_paths = []
-    library_root = None
-    python_oiio_lib_folder = None
-    if platform.system() == 'Windows':
-        library_root = os.path.join(vcpkg_folder, "installed", "x64-windows-release", "bin")
-        python_oiio_lib_folder = os.path.join(
-            vcpkg_folder, "installed", "x64-windows-release", "lib",
-            "python3.11", "site-packages", "OpenImageIO"
-        )
-    elif platform.system() == 'Darwin':
-        arch = "x64-osx"
-        if platform.processor() == "arm":
-            arch = "arm64-osx"
-
-        library_root = os.path.join(vcpkg_folder, "installed", arch, "lib")
-        python_oiio_lib_folder = os.path.join(
-            library_root,
-            "python3.11", "site-packages", "OpenImageIO"
-        )
-    lib_files = os.listdir(library_root)
-    for lib_file in lib_files:
-        manual_paths.append(f"{library_root}/{lib_file}")
-    
-    for lib_file in os.listdir(python_oiio_lib_folder):
-        if lib_file == "__init__.py":
-            continue
-        if lib_file == "__pycache__":
-            continue
-        manual_paths.append(f"{python_oiio_lib_folder}/{lib_file}")
-    return manual_paths
-
-
-def build_windows_installer(manual_paths, version) -> int:
+def build_windows_installer(manual_paths, version, icon_path) -> int:
     """ Builds the window's installer and ensures the manual files are copied to the distribution folder
 
     Args:
         manual_paths: The third party library paths we need to include
         version: The version of the app we are building so we update the installer compilation instructions
+        icon_path: The path to icon file
 
     Returns: The return code of the process
 
@@ -453,13 +330,14 @@ def build_windows_installer(manual_paths, version) -> int:
             os.path.basename(manual_path)
         )
         shutil.copy(manual_path, target_file)
-    
+
     iss_file_name = os.path.join(current_script_directory, "OpenVPCal.iss")
-    
-    update_iscc_app_version(iss_file_name, version)
-    
+
+    iss_vars = get_iscc_app_vars(version, icon_path)
+
     return_code = create_windows_installer(
-        iss_file_name
+        iss_file_name,
+        iss_vars
     )
     return return_code
 
@@ -521,33 +399,6 @@ def osx_sign_app_and_build_dmg(app_name: str, certificate_name: str, version: st
     # Wait for the process to finish and get the return code.
     return_code = process.wait()
     return return_code
-
-
-def setup_and_install_vcpkgs(vcpkg_folder: str) -> None:
-    """ Sets up and installs the vcpkgs for the given platform
-
-    Args:
-        vcpkg_folder: The path to the vcpkg folder
-    """
-    if not os.path.exists(vcpkg_folder):
-        os.makedirs(vcpkg_folder)
-        git_clone('https://github.com/microsoft/vcpkg', vcpkg_folder)
-        run_vcpkg_bootstrap(vcpkg_folder)
-        run_vcpkg_install(vcpkg_folder)
-
-
-def get_vcpkg_root() -> str:
-    """ Get the root folder of vcpkg
-
-    Returns: The root folder of vcpkg
-
-    """
-    if platform.system() == 'Windows':
-        root_folder = "D:\\"
-    else:
-        root_folder = os.path.expanduser("~")
-    vcpkg_folder = os.path.join(root_folder, "vcpkg")
-    return vcpkg_folder
 
 
 def check_dependencies() -> None:

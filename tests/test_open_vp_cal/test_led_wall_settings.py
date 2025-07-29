@@ -18,9 +18,8 @@ import os
 import json
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.core import constants
-from OpenImageIO import ROI
 
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 
 class TestLedWallSettings(TestBase):
@@ -67,7 +66,7 @@ class TestLedWallSettings(TestBase):
         sample_keys = list(self.sample.keys())
         sample_keys.sort()
 
-        constants_all = constants.LedWallSettingsKeys.ALL.copy()
+        constants_all = constants.LedWallSettingsKeys.all().copy()
         constants_all.sort()
         self.assertEqual(sample_keys, constants_all)
 

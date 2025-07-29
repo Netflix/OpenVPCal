@@ -16,7 +16,7 @@ limitations under the License.
 
 import os
 
-import tests_spgicvfxpatterns.utils as utils
+import utils as utils
 
 from spg_icvfxpatterns.PatternGenerators.referenceImage import ReferenceImage as _ReferenceImage
 

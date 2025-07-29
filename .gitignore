@@ -1,4 +1,7 @@
+*.log
 **/__pycache__/**
+**/build/**
+*.egg-info/
 .idea/*
 **/tests/**/output/**
 **/tests/**/results/**
@@ -8,3 +11,4 @@ dist/**
 openvpcal.egg-info/**
 .pytest_cache/**
 .DS_Store
+/Output

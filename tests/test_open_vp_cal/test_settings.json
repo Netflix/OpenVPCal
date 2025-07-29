@@ -1,6 +1,9 @@
 {
     "openvp_cal_version": "0.1.0a",
     "project_settings": {
+        "project_id": "123456",
+        "lut_size": 66,
+        "content_max_lum": 10000.0,
         "file_format": "exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
@@ -8,6 +11,7 @@
         "custom_logo_path": "",
         "ocio_config_path": "test",
         "frames_per_patch": 1,
+        "reference_gamut": "ACES2065-1",
         "frame_rate": 48,
         "export_lut_for_aces_cct": true,
         "export_lut_for_aces_cct_in_target_out": true,

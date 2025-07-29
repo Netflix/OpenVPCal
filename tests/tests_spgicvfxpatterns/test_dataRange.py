@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import tests_spgicvfxpatterns.utils as utils
+import utils as utils
 
 from spg_icvfxpatterns.PatternGenerators.dataRange import DataRange as _DataRange
 

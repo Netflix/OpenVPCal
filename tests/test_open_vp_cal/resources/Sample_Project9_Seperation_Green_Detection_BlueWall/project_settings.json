@@ -1,13 +1,14 @@
 {
     "openvp_cal_version": "1.0.0-rc.9b",
     "project_settings": {
-        "file_format": "exr",
+        "file_format": ".exr",
         "resolution_width": 3840,
         "resolution_height": 2160,
         "output_folder": "/Users/adamdavis/Downloads/SampleProject9_Seperation_Green_Detection_BlueWall",
         "ocio_config_path": "",
         "custom_logo_path": "",
         "frames_per_patch": 1,
+        "reference_gamut": "ACES2065-1",
         "led_walls": [
             {
                 "name": "Wall1",
@@ -21,12 +22,7 @@
                 "input_plate_gamut": "ACES2065-1",
                 "native_camera_gamut": "REDWideGamutRGB",
                 "reference_to_target_cat": "Bradford",
-                "roi": [
-                    668,
-                    1238,
-                    261,
-                    833
-                ],
+                "roi": [],
                 "shadow_rolloff": 0.008,
                 "target_max_lum_nits": 100,
                 "target_gamut": "sRGB",
