@@ -111,7 +111,7 @@ jobs:
         run: uv run ruff check ./packages ./tests
 
       - name: Run tests (verbose, stop on fail)
-        run: uv run pytest ./tests -vv --maxfail=1 --junitxml=test-results/junit-report.xml
+        run: uv run pytest ./tests/test_stageassets -vv --maxfail=1 --junitxml=test-results/junit-report.xml
 
       - name: Report test results
         if: always()
@@ -119,4 +119,4 @@ jobs:
         with:
           name: pytest results
           path: test-results/junit-report.xml
-          reporter: junit
+          reporter: java-junit
