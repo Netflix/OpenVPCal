@@ -375,6 +375,7 @@ class EOTF(StrEnum):
     EOTF_BT1886 = "ITU-R BT.1886"
     EOTF_SRGB = "sRGB"
     EOTF_ST2084 = "ST 2084"
+    EOTF_HLG = "HLG"
 
     @staticmethod
     def all() -> list[str]:

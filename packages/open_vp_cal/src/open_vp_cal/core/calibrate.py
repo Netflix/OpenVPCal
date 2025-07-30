@@ -720,6 +720,10 @@ def run(
     # If we are not working in PQ we force target nits to 100 aka 1.0
     if target_EOTF != constants.EOTF.EOTF_ST2084:
         target_max_lum_nits = 100
+
+    if target_EOTF == constants.EOTF.EOTF_HLG:
+        target_max_lum_nits = 1000
+
     peak_lum = target_max_lum_nits * 0.01
 
     if target_to_screen_cat == constants.CAT.CAT_NONE:
