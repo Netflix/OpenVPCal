@@ -150,31 +150,23 @@ def add_key_value_to_plist(plist_path: str, key_name: str, bool_value: bool) -> 
     # We can write the data back out to the Info.plist file
     tree.write(plist_path)
 
-def update_iscc_app_version(filename: str, new_version: str, icon_path:str) -> None:
+def get_iscc_app_vars(new_version: str, icon_path:str) -> dict[str, str]:
     """ Updates the version in the ISS file which is used to define the build process for the installer on windows
 
     Args:
         filename: The filename of the .iss filepath
         new_version: The new version we want to update too
         icon_path: The path to the icon file
+
+    Returns: A dictionary of the variables to be used in the .iss file
     """
-    # Read the content of the file
-    with open(filename, 'r') as file:
-        content = file.read()
+    return {
+        "MyAppVersion" : new_version,
+        "MyAppIconPath" : icon_path,
+        "MyRepoPath" : get_current_folder(),
+    }
 
-    # Replace the placeholder with the new version
-    placeholder = '#define MyAppVersion "{}"'.format(new_version)
-    updated_content = content.replace('#define MyAppVersion "0.0.1a"', placeholder)
-
-    placeholder = 'SetupIconFile={}'.format(icon_path)
-    updated_content = updated_content.replace('SetupIconFile=OPENVP_CAL_ICON_PATH', placeholder)
-
-    # Write the updated content back to the file
-    with open(filename, 'w') as file:
-        file.write(updated_content)
-
-
-def create_windows_installer(iss_file_path: str) -> int:
+def create_windows_installer(iss_file_path: str, iss_vars: dict[str, str]) -> int:
     """ Based on the given .iss file path, we run the inno setup compiler to create the window's installer
 
     Args:
@@ -187,7 +179,7 @@ def create_windows_installer(iss_file_path: str) -> int:
     inno_compiler_path = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 
     # Create the command
-    command = f'"{inno_compiler_path}" "{iss_file_path}"'
+    command = f'"{inno_compiler_path}" "{iss_file_path}" ' + " ".join([f"-D{key}={value}" for key, value in iss_vars.items()])
 
     # Execute the command
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
@@ -341,10 +333,11 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
 
     iss_file_name = os.path.join(current_script_directory, "OpenVPCal.iss")
 
-    update_iscc_app_version(iss_file_name, version, icon_path)
+    iss_vars = get_iscc_app_vars(version, icon_path)
 
     return_code = create_windows_installer(
-        iss_file_name
+        iss_file_name,
+        iss_vars
     )
     return return_code
 

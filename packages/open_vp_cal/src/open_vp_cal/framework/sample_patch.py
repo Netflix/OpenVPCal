@@ -53,9 +53,9 @@ class BaseSamplePatch:
         Returns:
             int: The number of patches relative to the red patch index.
         """
-        eotf_ramp_index = constants.PATCHES.get_patch_index(
+        eotf_ramp_index = constants.PATCHES.patch_index(
             constants.PATCHES.EOTF_RAMPS)
-        patch_index = constants.PATCHES.get_patch_index(self.patch)
+        patch_index = constants.PATCHES.patch_index(self.patch)
         if patch_index > eotf_ramp_index:
             return patch_index - red_patch_index + self.led_wall.num_grey_patches
         return patch_index - red_patch_index
@@ -141,7 +141,7 @@ class BaseSamplePatch:
         return sample_frames
 
     def calculate_first_and_last_patch_frame(self):
-        red_patch_index = constants.PATCHES.get_patch_index(
+        red_patch_index = constants.PATCHES.patch_index(
             constants.PATCHES.RED_PRIMARY_DESATURATED)
         number_of_patches_relative_to_red = self.get_num_patches_relative_to_red(
             red_patch_index

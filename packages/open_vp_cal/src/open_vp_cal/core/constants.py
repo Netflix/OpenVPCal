@@ -15,7 +15,7 @@ limitations under the License.
 
 This file contains constants used throughout the openvpcal calibration process
 """
-from enum import Enum
+from enum import Enum, StrEnum, IntEnum
 
 COLOR_WIDGET_GRAPH_SCALE = 1000
 
@@ -59,7 +59,7 @@ DEFAULT_OCIO_CONFIG = "studio-config-v2.1.0_aces-v1.3_ocio-v2.3"
 ARC_CONFIG = "arc_config.xml"
 
 
-class UILayouts:
+class UILayouts(StrEnum):
     """
     Constants for defining the different layouts we want to use for the UI
     """
@@ -69,8 +69,7 @@ class UILayouts:
     PROJECT_LAYOUT_WINDOWS = "ProjectLayout_Windows.layout"
 
 
-
-class DisplayFilters:
+class DisplayFilters(StrEnum):
     """
     Constants for defining the different filters we want to use to display the results
     """
@@ -80,7 +79,7 @@ class DisplayFilters:
     MACBETH = "macbeth"
 
 
-class CopyFormats:
+class CopyFormats(StrEnum):
     """
     Constants for defining the different modes we want to copy data into the clip board
     """
@@ -89,7 +88,7 @@ class CopyFormats:
     CSV = "CSV"
 
 
-class ProjectSettingsKeys:
+class ProjectSettingsKeys(StrEnum):
     """
     Constants for the project settings attribute names
     """
@@ -110,12 +109,14 @@ class ProjectSettingsKeys:
     EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT = "export_lut_for_aces_cct_in_target_out"
     PROJECT_ID = "project_id"
     LUT_SIZE = "lut_size"
-    ALL = [CONTENT_MAX_LUM, FILE_FORMAT, RESOLUTION_WIDTH, RESOLUTION_HEIGHT, OUTPUT_FOLDER, OCIO_CONFIG_PATH, CUSTOM_LOGO_PATH,
-           FRAMES_PER_PATCH, REFERENCE_GAMUT, LED_WALLS, PROJECT_CUSTOM_PRIMARIES, FRAME_RATE, EXPORT_LUT_FOR_ACES_CCT,
-           EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT, PROJECT_ID, LUT_SIZE]
+
+    @staticmethod
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in ProjectSettingsKeys]
 
 
-class FrameRates:
+class FrameRates(IntEnum):
     """
     Constants for the different frame rates we can use
     """
@@ -125,11 +126,18 @@ class FrameRates:
     FPS_48 = 48
     FPS_50 = 50
     FPS_60 = 60
-    FPS_ALL = [FPS_24, FPS_25, FPS_30, FPS_48, FPS_50, FPS_60]
-    FPS_DEFAULT = FPS_24
+
+    @staticmethod
+    def all() -> list[int]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in FrameRates]
+
+    @staticmethod
+    def default() -> int:
+        return FrameRates.FPS_24
 
 
-class LedWallSettingsKeys:
+class LedWallSettingsKeys(StrEnum):
     """
     Constants for the LED wall settings attribute names
     """
@@ -157,17 +165,15 @@ class LedWallSettingsKeys:
     USE_WHITE_POINT_OFFSET = "use_white_point_offset"
     IS_VERIFICATION_WALL = "is_verification_wall"
     VERIFICATION_WALL = "verification_wall"
-    ALL = [NAME, ENABLE_EOTF_CORRECTION, ENABLE_GAMUT_COMPRESSION, AUTO_WB_SOURCE, INPUT_SEQUENCE_FOLDER,
-           NUM_GREY_PATCHES, PRIMARIES_SATURATION, CALCULATION_ORDER, INPUT_PLATE_GAMUT, NATIVE_CAMERA_GAMUT,
-           REFERENCE_TO_TARGET_CAT, ROI, SHADOW_ROLLOFF, TARGET_MAX_LUM_NITS, TARGET_GAMUT, TARGET_EOTF,
-           TARGET_TO_SCREEN_CAT, MATCH_REFERENCE_WALL, REFERENCE_WALL, USE_WHITE_POINT_OFFSET,
-           WHITE_POINT_OFFSET_SOURCE, VERIFICATION_WALL, IS_VERIFICATION_WALL, AVOID_CLIPPING]
 
+    @staticmethod
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in LedWallSettingsKeys]
 
-class PATCHES:
+class PATCHES(StrEnum):
     """ Constants to define the names of the patches we use for the calibration, and a small helper function to get the
     order of the patches
-
     """
     SLATE = "Slate"
     RED_PRIMARY_DESATURATED = "Red_Primary_Desaturated"
@@ -185,23 +191,25 @@ class PATCHES:
     EOTF_RAMPS = "EOTF_Ramps"
     END_SLATE = "End_Slate"
 
-    PATCH_ORDER = [
-        SLATE, RED_PRIMARY_DESATURATED, GREEN_PRIMARY_DESATURATED, BLUE_PRIMARY_DESATURATED, GREY_18_PERCENT,
-        RED_PRIMARY, GREEN_PRIMARY, BLUE_PRIMARY, MAX_WHITE, MACBETH, SATURATION_RAMP,
-        DISTORT_AND_ROI, FLAT_FIELD, EOTF_RAMPS, END_SLATE
-    ]
+    @staticmethod
+    def patch_order() -> list[str]:
+        """ Returns the order of patches
 
-    @classmethod
-    def get_patch_index(cls, patch_name: str) -> int:
+        :return: The list of patch names in order
+        """
+        return [member.value for member in PATCHES]
+
+    @staticmethod
+    def patch_index(patch_name: str) -> int:
         """ Gets the index for the given patch name, so we know what order the patches are in
 
         :param patch_name: The name of the patch
         :return: The index of the patch
         """
-        return cls.PATCH_ORDER.index(patch_name)
+        return PATCHES.patch_order().index(patch_name)
 
 
-class Measurements:
+class Measurements(StrEnum):
     """
     Class to hold constants used to describe the measurements we take
     """
@@ -214,7 +222,7 @@ class Measurements:
     MAX_WHITE = "Max_White"
 
 
-class Results:
+class Results(StrEnum):
     """
     Class to hold the constants to describe the results of the calibration
     """
@@ -260,7 +268,7 @@ class Results:
     SCALED_AND_CONVERTED_SAMPLES = "scaled_and_converted_samples"
 
 
-class CAT:
+class CAT(StrEnum):
     """
     Class to hold the constants to describe the chromatic adaptation transforms we can use
     """
@@ -277,13 +285,29 @@ class CAT:
     CAT_SHARP = "Sharp"
     CAT_VON_KRIES = "Von Kries"
     CAT_XYZ_SCALING = "XYZ Scaling"
-    CAT_ALL = [CAT_BRADFORD, CAT_BIANCO2010, CAT_PC_BIANCO2010, CAT_CAT02_BRILL2008, CAT_CAT02, CAT_CAT16,
-               CAT_CMCCAT2000, CAT_CMCCAT97, CAT_FAIRCHILD, CAT_SHARP, CAT_VON_KRIES, CAT_XYZ_SCALING]
-    CAT_ALL_WITH_NONE = [CAT_NONE] + CAT_ALL
-    CAT_DEFAULT = CAT_CAT02
+
+    @staticmethod
+    def all() -> list[str]:
+        """ Returns the list of all CATs without the none option
+
+        :return: The list of all CATs without the none option
+        """
+        return CAT.all_with_none()[1:]
+
+    @staticmethod
+    def all_with_none() -> list[str]:
+        """ Returns the list of all CATs with the none option
+
+        :return: The list of all CATs with the none option
+        """
+        return [member.value for member in CAT]
+
+    @staticmethod
+    def default() -> str:
+        return CAT.CAT_CAT02
 
 
-class ColourSpace:
+class ColourSpace(StrEnum):
     """
     Class to hold the constants to describe the colour spaces we can use
     """
@@ -291,12 +315,21 @@ class ColourSpace:
     CS_BT2020 = "ITU-R BT.2020"
     CS_SRGB = "sRGB"
     CS_P3 = "DCI-P3"
-    CS_DEFAULT_TARGET = CS_BT2020
-    CS_DEFAULT_REF = CS_ACES
-    CS_ALL = [CS_ACES, CS_BT2020, CS_SRGB, CS_P3]
+
+    @staticmethod
+    def all() -> list[str]:
+        return [member.value for member in ColourSpace]
+
+    @staticmethod
+    def default_target() -> str:
+        return ColourSpace.CS_BT2020
+
+    @staticmethod
+    def default_ref() -> str:
+        return ColourSpace.CS_ACES
 
 
-class CameraColourSpace:
+class CameraColourSpace(StrEnum):
     """
     Class to hold the constants to describe the colour spaces we can use
     """
@@ -319,13 +352,19 @@ class CameraColourSpace:
     VGAMUT = "V-Gamut"
     VENICE_SGAMUT3 = "Venice S-Gamut3"
     VENICE_SGAMUT3_CINE = "Venice S-Gamut3.Cine"
-    CS_ALL = [CS_ACES, CS_ACES_CG, ARRI_WIDE_GAMUT_3, ARRI_WIDE_GAMUT_4, BLACKMAGIC_WIDE_GAMUT, CANON_CINEMA_GAMUT,
-              DJI_D_GAMUT, CS_BT2020, CS_BT709, P3_D65, PROTUNE_NATIVE, RED_WIDE_GAMUT, SGAMUT, SGAMUT3, SGAMUT3_CINE,
-              VGAMUT, VENICE_SGAMUT3, VENICE_SGAMUT3_CINE]
-    CS_DEFAULT = CS_ACES
+
+    @staticmethod
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in CameraColourSpace]
+
+    @staticmethod
+    def default() -> str:
+        return CameraColourSpace.CS_ACES
 
 
-class EOTF:
+
+class EOTF(StrEnum):
     """
     Class to hold the constants to describe the EOTFs we can use
     """
@@ -336,25 +375,47 @@ class EOTF:
     EOTF_BT1886 = "ITU-R BT.1886"
     EOTF_SRGB = "sRGB"
     EOTF_ST2084 = "ST 2084"
-    EOTF_HLG = "HLG"
-    EOTF_ALL = [EOTF_GAMMA_1_8, EOTF_GAMMA_2_2, EOTF_GAMMA_2_4, EOTF_GAMMA_2_6, EOTF_BT1886, EOTF_SRGB, EOTF_ST2084, EOTF_HLG]
-    EOTF_DEFAULT = EOTF_ST2084
+
+    @staticmethod
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in EOTF]
+
+    @staticmethod
+    def default() -> str:
+        return EOTF.EOTF_ST2084
 
 
-class CalculationOrder:
+class CalculationOrder(StrEnum):
     """
     Class to hold the constants to describe the operation order we can use
     """
     CO_CS_EOTF = "CS > EOTF"
     CO_EOTF_CS = "EOTF > CS"
-    CO_ALL = [CO_CS_EOTF, CO_EOTF_CS]
-    CO_DEFAULT = CO_EOTF_CS
-    CS_ONLY_STRING = "CS_Only"
-    CO_CS_EOTF_STRING = "CS_EOTF"
-    CO_EOTF_CS_STRING = "EOTF_CS"
+
+    @staticmethod
+    def all() -> list[str]:
+        """ Returns the list of all Enum values"""
+        return [member.value for member in CalculationOrder]
+
+    @staticmethod
+    def default() -> str:
+        return CalculationOrder.CO_EOTF_CS
+
+    @staticmethod
+    def cs_only_string() -> str:
+        return  "CS_Only"
+
+    @staticmethod
+    def cs_eotf_string() -> str:
+        return "CS_EOTF"
+
+    @staticmethod
+    def eotf_cs_string() -> str:
+        return "EOTF_CS"
 
 
-class PQ:
+class PQ(float, Enum):
     """
     Class to hold the constants to calculate values going to and from PQ
     """
@@ -366,12 +427,12 @@ class PQ:
     PQ_C2 = 18.8515625
     PQ_C3 = 18.6875
 
-class SourceSelect(Enum):
+class SourceSelect(StrEnum):
     SINGLE = "Single"
     SEQUENCE = "Sequence"
     CANCEL = "Cancel"
 
-class FileFormats:
+class FileFormats(StrEnum):
     """
     Class to hold the constants to describe the file formats we can use
     """
@@ -385,13 +446,34 @@ class FileFormats:
     FF_MP4 = ".mp4"
     FF_ARI = ".ari"
     FF_ARX = ".arx"
-    FF_ALL_READ = [FF_EXR, FF_DPX, FF_TIF, FF_PNG]
-    FF_ALL_WRITE = [FF_EXR, FF_DPX, FF_TIF]
-    FF_ALL_CONVERT = [FF_R3D, FF_MXF, FF_MOV, FF_ARI, FF_ARX, FF_MP4]
-    FF_DEFAULT = FF_EXR
+
+    @staticmethod
+    def all_read() -> list[str]:
+        """
+        Returns the list of all readable file formats
+        """
+        return [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF, FileFormats.FF_PNG]
+
+    @staticmethod
+    def all_write() -> list[str]:
+        """
+        Returns the list of all writable file formats
+        """
+        return [FileFormats.FF_EXR, FileFormats.FF_DPX, FileFormats.FF_TIF]
+
+    @staticmethod
+    def all_convert() -> list[str]:
+        """
+        Returns the list of all convertible file formats
+        """
+        return [FileFormats.FF_R3D, FileFormats.FF_MXF, FileFormats.FF_MOV, FileFormats.FF_ARI, FileFormats.FF_ARX, FileFormats.FF_MP4]
+
+    @staticmethod
+    def default() -> str:
+        return FileFormats.FF_EXR
 
 
-class ValidationStatus:
+class ValidationStatus(StrEnum):
     """
     Class to hold the constants to describe the validation status of a calibration
     """
@@ -401,7 +483,7 @@ class ValidationStatus:
     INFO = "INFO"
 
 
-class ProjectFolders:
+class ProjectFolders(StrEnum):
     """
     Constants used to describe the folder names within the project
     """
@@ -415,7 +497,7 @@ class ProjectFolders:
     SPG = "spg"
 
 
-class InputSelectSources:
+class InputSelectSources(StrEnum):
     """
     Represents the different input sources.
     """

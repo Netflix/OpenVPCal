@@ -21,11 +21,25 @@ from test_utils import TestBase
 
 class TestConstants(TestBase):
     def test_camera_colour_space_enum(self):
-        for item in constants.CameraColourSpace.CS_ALL:
+        for item in constants.CameraColourSpace:
             cs = colour.RGB_COLOURSPACES[item]
             self.assertNotEqual(cs, None)
 
     def test_colour_space_enum(self):
-        for item in constants.ColourSpace.CS_ALL:
+        for item in constants.ColourSpace:
             cs = colour.RGB_COLOURSPACES[item]
             self.assertNotEqual(cs, None)
+
+    def test_patches(self):
+        LEGACY_PATCH_ORDER = [
+            constants.PATCHES.SLATE, constants.PATCHES.RED_PRIMARY_DESATURATED, constants.PATCHES.GREEN_PRIMARY_DESATURATED, constants.PATCHES.BLUE_PRIMARY_DESATURATED, constants.PATCHES.GREY_18_PERCENT,
+            constants.PATCHES.RED_PRIMARY, constants.PATCHES.GREEN_PRIMARY, constants.PATCHES.BLUE_PRIMARY, constants.PATCHES.MAX_WHITE, constants.PATCHES.MACBETH, constants.PATCHES.SATURATION_RAMP,
+            constants.PATCHES.DISTORT_AND_ROI, constants.PATCHES.FLAT_FIELD, constants.PATCHES.EOTF_RAMPS, constants.PATCHES.END_SLATE
+        ]
+
+        for patch, legacy_patch in zip(constants.PATCHES.patch_order(), LEGACY_PATCH_ORDER):
+            self.assertEqual(patch, legacy_patch)
+
+    def test_cat(self):
+        self.assertTrue(constants.CAT.CAT_NONE in constants.CAT.all_with_none())
+        self.assertFalse(constants.CAT.CAT_NONE in constants.CAT.all())

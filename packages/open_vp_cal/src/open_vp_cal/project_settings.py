@@ -33,7 +33,7 @@ class ProjectSettings:
     def __init__(self):
         """Initialize an empty ProjectSettings object."""
         self._default_project_settings = {
-            constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.FF_DEFAULT,
+            constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.default(),
             constants.ProjectSettingsKeys.CONTENT_MAX_LUM: constants.PQ.PQ_MAX_NITS,
             constants.ProjectSettingsKeys.RESOLUTION_WIDTH: constants.DEFAULT_RESOLUTION_WIDTH,
             constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: constants.DEFAULT_RESOLUTION_HEIGHT,
@@ -44,7 +44,7 @@ class ProjectSettings:
             constants.ProjectSettingsKeys.LED_WALLS: [],
             constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
             constants.ProjectSettingsKeys.REFERENCE_GAMUT: constants.ColourSpace.CS_ACES,
-            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.FPS_DEFAULT,
+            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.default(),
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
             constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False,
             constants.ProjectSettingsKeys.PROJECT_ID: utils.generate_truncated_hash(),

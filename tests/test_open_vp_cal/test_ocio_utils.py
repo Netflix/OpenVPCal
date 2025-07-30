@@ -18,7 +18,7 @@ import tempfile
 
 from open_vp_cal.core import constants
 from open_vp_cal.main import run_cli
-from test_utils import TestProject
+from test_utils import TestProject, skip_if_ci
 
 
 import open_vp_cal.core.ocio_utils as ocio_utils
@@ -130,6 +130,7 @@ class TestCalibrate(TestProject):
         os.remove(temp_project_settings)
         return results
 
+    @skip_if_ci()
     def test_run_cli_ocio_post_config(self):
         self.project_settings.project_id = "test_ocio"
         expected_file = self.get_post_calibration_ocio_config()

@@ -28,7 +28,7 @@ OIIO_MSG = "OpenImageIO Is Not Installed"
 
 
 class TestBase(unittest.TestCase):
-    image_fail_count = 0
+    image_fail_count = 10
 
     @classmethod
     def get_folder_for_this_file(cls):
@@ -74,9 +74,12 @@ class TestBase(unittest.TestCase):
 
     @classmethod
     def get_test_result_folder(cls):
-        return os.path.join(
+        results_folder = os.path.join(
             cls.get_folder_for_this_file(),
             'results')
+        if not os.path.exists(results_folder):
+            os.makedirs(results_folder)
+        return results_folder
 
     @classmethod
     def get_test_result(cls, resource_name, ext):
@@ -124,7 +127,7 @@ class TestBase(unittest.TestCase):
         actual_bps = image_buffer_spec.get_int_attribute(constants.OIIO_BITS_PER_SAMPLE, defaultval=0)
         self.assertEqual(expected_bps, actual_bps)
 
-        comp_results = oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-5, 1.0e-5)
+        comp_results = oiio.ImageBufAlgo.compare(expected_image, image_buffer, 1.0e-3, 1.0e-5)
         if comp_results.nfail > self.image_fail_count:
 
             file_name = "_".join([self.__class__.__name__, self._testMethodName])

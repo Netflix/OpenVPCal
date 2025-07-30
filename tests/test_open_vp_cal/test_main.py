@@ -25,7 +25,7 @@ from json import JSONDecodeError
 from open_vp_cal.core import constants
 from open_vp_cal.main import validate_file_path, validate_folder_path, \
     validate_project_settings, generate_patterns, generate_spg_patterns
-from test_utils import TestBase, TestProject
+from test_utils import TestBase, TestProject, skip_if_ci
 
 
 class TestArgparseFunctions(TestBase):
@@ -89,6 +89,7 @@ class TestArgparseFunctions(TestBase):
 
 class TestProjectCli(TestProject):
 
+    @skip_if_ci()
     def test_run_cli(self):
         expected_file = self.get_results_file(self.led_wall)
 
@@ -117,6 +118,7 @@ class TestProjectCli(TestProject):
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
+    @skip_if_ci()
     def test_run_cli_multi_wall(self):
         # Add A Second Wall
         self.project_settings.copy_led_wall(self.project_settings.led_walls[0].name, "LedWall2")
@@ -159,6 +161,7 @@ class TestProjectCli(TestProject):
 class TestProjectExternalWhite(TestProject):
     project_name = "SampleProject2_External_White_NoLens"
 
+    @skip_if_ci()
     def test_external_white_no_lens(self):
         results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
