@@ -43,7 +43,12 @@ class TestBaseGenerator(utils.TestGenerator):
     def test_get_frame_num_and_file_path(self):
         name = "Test_num"
         expected_frame = 10
-        expected_path = os.path.join(self.output_folder, "Patterns/{0}_.seq/{1}_.000010.dpx".format(name, name))
+        expected_path = os.path.join(
+            self.output_folder,
+            "Patterns",
+            f"{name}_.seq",
+            f"{name}_.{expected_frame:06d}.dpx"
+        )
         result_frame, result_path = self.generator_class.get_frame_num_and_file_path(expected_frame, name)
 
         self.assertEqual(expected_frame, result_frame)
@@ -137,7 +142,7 @@ class TestBaseGenerator(utils.TestGenerator):
         frame_num = 10
         name = "adam"
         self.generator_class.name = "GenericGen"
-        expected = "folder/adam_GenericGen.000010.dpx"
+        expected = os.path.join("folder", "adam_GenericGen.000010.dpx")
         result = self.generator_class.get_image_file_name(
             pattern_output_folder, frame_num, name
         )
