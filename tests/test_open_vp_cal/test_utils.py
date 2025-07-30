@@ -371,8 +371,9 @@ class TestProject(TestUtils):
             self.assertIsInstance(actual, dict,
                                   f"{path}: expected dict, got {type(actual)}")
             for key, exp_val in expected.items():
-                if key == "DELTA_E_MACBETH": # Delta_E is a totally different scale so needs its own abs total
+                if key in ["DELTA_E_MACBETH", "DELTA_E_EOTF_RAMP"]: # Delta_E is a totally different scale so needs its own abs total
                     abs_tol = 0.2
+                    rel_tol = 1e-6
                 self.assertIn(key, actual, f"{path}: missing key {key!r}")
                 self.compare_data(exp_val,
                                   actual[key],
