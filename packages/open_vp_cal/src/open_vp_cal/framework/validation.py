@@ -62,7 +62,7 @@ class Validation:
         result.name = "Measured EOTF Peak vs Target Peak Failed"
         result.status = ValidationStatus.PASS
 
-        measured_peak = calibration_results[Results.MEASURED_MAX_LUM_NITS][1]
+        measured_peak = calibration_results[Results.MEASURED_MAX_LUM_NITS][2]
         target_peak = calibration_results[Results.TARGET_MAX_LUM_NITS]
         delta = abs(measured_peak - target_peak) / target_peak
 
