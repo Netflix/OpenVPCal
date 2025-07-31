@@ -204,3 +204,12 @@ class ResourceLoader:
 
         """
         return cls._get_resource("spg_pattern_basic_config.json")
+
+    @classmethod
+    def hlg_to_linear_cube(cls) -> str:
+        """
+
+        Returns: The absolute path to the HLG to Linear cube file
+
+        """
+        return cls._get_resource("HLG_to_Linear.cube")

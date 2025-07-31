@@ -772,8 +772,12 @@ class PatchGeneration:
         rois = self.split_roi(nit_bar_roi, nit_bar_steps)
         img_buffers = self.create_image_buffers_from_rois(rois)
 
+        use_pq_peak_luminance = False
+        if self.led_wall.target_eotf == constants.EOTF.EOTF_ST2084:
+            use_pq_peak_luminance = True
+
         minimum_legal, maximum_legal, minimum_extended, maximum_extended = utils.get_legal_and_extended_values(
-            self.led_wall.target_max_lum_nits
+            self.led_wall.target_max_lum_nits, use_pq_peak_luminance=use_pq_peak_luminance
         )
 
         Oiio.ImageBufAlgo.fill(
