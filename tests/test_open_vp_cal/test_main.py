@@ -94,7 +94,7 @@ class TestProjectCli(TestProject):
         expected_file = self.get_results_file(self.led_wall)
 
         # Override the roi so we have to run the auto detection
-        self.project_settings.led_walls[0].roi = None
+        self.project_settings.led_walls[0].roi = []
 
         temp_folders = self.pre_process_vp_cal_1x(
             self.project_settings, self.get_output_folder()
@@ -124,8 +124,8 @@ class TestProjectCli(TestProject):
         self.project_settings.copy_led_wall(self.project_settings.led_walls[0].name, "LedWall2")
 
         # Override the roi so we have to run the auto detection
-        self.project_settings.led_walls[0].roi = None
-        self.project_settings.led_walls[1].roi = None
+        self.project_settings.led_walls[0].roi = []
+        self.project_settings.led_walls[1].roi = []
 
         # Set the new wall to the same sequence as the first wall for testing
         original_sequence = self.project_settings.led_walls[0].input_sequence_folder

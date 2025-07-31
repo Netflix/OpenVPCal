@@ -44,7 +44,7 @@ class LedWallSettingsModel(BaseModel):
     input_plate_gamut: constants.ColourSpace|str = Field(default=constants.ColourSpace(constants.ColourSpace.default_ref()))
     native_camera_gamut: constants.CameraColourSpace|str = Field(default=constants.CameraColourSpace(constants.CameraColourSpace.default()))
     reference_to_target_cat: constants.CAT = Field(default=constants.CAT(constants.CAT.CAT_BRADFORD))
-    roi: List[List[int]] = Field(default=[])
+    roi: List[List[int]] = Field(default=[], description="roi is consist of 4 points [[tl.x,tl.y],[tr.x,tr.y],[br.x,br.y],[bl.x,bl.y]]")
     shadow_rolloff: float = Field(default=0.008)
     target_max_lum_nits: int = Field(default=1000, ge=0, le=constants.PQ.PQ_MAX_NITS)
     target_gamut: constants.LedColourSpace|str = Field(default=constants.LedColourSpace(constants.LedColourSpace.default_target()))

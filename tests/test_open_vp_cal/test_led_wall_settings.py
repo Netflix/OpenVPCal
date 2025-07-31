@@ -283,10 +283,18 @@ class TestLedWallSettings(TestBase):
     # <test_saturation_cat> is removed
 
     def test_roi(self):
-        roi = [1, 2, 3, 4]
-        self.wall.roi = upgrade_legacy_roi(roi)
+        legacy_roi = [1, 2, 3, 4]
+        self.assertEqual(upgrade_legacy_roi(legacy_roi),
+            LedWallSettingsModel.upgrade_roi(legacy_roi))
+        
+        roi = upgrade_legacy_roi(legacy_roi)
+        self.wall.roi = roi
         self.assertEqual(self.wall.roi, roi)
         self.assertEqual(self.wall._led_settings.roi, roi)
+
+    def test_empty_roi(self):
+        self.wall.roi = []
+        self.assertFalse(self.wall.roi, "Empty roi should return False")
 
     def test_shadow_rolloff(self):
         self.wall.shadow_rolloff = 0.1
