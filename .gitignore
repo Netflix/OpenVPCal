@@ -4,7 +4,8 @@
 *.egg-info/
 .idea/*
 **/tests/**/output/**
-**/tests/**/results/**
+**/tests/tests_spg/results/**
+**/tests/tests_spgicvfxpatterns/results/**
 dist/**
 **myenv/**
 **venv/**

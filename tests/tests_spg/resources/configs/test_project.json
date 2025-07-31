@@ -1,7 +1,7 @@
 {
   "frame_rate" : 24.0,
   "sequence_start_frame": 0,
-  "image_file_format" : "dpx",
+  "image_file_format" : ".dpx",
   "image_file_bit_depth": 10,
   "output_folder": "/Users/adamdavis/dev/workspace/git/netflix-skunkworks/SPG/patterns",
   "frame_padding": 6,

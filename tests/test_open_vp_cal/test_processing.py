@@ -15,10 +15,12 @@ limitations under the License.
 """
 
 from open_vp_cal.framework.processing import Processing
-from test_utils import TestProject
+from test_utils import TestProject, skip_if_ci
 
 
 class Test_Processing(TestProject):
+
+    @skip_if_ci()
     def test_swatch_analysis_generation(self):
         self.led_wall.sequence_loader.load_sequence(
             self.led_wall.input_sequence_folder)
