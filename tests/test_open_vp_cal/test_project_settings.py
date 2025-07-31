@@ -288,6 +288,15 @@ class TestProjectSettings(TestBase):
         settings.frame_rate = constants.FrameRates.FPS_60
         self.assertEqual(settings.frame_rate, constants.FrameRates.FPS_60)
 
+    def test_try_convert_to_enum_frame_rates(self):
+        """Test try_convert_to_enum_frame_rates function."""
+        self.assertNotEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(23.99), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(23.998), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(23.999), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(24.000), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(24.001), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(24.002), constants.FrameRates.FPS_24)
+
     def test_export_lut_for_aces_cct(self):
         """Test export_lut_for_aces_cct field."""
         settings = ProjectSettings()

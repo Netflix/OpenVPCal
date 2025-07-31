@@ -17,11 +17,11 @@ Module contains the classes associated with handling the project settings includ
 setting
 """
 import os
-import copy
 import json
+import math
 from pathlib import Path
 from typing import Dict, List, Union, Any
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
 
 import open_vp_cal
 from open_vp_cal.core import constants, ocio_utils, utils
@@ -66,7 +66,27 @@ class ProjectSettingsModel(BaseModel):
         if value is None:
             return ""
         return value
-
+    
+    @field_serializer("frame_rate")
+    @field_validator(
+        "frame_rate",
+        mode="before",
+        json_schema_input_type=Union[constants.FrameRates, float]
+    )
+    @classmethod
+    def try_convert_to_enum_frame_rates(cls, value:Any) -> constants.FrameRates|float:
+        """
+        Try to convert a float frame rate to an enum frame rate if possible.
+        Precision is 1e-3, for example:
+        23.99 != constants.FrameRates.FPS_24
+        23.998 != constants.FrameRates.FPS_24
+        23.999 == constants.FrameRates.FPS_24
+        """
+        if isinstance(value, float):
+             for frame_rate in constants.FrameRates:
+                if math.isclose(value, frame_rate.value, abs_tol=11e-4):
+                    return frame_rate
+        return value
 
 class OpenVPCalSettingsModel(BaseModel):
     """Base model for OpenVPCalSettings with typing."""
