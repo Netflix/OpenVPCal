@@ -108,42 +108,31 @@ class OpenVPCalBase:
 
     def validate_roi(self, roi: List[Tuple[float, float]]) -> bool:
         """
-        Validates the control point arrangement for an ROI defined by four (x, y) tuples.
+        Validates that four ROI control points form a valid quadrilateral.
 
-        The following conditions must be satisfied:
-          - Red (index 0) must be higher than Blue (index 2) and White (index 3)
-            (i.e. its y-value is smaller) and further left than Green (index 1) (i.e. its x-value is smaller).
-          - Green (index 1) must be higher than Blue (index 2) and White (index 3)
-            (i.e. its y-value is smaller) and further right than Red (index 0) (i.e. its x-value is larger).
-          - White (index 3) must be lower than Red (index 0) and Green (index 1)
-            (i.e. its y-value is larger) and further left than Blue (index 2) (i.e. its x-value is smaller).
-          - Blue (index 2) must be lower than Red (index 0) and Green (index 1)
-            (i.e. its y-value is larger) and further right than White (index 3) (i.e. its x-value is larger).
+        Coordinate system: Origin at top-left, y increases downward.
 
+        Validates that the four points create a proper rectangle-like shape where:
+        - Top points are above bottom points (y-values: top < bottom)
+        - Left points are to the left of right points (x-values: left < right)
+        - Points are arranged in clockwise order: top-left, top-right, bottom-right, bottom-left
         Parameters:
-            roi (List[Tuple[float, float]]): A list of four (x, y) tuples representing the ROI.
-                The expected order is: [Red, Green, Blue, White], corresponding to:
-                top-left, top-right, bottom-right, bottom-left.
+            roi: Four (x, y) tuples in order [tl, tr, br, bl]
+                where tl=top-left, tr=top-right, br=bottom-right, bl=bottom-left
 
         Returns:
             bool: True if all conditions are satisfied; False otherwise.
         """
         if len(roi) < 4:
-            return True
+            return False
 
         # Unpack the points.
-        r, g, b, w = roi[0], roi[1], roi[2], roi[3]
+        tl, tr, br, bl = roi[0], roi[1], roi[2], roi[3]
 
-        cond1 = (r[1] < b[1] and r[1] < w[1] and r[0] < g[
-            0])  # Red is higher than blue and white and more left than green.
-        cond2 = (g[1] < b[1] and g[1] < w[1] and g[0] > r[
-            0])  # Green is higher than blue and white and more right than red.
-        cond3 = (w[1] > r[1] and w[1] > g[1] and w[0] < b[
-            0])  # White is lower than red and green and more left than blue.
-        cond4 = (b[1] > r[1] and b[1] > g[1] and b[0] > w[
-            0])  # Blue is lower than red and green and more right than white.
-
-        return cond1 and cond2 and cond3 and cond4
+        cond1 = (tl[1] < bl[1] and tl[1] < br[1] and tr[1] < bl[1] and tr[1] < br[1]) # tl and tr are higher than both bl and br.
+        cond2 = (tl[0] < tr[0] and tl[0] < br[0]) # tl is more left than tr and br.
+        cond3 = (bl[0] < tr[0] and bl[0] < br[0]) # bl is more left than tr and br.
+        return cond1 and cond2 and cond3
 
     def run_pre_checks(self, led_walls: List[LedWallSettings]) -> bool:
         """ Runs the pre-checks for the analysis and calibration, we report any warnings or failures to the user.
