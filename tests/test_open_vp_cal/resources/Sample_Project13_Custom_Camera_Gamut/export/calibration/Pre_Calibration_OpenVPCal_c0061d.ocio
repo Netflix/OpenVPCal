@@ -1,18 +1,16 @@
-ocio_profile_version: 2.1
+ocio_profile_version: 2.3
 
 environment:
   {}
 search_path: ./
 strictparsing: true
 luma: [0.2126, 0.7152, 0.0722]
-name: studio-config-v1.0.0_aces-v1.3_ocio-v2.1
+name: studio-config-v2.1.0_aces-v1.3_ocio-v2.3
 description: |
-  Academy Color Encoding System - Studio Config [COLORSPACES v1.0.0] [ACES v1.3] [OCIO v2.1]
+  Academy Color Encoding System - Studio Config [COLORSPACES v2.1.0] [ACES v1.3] [OCIO v2.3]
   ------------------------------------------------------------------------------------------
 
   This "OpenColorIO" config is geared toward studios requiring a config that includes a wide variety of camera colorspaces, displays and looks.
-
-  Generated with "OpenColorIO-Config-ACES" v1.0.0 on the 2022/10/26 at 05:59.
 
 roles:
   aces_interchange: ACES2065-1
@@ -21,9 +19,9 @@ roles:
   color_timing: ACEScct
   compositing_log: ACEScct
   data: Raw
-  matte_paint: sRGB - Texture
+  matte_paint: ACEScct
   scene_linear: ACEScg
-  texture_paint: ACEScct
+  texture_paint: sRGB - Texture
 
 file_rules:
   - !<Rule> {name: Default, colorspace: ACES2065-1}
@@ -40,9 +38,9 @@ shared_views:
   - !<View> {name: ACES 1.1 - HDR Video (2000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (2000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - HDR Video (4000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (4000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.0 - SDR Cinema, view_transform: ACES 1.0 - SDR Cinema, display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - SDR Cinema (D60 sim on D65), view_transform: ACES 1.1 - SDR Cinema (D60 sim on D65), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (Rec.709 lim), view_transform: ACES 1.1 - SDR Cinema (Rec.709 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.0 - SDR Cinema (D60 sim on DCI), view_transform: ACES 1.0 - SDR Cinema (D60 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: ACES 1.1 - SDR Cinema (D60 sim on D65), view_transform: ACES 1.1 - SDR Cinema (D60 sim on D65), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (D65 sim on DCI), view_transform: ACES 1.1 - SDR Cinema (D65 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - HDR Cinema (108 nits & P3 lim), view_transform: ACES 1.1 - HDR Cinema (108 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Un-tone-mapped, view_transform: Un-tone-mapped, display_colorspace: <USE_DISPLAY_NAME>}
@@ -50,6 +48,9 @@ shared_views:
 
 displays:
   sRGB - Display:
+    - !<View> {name: Raw, colorspace: Raw}
+    - !<Views> [ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), Un-tone-mapped]
+  Display P3 - Display:
     - !<View> {name: Raw, colorspace: Raw}
     - !<Views> [ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), Un-tone-mapped]
   Rec.1886 Rec.709 - Display:
@@ -72,7 +73,7 @@ displays:
     - !<Views> [ACES 1.0 - SDR Cinema, Un-tone-mapped]
   P3-D65 - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (Rec.709 lim), Un-tone-mapped]
+    - !<Views> [ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.1 - SDR Cinema (D60 sim on D65), Un-tone-mapped]
   P3-DCI - Display:
     - !<View> {name: Raw, colorspace: Raw}
     - !<Views> [ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D65 sim on DCI), Un-tone-mapped]
@@ -80,9 +81,9 @@ displays:
     - !<View> {name: Raw, colorspace: Raw}
     - !<Views> [Pre-Calibration Output]
 
-active_displays: [ROE - ST 2084 - OpenVPCal LED, sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
-active_views: [ACES 1.0 - SDR Video, Pre-Calibration Output, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw]
-inactive_colorspaces: [CIE-XYZ-D65, sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, sRGB - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, ST2084-P3-D65 - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-D65 - Display, P3-D65 - Display, P3-DCI - Display, P3-DCI - Display, ST2084-P3-D65 - Display]
+active_displays: [ROE - ST 2084 - OpenVPCal LED, sRGB - Display, Display P3 - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
+active_views: [ACES 1.0 - SDR Video, Pre-Calibration Output, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw]
+inactive_colorspaces: [CIE-XYZ-D65, sRGB - Display, Display P3 - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
 
 looks:
   - !<Look>
@@ -91,7 +92,11 @@ looks:
     description: |
       LMT (applied in ACES2065-1) to compress scene-referred values from common cameras into the AP1 gamut
 
-      ACEStransformID: urn:ampas:aces:transformId:v1.5:LMT.Academy.GamutCompress.a1.3.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:LMT.Academy.ReferenceGamutCompress.a1.v1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvLMT.Academy.ReferenceGamutCompress.a1.v1.0
     transform: !<BuiltinTransform> {style: ACES-LMT - ACES 1.3 Reference Gamut Compression}
 
 
@@ -104,8 +109,16 @@ view_transforms:
       Component of ACES Output Transforms for SDR D65 video
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.DisplayP3_dim.a1.0.0
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_100nits_dim.a1.0.3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.RGBmonitor_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.DisplayP3_dim.a1.0.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.Rec709_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.Rec2020_100nits_dim.a1.0.3
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO_1.0}
 
   - !<ViewTransform>
@@ -114,7 +127,14 @@ view_transforms:
       Component of ACES Output Transforms for SDR D65 video simulating D60 white
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_D60sim_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.DisplayP3_D60sim_dim.a1.0.0
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_D60sim_100nits_dim.a1.0.3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.RGBmonitor_D60sim_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.DisplayP3_D60sim_dim.a1.0.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.Rec709_D60sim_100nits_dim.a1.0.3
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO-D60sim-D65_1.0}
 
   - !<ViewTransform>
@@ -140,6 +160,11 @@ view_transforms:
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
@@ -148,6 +173,10 @@ view_transforms:
       Component of ACES Output Transforms for 2000 nit HDR D65 video
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_2000nits_15nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_2000nits_15nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-2000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
@@ -156,6 +185,10 @@ view_transforms:
       Component of ACES Output Transforms for 4000 nit HDR D65 video
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_4000nits_15nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_4000nits_15nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-4000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
@@ -164,6 +197,10 @@ view_transforms:
       Component of ACES Output Transforms for 1000 nit HDR D65 video
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
@@ -172,6 +209,10 @@ view_transforms:
       Component of ACES Output Transforms for 2000 nit HDR D65 video
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_2000nits_15nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_2000nits_15nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-2000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
@@ -180,6 +221,10 @@ view_transforms:
       Component of ACES Output Transforms for 4000 nit HDR D65 video
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_4000nits_15nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_4000nits_15nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-4000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
@@ -189,15 +234,12 @@ view_transforms:
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3D60_48nits.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3D65_48nits.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA_1.0}
-
-  - !<ViewTransform>
-    name: ACES 1.1 - SDR Cinema (D60 sim on D65)
-    description: |
-      Component of ACES Output Transforms for SDR D65 cinema simulating D60 white
-
-      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_D60sim_48nits.a1.1.0
-    from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA-D60sim-D65_1.1}
 
   - !<ViewTransform>
     name: ACES 1.1 - SDR Cinema (Rec.709 lim)
@@ -213,7 +255,23 @@ view_transforms:
       Component of ACES Output Transforms for SDR DCI cinema simulating D60 white
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3DCI_48nits.a1.0.3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3DCI_48nits.a1.0.3
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA-D60sim-DCI_1.0}
+
+  - !<ViewTransform>
+    name: ACES 1.1 - SDR Cinema (D60 sim on D65)
+    description: |
+      Component of ACES Output Transforms for SDR D65 cinema simulating D60 white
+
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_D60sim_48nits.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3D65_D60sim_48nits.a1.1.0
+    from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA-D60sim-D65_1.1}
 
   - !<ViewTransform>
     name: ACES 1.1 - SDR Cinema (D65 sim on DCI)
@@ -221,6 +279,10 @@ view_transforms:
       Component of ACES Output Transforms for SDR DCI cinema simulating D65 white
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3DCI_D65sim_48nits.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3DCI_D65sim_48nits.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA-D65sim-DCI_1.1}
 
   - !<ViewTransform>
@@ -229,6 +291,10 @@ view_transforms:
       Component of ACES Output Transforms for 108 nit HDR D65 cinema
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7point2nits_ST2084.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_108nits_7point2nits_ST2084.a1.1.0
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-CINEMA-108nit-7.2nit-P3lim_1.1}
 
   - !<ViewTransform>
@@ -257,7 +323,15 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to sRGB (piecewise EOTF)
+    description: |
+      Convert CIE XYZ (D65 white) to sRGB (piecewise EOTF)
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.RGBmonitor_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.RGBmonitor_D60sim_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.RGBmonitor_D60sim_100nits_dim.a1.0.3
     isdata: false
     categories: [file-io]
     encoding: sdr-video
@@ -265,12 +339,41 @@ display_colorspaces:
     from_display_reference: !<BuiltinTransform> {style: DISPLAY - CIE-XYZ-D65_to_sRGB}
 
   - !<ColorSpace>
+    name: Display P3 - Display
+    aliases: [displayp3_display]
+    family: Display
+    equalitygroup: ""
+    bitdepth: 32f
+    description: |
+      Convert CIE XYZ (D65 white) to Apple Display P3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.DisplayP3_dim.a1.0.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.DisplayP3_dim.a1.0.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.DisplayP3_D60sim_dim.a1.0.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.DisplayP3_D60sim_dim.a1.0.0
+    isdata: false
+    categories: [file-io]
+    encoding: sdr-video
+    allocation: uniform
+    from_display_reference: !<BuiltinTransform> {style: DISPLAY - CIE-XYZ-D65_to_DisplayP3}
+
+  - !<ColorSpace>
     name: Rec.1886 Rec.709 - Display
     aliases: [rec1886_rec709_display]
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Rec.1886/Rec.709 (HD video)
+    description: |
+      Convert CIE XYZ (D65 white) to Rec.1886/Rec.709 (HD video)
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.Rec709_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709_D60sim_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.Rec709_D60sim_100nits_dim.a1.0.3
     isdata: false
     categories: [file-io]
     encoding: sdr-video
@@ -283,7 +386,15 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Rec.1886/Rec.2020 (UHD video)
+    description: |
+      Convert CIE XYZ (D65 white) to Rec.1886/Rec.2020 (UHD video)
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.Rec2020_100nits_dim.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_P3D65limited_100nits_dim.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec2020_Rec709limited_100nits_dim.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: sdr-video
@@ -296,7 +407,13 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Rec.2100-HLG, 1000 nit
+    description: |
+      Convert CIE XYZ (D65 white) to Rec.2100-HLG, 1000 nit
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_1000nits_15nits_HLG.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: hdr-video
@@ -309,7 +426,17 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Rec.2100-PQ
+    description: |
+      Convert CIE XYZ (D65 white) to Rec.2100-PQ
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_1000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_2000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_2000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.Rec2020_4000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.Rec2020_4000nits_15nits_ST2084.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: hdr-video
@@ -322,7 +449,19 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to ST-2084 (PQ), P3-D65 primaries
+    description: |
+      Convert CIE XYZ (D65 white) to ST-2084 (PQ), P3-D65 primaries
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_1000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_2000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_2000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_4000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_4000nits_15nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:RRTODT.Academy.P3D65_108nits_7point2nits_ST2084.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvRRTODT.Academy.P3D65_108nits_7point2nits_ST2084.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: hdr-video
@@ -335,7 +474,13 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Gamma 2.6, P3-D60 (Bradford adaptation)
+    description: |
+      Convert CIE XYZ (D65 white) to Gamma 2.6, P3-D60 (Bradford adaptation)
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D60_48nits.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3D60_48nits.a1.0.3
     isdata: false
     categories: [file-io]
     encoding: sdr-video
@@ -348,7 +493,16 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Gamma 2.6, P3-D65
+    description: |
+      Convert CIE XYZ (D65 white) to Gamma 2.6, P3-D65
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_48nits.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3D65_48nits.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_Rec709limited_48nits.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3D65_D60sim_48nits.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3D65_D60sim_48nits.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: sdr-video
@@ -361,7 +515,15 @@ display_colorspaces:
     family: Display
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert CIE XYZ (D65 white) to Gamma 2.6, P3-DCI (DCI white with Bradford adaptation)
+    description: |
+      Convert CIE XYZ (D65 white) to Gamma 2.6, P3-DCI (DCI white with Bradford adaptation)
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3DCI_48nits.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3DCI_48nits.a1.0.3
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ODT.Academy.P3DCI_D65sim_48nits.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:InvODT.Academy.P3DCI_D65sim_48nits.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: sdr-video
@@ -405,6 +567,10 @@ colorspaces:
       Convert ACEScc to ACES2065-1
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScc_to_ACES.a1.0.3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScc.a1.0.3
     isdata: false
     categories: [file-io]
     encoding: log
@@ -421,6 +587,10 @@ colorspaces:
       Convert ACEScct to ACES2065-1
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScct_to_ACES.a1.0.3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScct.a1.0.3
     isdata: false
     categories: [file-io, working-space]
     encoding: log
@@ -437,8 +607,12 @@ colorspaces:
       Convert ACEScg to ACES2065-1
 
       ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACEScg_to_ACES.a1.0.3
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_ACEScg.a1.0.3
     isdata: false
-    categories: [file-io, working-space]
+    categories: [file-io, working-space, texture]
     encoding: scene-linear
     allocation: uniform
     to_scene_reference: !<BuiltinTransform> {style: ACEScg_to_ACES2065-1}
@@ -492,7 +666,7 @@ colorspaces:
     to_scene_reference: !<GroupTransform>
       name: Linear ARRI Wide Gamut 3 to ACES2065-1
       children:
-        - !<MatrixTransform> {matrix: [0.680205505106279, 0.236136601606481, 0.0836578932872399, 0, 0.0854149797421404, 1.01747087860704, -0.102885858349182, 0, 0.00205652166929683, -0.0625625003847921, 1.0605059787155, 0, 0, 0, 0, 1]}
+        - !<MatrixTransform> {matrix: [0.680205505106279, 0.236136601606481, 0.0836578932872398, 0, 0.0854149797421404, 1.01747087860704, -0.102885858349182, 0, 0.00205652166929683, -0.0625625003847921, 1.06050597871549, 0, 0, 0, 0, 1]}
 
   - !<ColorSpace>
     name: ARRI LogC3 (EI800)
@@ -504,6 +678,12 @@ colorspaces:
       Convert ARRI LogC3 (EI800) to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:ARRI:Input:ARRI_LogC3_EI800_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.ARRI.Alexa-v3-logC-EI800.a1.v2
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_LogC_EI800_AWG.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.LogC_EI800_AWG_to_ACES.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -512,7 +692,7 @@ colorspaces:
       name: ARRI LogC3 (EI800) to ACES2065-1
       children:
         - !<LogCameraTransform> {base: 10, log_side_slope: 0.247189638318671, log_side_offset: 0.385536998692443, lin_side_slope: 5.55555555555556, lin_side_offset: 0.0522722750251688, lin_side_break: 0.0105909904954696, direction: inverse}
-        - !<MatrixTransform> {matrix: [0.680205505106279, 0.236136601606481, 0.0836578932872399, 0, 0.0854149797421404, 1.01747087860704, -0.102885858349182, 0, 0.00205652166929683, -0.0625625003847921, 1.0605059787155, 0, 0, 0, 0, 1]}
+        - !<MatrixTransform> {matrix: [0.680205505106279, 0.236136601606481, 0.0836578932872398, 0, 0.0854149797421404, 1.01747087860704, -0.102885858349182, 0, 0.00205652166929683, -0.0625625003847921, 1.06050597871549, 0, 0, 0, 0, 1]}
 
   - !<ColorSpace>
     name: Linear ARRI Wide Gamut 4
@@ -543,6 +723,12 @@ colorspaces:
       Convert ARRI LogC4 to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:ARRI:Input:ARRI_LogC4_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.ARRI.ARRI-LogC4.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.LogC4_to_ACES.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_LogC4.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -563,6 +749,12 @@ colorspaces:
       Convert Blackmagic Film Wide Gamut (Gen 5) to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:BlackmagicDesign:Input:BMDFilm_WideGamut_Gen5_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.BlackmagicDesign.BMDFilm_WideGamut_Gen5.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_BMDFilm_WideGamut_Gen5.a1.v1
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.BMDFilm_WideGamut_Gen5_to_ACES.a1.v1
     isdata: false
     categories: [file-io]
     encoding: log
@@ -583,6 +775,7 @@ colorspaces:
       Convert DaVinci Intermediate Wide Gamut to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:BlackmagicDesign:Input:DaVinci_Intermediate_WideGamut_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.DaVinci_Intermediate_WideGamut_to_ACES.a1.v1
     isdata: false
     categories: [file-io]
     encoding: log
@@ -632,12 +825,41 @@ colorspaces:
         - !<MatrixTransform> {matrix: [0.748270290272981, 0.167694659554328, 0.0840350501726906, 0, 0.0208421234689102, 1.11190474268894, -0.132746866157851, 0, -0.0915122574225729, -0.127746712807307, 1.21925897022988, 0, 0, 0, 0, 1]}
 
   - !<ColorSpace>
+    name: CanonLog2 CinemaGamut D55
+    aliases: [canonlog2_cinemagamut_d55, Input - Canon - Canon-Log2 - Cinema Gamut Daylight, canonlog2_cgamutday]
+    family: Input/Canon
+    equalitygroup: ""
+    bitdepth: 32f
+    description: |
+      Convert Canon Log 2 Cinema Gamut (Daylight) to ACES2065-1
+
+      CLFtransformID: urn:aswf:ocio:transformId:1.0:Canon:Input:CanonLog2_CinemaGamut-D55_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.CLog2_CGamut_to_ACES.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_CLog2_CGamut.a1.1.0
+    isdata: false
+    categories: [file-io]
+    encoding: log
+    allocation: uniform
+    to_scene_reference: !<BuiltinTransform> {style: CANON_CLOG2-CGAMUT_to_ACES2065-1}
+
+  - !<ColorSpace>
     name: CanonLog3 CinemaGamut D55
     aliases: [canonlog3_cinemagamut_d55, Input - Canon - Canon-Log3 - Cinema Gamut Daylight, canonlog3_cgamutday]
     family: Input/Canon
     equalitygroup: ""
     bitdepth: 32f
-    description: Convert Canon Log 3 Cinema Gamut to ACES2065-1
+    description: |
+      Convert Canon Log 3 Cinema Gamut (Daylight) to ACES2065-1
+
+      CLFtransformID: urn:aswf:ocio:transformId:1.0:Canon:Input:CanonLog3_CinemaGamut-D55_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.CLog3_CGamut_to_ACES.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_CLog3_CGamut.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -692,6 +914,12 @@ colorspaces:
       Convert Panasonic V-Log - V-Gamut to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:Panasonic:Input:VLog_VGamut_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.VLog_VGamut_to_ACES.a1.1.0
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_VLog_VGamut.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.Panasonic.VLog_VGamut.a1.v1
     isdata: false
     categories: [file-io]
     encoding: log
@@ -731,6 +959,12 @@ colorspaces:
       Convert RED Log3G10 REDWideGamutRGB to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:RED:Input:Log3G10_REDWideGamutRGB_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.RED.Log3G10_REDWideGamutRGB.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_Log3G10_RWG.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.Log3G10_RWG_to_ACES.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -827,6 +1061,12 @@ colorspaces:
       Convert Sony S-Log3 S-Gamut3 to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:Sony:Input:SLog3_SGamut3_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.Sony.SLog3_SGamut3.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_SLog3_SGamut3.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.SLog3_SGamut3_to_ACES.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -847,6 +1087,12 @@ colorspaces:
       Convert Sony S-Log3 S-Gamut3.Cine to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:Sony:Input:SLog3_SGamut3Cine_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.Sony.SLog3_SGamut3Cine.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_SLog3_SGamut3Cine.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.SLog3_SGamut3Cine_to_ACES.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -867,6 +1113,12 @@ colorspaces:
       Convert Sony S-Log3 Venice S-Gamut3 to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:Sony:Input:SLog3_Venice_SGamut3_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.Sony.Venice_SLog3_SGamut3.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_SLog3_Venice_SGamut3.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.SLog3_Venice_SGamut3_to_ACES.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -887,6 +1139,12 @@ colorspaces:
       Convert Sony S-Log3 Venice S-Gamut3.Cine to ACES2065-1
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:Sony:Input:SLog3_Venice_SGamut3Cine_to_ACES2065-1:1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:IDT.Sony.Venice_SLog3_SGamut3Cine.a1.v1
+
+      AMF Components
+      --------------
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.ACES_to_SLog3_Venice_SGamut3Cine.a1.1.0
+      ACEStransformID: urn:ampas:aces:transformId:v1.5:ACEScsc.Academy.SLog3_Venice_SGamut3Cine_to_ACES.a1.1.0
     isdata: false
     categories: [file-io]
     encoding: log
@@ -919,7 +1177,7 @@ colorspaces:
 
   - !<ColorSpace>
     name: Linear P3-D65
-    aliases: [lin_p3d65, Utility - Linear - P3-D65]
+    aliases: [lin_p3d65, Utility - Linear - P3-D65, lin_displayp3, Linear Display P3]
     family: Utility
     equalitygroup: ""
     bitdepth: 32f
@@ -928,7 +1186,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Linear_P3-D65:1.0
     isdata: false
-    categories: [file-io, working-space]
+    categories: [file-io, working-space, texture]
     encoding: scene-linear
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -947,7 +1205,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Linear_Rec2020:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     encoding: scene-linear
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -966,7 +1224,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Linear_Rec709:1.0
     isdata: false
-    categories: [file-io, working-space]
+    categories: [file-io, working-space, texture]
     encoding: scene-linear
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -985,7 +1243,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Gamma1.8_Rec709-Texture:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     encoding: sdr-video
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -1001,11 +1259,11 @@ colorspaces:
     equalitygroup: ""
     bitdepth: 32f
     description: |
-      Convert ACES2065-1 to 2.2 gamma-corrected AP1 primaries, D60 white point
+      Convert ACES2065-1 to 2.2 gamma-corrected AP1 primaries, ACES ~=D60 white point
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Gamma2.2_AP1-Texture:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     encoding: sdr-video
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -1025,7 +1283,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Gamma2.2_Rec709-Texture:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     encoding: sdr-video
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -1045,7 +1303,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_Gamma2.4_Rec709-Texture:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     encoding: sdr-video
     allocation: uniform
     from_scene_reference: !<GroupTransform>
@@ -1061,17 +1319,37 @@ colorspaces:
     equalitygroup: ""
     bitdepth: 32f
     description: |
-      Convert ACES2065-1 to sRGB Encoded AP1 primaries, D60 white point
+      Convert ACES2065-1 to sRGB Encoded AP1 primaries, ACES ~=D60 white point
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_sRGB_Encoded_AP1-Texture:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     encoding: sdr-video
     allocation: uniform
     from_scene_reference: !<GroupTransform>
       name: AP0 to sRGB Encoded AP1 - Texture
       children:
         - !<MatrixTransform> {matrix: [1.45143931614567, -0.23651074689374, -0.214928569251925, 0, -0.0765537733960206, 1.17622969983357, -0.0996759264375522, 0, 0.00831614842569772, -0.00603244979102102, 0.997716301365323, 0, 0, 0, 0, 1]}
+        - !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
+
+  - !<ColorSpace>
+    name: sRGB Encoded P3-D65 - Texture
+    aliases: [srgb_encoded_p3d65_tx, srgb_p3d65, srgb_displayp3]
+    family: Utility
+    equalitygroup: ""
+    bitdepth: 32f
+    description: |
+      Convert ACES2065-1 to sRGB Encoded P3-D65 primaries, D65 white point
+
+      CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_sRGB_Encoded_P3-D65-Texture:1.0
+    isdata: false
+    categories: [file-io, texture]
+    encoding: sdr-video
+    allocation: uniform
+    from_scene_reference: !<GroupTransform>
+      name: AP0 to sRGB Encoded P3-D65 - Texture
+      children:
+        - !<MatrixTransform> {matrix: [2.02490528596679, -0.689069761034766, -0.335835524932019, 0, -0.183597032256178, 1.28950620775902, -0.105909175502841, 0, 0.00905856112234766, -0.0592796840575522, 1.0502211229352, 0, 0, 0, 0, 1]}
         - !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
 
   - !<ColorSpace>
@@ -1085,7 +1363,7 @@ colorspaces:
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:AP0_to_sRGB-Texture:1.0
     isdata: false
-    categories: [file-io]
+    categories: [file-io, texture]
     allocation: uniform
     from_scene_reference: !<GroupTransform>
       name: AP0 to sRGB Rec.709
@@ -1101,7 +1379,7 @@ colorspaces:
     bitdepth: 32f
     description: The utility "Raw" colorspace.
     isdata: true
-    categories: [file-io]
+    categories: [file-io, texture]
     allocation: uniform
 
   - !<ColorSpace>
@@ -1204,6 +1482,30 @@ named_transforms:
         - !<LogCameraTransform> {log_side_slope: 0.07329248, log_side_offset: 0.51304736, lin_side_offset: 0.0075, lin_side_break: 0.00262409, linear_slope: 10.44426855, direction: inverse}
 
   - !<NamedTransform>
+    name: C-Log2 - Curve
+    aliases: [clog2_crv, Input - Canon - Curve - Canon-Log2, crv_canonlog2]
+    description: |
+      Convert CLog2 Log (arbitrary primaries) to CLog2 Linear (arbitrary primaries)
+
+      CLFtransformID: urn:aswf:ocio:transformId:1.0:Canon:Input:CLog2-Curve_to_Linear:1.0
+    family: Input/Canon
+    categories: [file-io]
+    encoding: log
+    transform: !<BuiltinTransform> {style: CURVE - CANON_CLOG2_to_LINEAR}
+
+  - !<NamedTransform>
+    name: C-Log3 - Curve
+    aliases: [clog3_crv, Input - Canon - Curve - Canon-Log3, crv_canonlog3]
+    description: |
+      Convert CLog3 Log (arbitrary primaries) to CLog3 Linear (arbitrary primaries)
+
+      CLFtransformID: urn:aswf:ocio:transformId:1.0:Canon:Input:CLog3-Curve_to_Linear:1.0
+    family: Input/Canon
+    categories: [file-io]
+    encoding: log
+    transform: !<BuiltinTransform> {style: CURVE - CANON_CLOG3_to_LINEAR}
+
+  - !<NamedTransform>
     name: V-Log - Curve
     aliases: [vlog_crv, Input - Panasonic - Curve - V-Log, crv_vlog]
     description: |
@@ -1252,7 +1554,7 @@ named_transforms:
     name: Rec.1886 - Curve
     aliases: [rec1886_crv, Utility - Curve - Rec.1886, crv_rec1886]
     description: |
-      Convert generic linear RGB to generic gamma-corrected RGB
+      Convert generic linear RGB to Rec.1886 encoded RGB
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:Linear_to_Rec1886-Curve:1.0
     family: Utility
@@ -1282,7 +1584,7 @@ named_transforms:
     name: sRGB - Curve
     aliases: [srgb_crv, Utility - Curve - sRGB, crv_srgb]
     description: |
-      Convert generic linear RGB to generic gamma-corrected RGB
+      Convert generic linear RGB to sRGB encoded RGB
 
       CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:Linear_to_sRGB-Curve:1.0
     family: Utility
@@ -1296,7 +1598,10 @@ named_transforms:
   - !<NamedTransform>
     name: ST-2084 - Curve
     aliases: [st_2084_crv]
-    description: Convert linear nits/100 to SMPTE ST-2084 (PQ) full-range
+    description: |
+      Convert generic linear RGB to generic ST.2084 (PQ) encoded RGB mapping 1.0 to 100nits
+
+      CLFtransformID: urn:aswf:ocio:transformId:1.0:OCIO:Utility:Linear_to_ST2084-Curve:1.0
     family: Utility
     categories: [file-io]
     encoding: hdr-video

@@ -23,7 +23,7 @@ from open_vp_cal.core.resource_loader import ResourceLoader
 class TestResourceLoader(unittest.TestCase):
     def test_ocio_config_path(self):
         actual = ResourceLoader.ocio_config_path()
-        expected = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1.ocio"
+        expected = "studio-config-v2.1.0_aces-v1.3_ocio-v2.3.ocio"
         self.assertTrue(os.path.exists(actual))
         self.assertEqual(os.path.basename(actual), expected)
 
