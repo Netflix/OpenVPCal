@@ -21,7 +21,7 @@ import tempfile
 from pathlib import Path
 
 import open_vp_cal
-from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsModel
+from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings, ProjectSettingsModel
 from open_vp_cal.core import constants, utils
 from test_utils import TestBase
@@ -103,7 +103,7 @@ class TestProjectSettings(TestBase):
                     ]
                 }
             }
-        
+
         self.test_settings_expected = copy.deepcopy(self.test_settings)
         for led_wall in self.test_settings_expected[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS][constants.ProjectSettingsKeys.LED_WALLS]:
             led_wall[constants.LedWallSettingsKeys.ROI] = upgrade_legacy_roi(led_wall[constants.LedWallSettingsKeys.ROI])
@@ -131,7 +131,7 @@ class TestProjectSettings(TestBase):
     def tearDown(self):
         if os.path.exists(self.test_json_path):
             os.remove(self.test_json_path)
-    
+
     def create_test_settings_json(self):
         """Helper function to create a test settings json file."""
         with open(self.test_json_path, "w") as file:
@@ -144,7 +144,7 @@ class TestProjectSettings(TestBase):
         model_keys = list(ProjectSettingsModel.model_fields.keys())
         model_keys.sort()
         self.assertEqual(test_settings_keys, model_keys)
-    
+
     def test_project_settings_keys(self):
         """Test that ProjectSettingsKeys should reflect all fields in the model."""
         constants_all = constants.ProjectSettingsKeys.all().copy()
@@ -176,7 +176,7 @@ class TestProjectSettings(TestBase):
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT], new_settings.export_lut_for_aces_cct)
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT], new_settings.export_lut_for_aces_cct_in_target_out)
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.LUT_SIZE], new_settings.lut_size)
-        
+
         # project_id is generated dynamically, so we just check it's a string
         self.assertIsInstance(new_settings.project_id, str)
 
@@ -198,7 +198,7 @@ class TestProjectSettings(TestBase):
         self.assertEqual(settings.export_lut_for_aces_cct_in_target_out, self.legacy_default[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT])
         self.assertEqual(settings.lut_size, self.legacy_default[constants.ProjectSettingsKeys.LUT_SIZE])
         self.assertIsInstance(settings.project_id, str)
-    
+
     def test_content_max_lum(self):
         """Test content_max_lum field."""
         settings = ProjectSettings()
@@ -384,7 +384,7 @@ class TestProjectSettings(TestBase):
     def test_to_json(self):
         self.maxDiff = None
         self.create_test_settings_json()
-        
+
         # Load settings from file
         loaded_settings:ProjectSettings = ProjectSettings.from_json(self.test_json_path)
         # Save settings to file

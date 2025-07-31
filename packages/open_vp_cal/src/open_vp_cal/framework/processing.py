@@ -437,7 +437,7 @@ class Processing:
     @staticmethod
     def _is_auto_detect_roi(roi) -> bool:
         return not roi
-    
+
     def auto_detect_roi(self, separation_results) -> Union[AutoROIResults, None]:
         """ Auto-detects the region of interest and returns the results
 

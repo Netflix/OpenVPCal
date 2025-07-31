@@ -16,7 +16,6 @@ limitations under the License.
 
 import os
 import json
-from pathlib import Path
 from typing import List
 from open_vp_cal.framework.identify_separation import SeparationResults
 from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsModel, ProcessingResults
@@ -286,7 +285,7 @@ class TestLedWallSettings(TestBase):
         legacy_roi = [1, 2, 3, 4]
         self.assertEqual(upgrade_legacy_roi(legacy_roi),
             LedWallSettingsModel.upgrade_roi(legacy_roi))
-        
+
         roi = upgrade_legacy_roi(legacy_roi)
         self.wall.roi = roi
         self.assertEqual(self.wall.roi, roi)
@@ -320,7 +319,7 @@ class TestLedWallSettings(TestBase):
         self.assertEqual(self.wall._led_settings.target_eotf, constants.EOTF.EOTF_BT1886)
         self.assertEqual(self.wall.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
         self.assertEqual(self.wall._led_settings.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
- 
+
     def test_target_max_lum_nits(self):
         self.wall.target_eotf = constants.EOTF.EOTF_ST2084
         self.wall.target_max_lum_nits = 2000
@@ -476,7 +475,7 @@ class TestLedWallSettings(TestBase):
 
         self.project_settings.remove_led_wall(new_wall.name)
         self.assertEqual(verification_wall.verification_wall, "")
-    
+
     def test_set_property_on_verification_wall_does_not_propagate(self):
         new_wall = self.project_settings.add_led_wall("NewWall")
         verification_wall = self.project_settings.add_verification_wall(new_wall.name)
@@ -495,19 +494,19 @@ class TestLedWallSettings(TestBase):
         """Test edge cases for verification wall functionality."""
         new_wall = self.project_settings.add_led_wall("NewWall")
         verification_wall = self.project_settings.add_verification_wall(new_wall.name)
-        
+
         # Setting a property on verification wall should not affect main wall
         verification_wall.input_plate_gamut = constants.ColourSpace.CS_SRGB
         self.assertNotEqual(new_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)  # Should not change
-        
+
         # Setting verification wall to itself should raise ValueError
         with self.assertRaises(ValueError):
             verification_wall.verification_wall = verification_wall
-            
+
         # Setting reference wall to itself should raise ValueError
         with self.assertRaises(ValueError):
             new_wall.reference_wall = new_wall
-            
+
         # Removing parent wall should clear verification wall link
         self.project_settings.remove_led_wall(new_wall.name)
         self.assertEqual(verification_wall.verification_wall, "")
@@ -515,12 +514,12 @@ class TestLedWallSettings(TestBase):
     def test_verification_wall_as_wall_none(self):
         """Test that verification_wall_as_wall returns None when no verification wall is set."""
         self.assertIsNone(self.wall.verification_wall_as_wall)
-        
+
         # Test with a non-existent verification wall name
         self.wall._led_settings.verification_wall = "NonExistentWall"
         with self.assertRaises(ValueError):
             _ = self.wall.verification_wall_as_wall
-        
+
         # Test with empty string
         self.wall._led_settings.verification_wall = ""
         self.assertIsNone(self.wall.verification_wall_as_wall)
@@ -544,7 +543,7 @@ class TestLedWallSettings(TestBase):
         new_wall2 = LedWallSettings.from_json_file(self.project_settings, self.json_path)
         for key in self.sample:
             self.assertEqual(getattr(new_wall2._led_settings, key), self.sample_expected[key])
-    
+
     def test_from_json_string(self):
         json_str = json.dumps(self.sample)
 
@@ -578,12 +577,12 @@ class TestLedWallSettings(TestBase):
         self.wall.target_max_lum_nits = 2000
         self.wall.input_sequence_folder = "/custom/path"
         self.wall.to_json(self.json_path)
-        
+
         self.assertTrue(os.path.exists(self.json_path))
-        
+
         with open(self.json_path, 'r', encoding='utf-8') as file:
             saved_data = json.load(file)
-        
+
         self.assertEqual(saved_data[constants.LedWallSettingsKeys.NAME], "CustomWall")
         self.assertEqual(saved_data[constants.LedWallSettingsKeys.AVOID_CLIPPING], True)
         self.assertEqual(saved_data[constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION], False)
@@ -596,13 +595,13 @@ class TestLedWallSettings(TestBase):
         loader = self.wall.sequence_loader
         self.assertIsNotNone(loader)
         self.assertIsInstance(loader, self.wall._sequence_loader_class)
-        
+
         # Test that it returns the same instance on subsequent calls (caching behavior)
         self.assertIs(loader, self.wall.sequence_loader)
-        
+
         # Test that the loader is properly initialized with the wall settings
         self.assertEqual(loader.led_wall_settings, self.wall)
-        
+
         # Test that the loader starts with default values
         self.assertEqual(loader.folder_path, None)
         self.assertEqual(loader.file_name, None)
@@ -617,29 +616,28 @@ class TestLedWallSettings(TestBase):
         """Test sequence_loader behavior with edge cases and error conditions."""
         # Test that sequence_loader is properly reset when wall is cleared
         loader = self.wall.sequence_loader
-        original_loader = loader
-        
+
         # Clear the wall settings
         self.wall.clear()
-        
+
         # The sequence_loader should still be the same instance (cached)
         self.assertIs(loader, self.wall.sequence_loader)
-        
+
         # But the loader should be reset internally
         self.assertEqual(loader.folder_path, None)
         self.assertEqual(loader.file_name, None)
         self.assertEqual(loader.frames, [])
-        
+
         # Test that sequence_loader works with verification walls
         new_wall = self.project_settings.add_led_wall("NewWall")
         verification_wall = self.project_settings.add_verification_wall(new_wall.name)
-        
+
         # Verification wall should have its own sequence loader
         verif_loader = verification_wall.sequence_loader
         self.assertIsNotNone(verif_loader)
         self.assertIsInstance(verif_loader, verification_wall._sequence_loader_class)
         self.assertEqual(verif_loader.led_wall_settings, verification_wall)
-        
+
         # Test that different walls have different sequence loaders
         self.assertIsNot(loader, verif_loader)
 

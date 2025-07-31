@@ -66,7 +66,7 @@ class TestUtils(unittest.TestCase):
             cls.get_folder_for_this_file(),
             "output",
         )
-    
+
     @classmethod
     def get_all_test_project_settings_path(cls) -> List[Path]:
         """

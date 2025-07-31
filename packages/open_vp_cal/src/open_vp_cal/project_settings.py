@@ -59,14 +59,15 @@ class ProjectSettingsModel(BaseModel):
         Force ocio_config_path to be a string all the time.
         - version 1.x: str|None
         - version 2.x: str
-        
+        Parameters:
+            value: The OCIO config path in either str or None.
         Returns:
             str: The OCIO config path as a string.
         """
         if value is None:
             return ""
         return value
-    
+
     @field_serializer("frame_rate")
     @field_validator(
         "frame_rate",

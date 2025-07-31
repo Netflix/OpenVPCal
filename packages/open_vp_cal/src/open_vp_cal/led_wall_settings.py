@@ -68,7 +68,8 @@ class LedWallSettingsModel(BaseModel):
         Upgrade roi data structure
         - version 1.x: [x, y, width, height]
         - version 2.x: [[tl.x, tl.y], [tr.x, tr.y], [br.x, br.y], [bl.x, bl.y]]
-        
+        Parameters:
+            value: roi in type of either List[int] or List[List[int]]
         Returns:
             list: A list of four lists representing the corners in the following order:
                   top left, top right, bottom right, bottom left.
@@ -141,7 +142,7 @@ class LedWallSettings:
         """
         if not self.is_verification_wall:
             return getattr(self._led_settings, field_name)
-        
+
         wall = self.verification_wall_as_wall
         if wall is not None:
             return getattr(wall._led_settings, field_name)
@@ -706,7 +707,7 @@ class LedWallSettings:
         instance = cls(project_settings)
         instance._led_settings = LedWallSettingsModel.model_validate(input_dict)
         return instance
-    
+
     def to_dict(self) -> dict:
         """ Returns a dictionary representation of the LedWallSettings object.
 
