@@ -441,9 +441,16 @@ class LedWallSettings:
         Args:
             value (constants.EOTF): the eotf for the target
         """
+        target_max_lum_nits = (
+            constants.TARGET_MAX_LUM_NITS_HLG if value == constants.EOTF.EOTF_HLG
+            else constants.TARGET_MAX_LUM_NITS_NONE_PQ if value != constants.EOTF.EOTF_ST2084
+            else None
+        )
+
         self._set_property(constants.LedWallSettingsKeys.TARGET_EOTF, value)
-        if value != constants.EOTF.EOTF_ST2084:
-            self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
+        if target_max_lum_nits is not None:
+            self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS,
+                               target_max_lum_nits)
 
     @property
     def target_max_lum_nits(self) -> int:
@@ -464,13 +471,17 @@ class LedWallSettings:
         """
         if self.target_eotf != constants.EOTF.EOTF_ST2084:
             value = constants.TARGET_MAX_LUM_NITS_NONE_PQ
+
+        if  self.target_eotf == constants.EOTF.EOTF_HLG:
+            value = constants.TARGET_MAX_LUM_NITS_HLG
+
         self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, value)
 
     @property
     def target_to_screen_cat(self) -> constants.CAT:
         """Returns the target screen cat
 
-        Returns:
+        Returns:z
             constants.CAT: The target screen cat
         """
         return self._get_property(constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT)

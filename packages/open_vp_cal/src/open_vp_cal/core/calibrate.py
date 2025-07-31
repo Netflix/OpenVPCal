@@ -627,6 +627,7 @@ def check_eotf_max_values(measured_samples):
             "Two Patches.\nMost Likely Due Sampling The End Slate Instead Of The Last EOTF Ramp."
             "\nThis Is Likely Due To A Genlock, Frame Rate Mismatch, Sync Issue, "
             "Or Inconsistent Playback Rates."
+            "It could also indicate an incorrect gamme mismatch the processor and the output of the media server.\n"
             "Ensure Your Playback & Capture Setup Is Correct")
 
 def run(
@@ -719,6 +720,10 @@ def run(
     # If we are not working in PQ we force target nits to 100 aka 1.0
     if target_EOTF != constants.EOTF.EOTF_ST2084:
         target_max_lum_nits = 100
+
+    if target_EOTF == constants.EOTF.EOTF_HLG:
+        target_max_lum_nits = 1000
+
     peak_lum = target_max_lum_nits * 0.01
 
     if target_to_screen_cat == constants.CAT.CAT_NONE:
@@ -835,10 +840,13 @@ def run(
 
     # 7) We Get The Max Green Value Of The EOTF Ramp And We Scale So It Hits Peak Lum
     grey_measurements_white_balanced_native_gamut = rgbw_measurements_camera_native_gamut[3]
-    grey_measurements_white_balanced_native_gamut_green = grey_measurements_white_balanced_native_gamut[1]
+
+    xyY_grey_measurement = convert_samples_to_xyY(grey_measurements_white_balanced_native_gamut, native_camera_gamut_cs)
+    xyY_eotf = convert_samples_to_xyY(eotf_ramp_camera_native_gamut, native_camera_gamut_cs)
+    xyY_max_white = convert_samples_to_xyY(max_white_camera_native_gamut, native_camera_gamut_cs)
 
     exposure_scaling_factor = 1.0 / peak_lum
-    max_white_delta = max_white_camera_native_gamut[1] / eotf_ramp_camera_native_gamut[-1][1]
+    max_white_delta = xyY_max_white[2] / xyY_eotf[-1][2]
 
     rgbw_measurements_camera_native_gamut = rgbw_measurements_camera_native_gamut / exposure_scaling_factor
     eotf_ramp_camera_native_gamut = [
@@ -1086,7 +1094,11 @@ def run(
             macbeth_measurements_target_calibrated, target_cs, native_camera_gamut_cs, None
         )
 
-    measured_peak_lum_nits = [item * 100 for item in eotf_ramp_camera_native_gamut[-1]]
+    # We re convert the eotf_ramp_camera_native_gamut to xyY after any additional scaling
+    # and white balancing has occured
+    xyY_eotf = convert_samples_to_xyY(eotf_ramp_camera_native_gamut, native_camera_gamut_cs)
+
+    measured_peak_lum_nits = [item * 100 for item in xyY_eotf[-1]]
 
     macbeth_measurements_camera_native_gamut_XYZ = np.apply_along_axis(
         lambda rgb: native_camera_gamut_cs.matrix_RGB_to_XYZ.dot(rgb), 1, macbeth_measurements_camera_native_gamut
@@ -1134,7 +1146,7 @@ def run(
         Results.DELTA_E_MACBETH: delta_e_macbeth.tolist(),
         Results.EXPOSURE_SCALING_FACTOR: exposure_scaling_factor,
         Results.TARGET_MAX_LUM_NITS: target_max_lum_nits,
-        Results.MEASURED_18_PERCENT_SAMPLE: grey_measurements_white_balanced_native_gamut_green,
+        Results.MEASURED_18_PERCENT_SAMPLE: xyY_grey_measurement[2],
         Results.MEASURED_MAX_LUM_NITS: measured_peak_lum_nits,
         Results.REFERENCE_EOTF_RAMP: eotf_signal_values,
         Results.TARGET_TO_XYZ_MATRIX: target_to_XYZ_matrix.tolist(),
@@ -1145,6 +1157,18 @@ def run(
         Results.AVOID_CLIPPING: avoid_clipping,
         Results.CAMERA_WHITE_BALANCE_MATRIX: camera_white_balance_matrix.tolist()
     }
+
+
+def convert_samples_to_xyY(samples, samples_color_space):
+    XYZ_eotf = colour.RGB_to_XYZ(
+        samples,
+        samples_color_space.whitepoint,
+        samples_color_space.whitepoint,
+        samples_color_space.matrix_RGB_to_XYZ
+    )
+    # Convert rthe XYZ_eotf to xyY values
+    xyY_eotf = colour.XYZ_to_xyY(XYZ_eotf)
+    return xyY_eotf
 
 
 def apply_matrix_to_samples(

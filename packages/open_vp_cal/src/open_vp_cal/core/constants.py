@@ -49,11 +49,12 @@ OPEN_VP_CAL_UNIT_TESTING = "OPEN_VP_CAL_UNIT_TESTING"
 PRE_PROCESSING_FORMAT_MAP = "PRE_PROCESSING_FORMAT_MAP"
 
 TARGET_MAX_LUM_NITS_NONE_PQ = 100
+TARGET_MAX_LUM_NITS_HLG = 1000
 
 DEFAULT_RESOLUTION_WIDTH = 1920
 DEFAULT_RESOLUTION_HEIGHT = 1080
 
-DEFAULT_OCIO_CONFIG = "studio-config-v1.0.0_aces-v1.3_ocio-v2.1"
+DEFAULT_OCIO_CONFIG = "studio-config-v2.1.0_aces-v1.3_ocio-v2.3"
 ARC_CONFIG = "arc_config.xml"
 
 
@@ -389,11 +390,17 @@ class EOTF(StrEnum):
     EOTF_BT1886 = "ITU-R BT.1886"
     EOTF_SRGB = "sRGB"
     EOTF_ST2084 = "ST 2084"
+    EOTF_HLG = "HLG"
 
     @staticmethod
     def all() -> list[str]:
-        """ Returns the list of all Enum values"""
-        return [member.value for member in EOTF]
+        """ Returns all EOTFs except HLG """
+        # TODO : Remove HLG exclusion when we get a response from Brompton on how their gamma is handing things
+        return [
+            member.value
+            for member in EOTF
+            if member is not EOTF.EOTF_HLG
+        ]
 
     @staticmethod
     def default() -> str:
