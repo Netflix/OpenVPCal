@@ -379,8 +379,13 @@ class EOTF(StrEnum):
 
     @staticmethod
     def all() -> list[str]:
-        """ Returns the list of all Enum values"""
-        return [member.value for member in EOTF]
+        """ Returns all EOTFs except HLG """
+        # TODO : Remove HLG exclusion when we get a response from Brompton on how their gamma is handing things
+        return [
+            member.value
+            for member in EOTF
+            if member is not EOTF.EOTF_HLG
+        ]
 
     @staticmethod
     def default() -> str:
