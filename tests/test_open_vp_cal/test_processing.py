@@ -24,7 +24,6 @@ class Test_Processing(TestProject):
     def test_swatch_analysis_generation(self):
         self.led_wall.sequence_loader.load_sequence(
             self.led_wall.input_sequence_folder)
-        self.led_wall.roi = self.recalc_old_roi(self.led_wall.roi)
         processing = Processing(self.led_wall)
         processing.run_sampling()
         processing.analyse()
@@ -43,3 +42,9 @@ class Test_Processing(TestProject):
 
         self.assertNotEqual(sample_bufs_stitched, None)
         self.assertNotEqual(sample_reference_bufs_stitched, None)
+
+    def test_is_auto_detect_roi(self):
+        roi = []
+        self.assertTrue(Processing._is_auto_detect_roi(roi))
+        self.assertTrue(len(self.led_wall.roi) > 0)
+        self.assertFalse(Processing._is_auto_detect_roi(self.led_wall.roi))

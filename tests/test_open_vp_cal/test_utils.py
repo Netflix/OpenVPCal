@@ -21,11 +21,14 @@ import platform
 import shutil
 import tempfile
 import unittest
+from typing import List
+from pathlib import Path
 
 import open_vp_cal.imaging.imaging_utils
 from open_vp_cal.core import constants
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.project_settings import ProjectSettings
+from open_vp_cal.led_wall_settings import LedWallSettingsBaseModel
 from open_vp_cal.main import run_cli
 
 import OpenImageIO as Oiio
@@ -63,6 +66,23 @@ class TestUtils(unittest.TestCase):
             cls.get_folder_for_this_file(),
             "output",
         )
+
+    @classmethod
+    def get_all_test_project_settings_path(cls) -> List[Path]:
+        """
+        Get all project settings files from the resources directory.
+        This is used to ensure that all sample projects are valid.
+        """
+        resource_dir:Path = Path(cls.get_test_resources_folder())
+        project_settings_filename:Path = Path("project_settings.json")
+        all_project_settings_path:List[Path] = []
+        for directory in os.listdir(resource_dir):
+            if not directory.startswith("Sample_Project"):
+                continue
+            project_settings_path:Path = resource_dir / Path(directory) / project_settings_filename
+            if(project_settings_path.exists()):
+                all_project_settings_path.append(project_settings_path)
+        return all_project_settings_path
 
     def compare_image_files(self, expected_image_file, actual_image_file, ext):
         expected_image = Oiio.ImageBuf(expected_image_file)
@@ -112,7 +132,7 @@ class TestUtils(unittest.TestCase):
         open_vp_cal.imaging.imaging_utils.write_image(image, file_name, bit_depth)
         return file_name
 
-    def recalc_old_roi(self, roi):
+    def recalc_old_roi(self, roi:List[int]) -> List[List[int]]:
         """
         Convert an ROI given as [x, y, width, height] as described in version 1.x
         and convert it to a list of four corners for 2.x
@@ -124,16 +144,7 @@ class TestUtils(unittest.TestCase):
             list: A list of four tuples representing the corners in the following order:
                   top left, top right, bottom right, bottom left.
         """
-        if not roi:
-            return []
-        left, right, top, bottom = roi
-        top_left = [left, top]
-        top_right = [right, top]
-        bottom_right = [right, bottom]
-        bottom_left = [left, bottom]
-
-        corners =  [top_left, top_right, bottom_right, bottom_left]
-        return corners
+        return LedWallSettingsBaseModel.upgrade_roi(roi)
 
     def pre_process_vp_cal_1x(self, project_settings, output_folder, input_colour_space="ACES2065-1"):
         """ For all unit tests which where created using v1.x we need to double the

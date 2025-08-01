@@ -434,13 +434,17 @@ class Processing:
         )
         return walls
 
+    @staticmethod
+    def _is_auto_detect_roi(roi) -> bool:
+        return not roi
+
     def auto_detect_roi(self, separation_results) -> Union[AutoROIResults, None]:
         """ Auto-detects the region of interest and returns the results
 
         :param separation_results:
         :return:
         """
-        if not self.led_wall.roi:
+        if self._is_auto_detect_roi(self.led_wall.roi):
             results = AutoROI(self.led_wall, separation_results).run()
             if not results.is_valid:
                 raise OpenVPCalException("Auto ROI detection failed, no ROI detected")
@@ -680,7 +684,7 @@ class Processing:
             return sep_results, None
 
         # We now remove the ROI so that we can run the autodetect ROI algorithm
-        led_wall_settings.roi = None
+        led_wall_settings.roi = []
         try:
             auto_roi_results = processing.auto_detect_roi(sep_results)
             # If we can not detect the roi automatically, we resort back to the whole image ROI

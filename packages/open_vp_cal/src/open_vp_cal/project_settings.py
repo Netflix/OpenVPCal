@@ -16,49 +16,101 @@ limitations under the License.
 Module contains the classes associated with handling the project settings including, loading, saving, getting and
 setting
 """
+from __future__ import annotations
 import os
-import copy
 import json
+import math
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union, Any, Type
+from pydantic import BaseModel, Field, field_validator, field_serializer
 
 import open_vp_cal
 from open_vp_cal.core import constants, ocio_utils, utils
-from open_vp_cal.led_wall_settings import LedWallSettings
+from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsBaseModel
 from open_vp_cal.core.resource_loader import ResourceLoader
+
+
+class ProjectSettingsBaseModel(BaseModel):
+    """Base model for LedWallSettings with typing."""
+    content_max_lum: float = Field(default=constants.PQ.PQ_MAX_NITS)
+    file_format: constants.FileFormats = Field(default=constants.FileFormats(constants.FileFormats.default()))
+    resolution_width: int = Field(default=constants.DEFAULT_RESOLUTION_WIDTH)
+    resolution_height: int = Field(default=constants.DEFAULT_RESOLUTION_HEIGHT)
+    output_folder: str = Field(default=os.path.join(str(Path.home()), "OpenVPCal_output"))
+    ocio_config_path: str = Field(default="")
+    custom_logo_path: str = Field(default="")
+    frames_per_patch: int = Field(default=1)
+    reference_gamut: constants.ColourSpace|str = Field(default=constants.ColourSpace(constants.ColourSpace.CS_ACES))
+    led_walls: List[LedWallSettingsBaseModel] = Field(default=[])
+    project_custom_primaries: Dict[str, List[List[float]]] = Field(default={})
+    frame_rate: constants.FrameRates|float = Field(default=constants.FrameRates(constants.FrameRates.default()))
+    export_lut_for_aces_cct: bool = Field(default=False)
+    export_lut_for_aces_cct_in_target_out: bool = Field(default=False)
+    project_id: str = Field(default=utils.generate_truncated_hash())
+    lut_size: int = Field(default=constants.DEFAULT_LUZ_SIZE)
+
+    @field_validator(
+        "ocio_config_path",
+        mode="before",
+        json_schema_input_type=Union[str, None]
+    )
+    @classmethod
+    def upgrade_ocio_config_path(cls, value: Any) -> str:
+        """
+        Force ocio_config_path to be a string all the time.
+        - version 1.x: str|None
+        - version 2.x: str
+        Parameters:
+            value: The OCIO config path in either str or None.
+        Returns:
+            str: The OCIO config path as a string.
+        """
+        if value is None:
+            return ""
+        return value
+
+    @field_serializer("frame_rate")
+    @field_validator(
+        "frame_rate",
+        mode="before",
+        json_schema_input_type=Union[constants.FrameRates, float]
+    )
+    @classmethod
+    def try_convert_to_enum_frame_rates(cls, value:Any) -> constants.FrameRates|float:
+        """
+        Try to convert a float frame rate to an enum frame rate if possible.
+        Precision is 1e-3, for example:
+        23.99 != constants.FrameRates.FPS_24
+        23.998 != constants.FrameRates.FPS_24
+        23.999 == constants.FrameRates.FPS_24
+        """
+        if isinstance(value, float):
+             for frame_rate in constants.FrameRates:
+                if math.isclose(value, frame_rate.value, abs_tol=11e-4):
+                    return frame_rate
+        return value
+
+class OpenVPCalSettingsModel(BaseModel):
+    """Base model for OpenVPCalSettings with typing."""
+    openvp_cal_version: str = Field(default=open_vp_cal.__version__)
+    project_settings: ProjectSettingsBaseModel = Field(default=ProjectSettingsBaseModel())
 
 
 class ProjectSettings:
     """A class to handle project settings."""
     def __init__(self):
         """Initialize an empty ProjectSettings object."""
-        self._default_project_settings = {
-            constants.ProjectSettingsKeys.FILE_FORMAT: constants.FileFormats.default(),
-            constants.ProjectSettingsKeys.CONTENT_MAX_LUM: constants.PQ.PQ_MAX_NITS,
-            constants.ProjectSettingsKeys.RESOLUTION_WIDTH: constants.DEFAULT_RESOLUTION_WIDTH,
-            constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: constants.DEFAULT_RESOLUTION_HEIGHT,
-            constants.ProjectSettingsKeys.OUTPUT_FOLDER: os.path.join(str(Path.home()), "OpenVPCal_output"),
-            constants.ProjectSettingsKeys.OCIO_CONFIG_PATH: "",
-            constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH: "",
-            constants.ProjectSettingsKeys.FRAMES_PER_PATCH: 1,
-            constants.ProjectSettingsKeys.LED_WALLS: [],
-            constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES: {},
-            constants.ProjectSettingsKeys.REFERENCE_GAMUT: constants.ColourSpace.CS_ACES,
-            constants.ProjectSettingsKeys.FRAME_RATE: constants.FrameRates.default(),
-            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT: False,
-            constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT: False,
-            constants.ProjectSettingsKeys.PROJECT_ID: utils.generate_truncated_hash(),
-            constants.ProjectSettingsKeys.LUT_SIZE: constants.DEFAULT_LUZ_SIZE,
-        }
-
-        self._project_settings = copy.deepcopy(self._default_project_settings)
+        from open_vp_cal.led_wall_settings import LedWallSettings
+        self._project_settings: ProjectSettingsBaseModel = ProjectSettingsBaseModel()
+        self._led_walls:List[LedWallSettings] = []
         self._led_wall_class = LedWallSettings
 
     def clear_project_settings(self):
         """
         Clear the project settings and restore them to the defaults
         """
-        self._project_settings = copy.deepcopy(self._default_project_settings)
+        self._project_settings = ProjectSettingsBaseModel()
+        self._led_walls:List[LedWallSettings] = []
 
     @property
     def custom_logo_path(self) -> str:
@@ -67,46 +119,46 @@ class ProjectSettings:
         Returns:
             str: The filepath to the custom logo for the pattern generation
         """
-        return self._project_settings[constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH]
+        return self._project_settings.custom_logo_path
 
     @custom_logo_path.setter
-    def custom_logo_path(self, value: str):
+    def custom_logo_path(self: ProjectSettings, value: str):
         """Set the filepath to the custom logo for the pattern generation
 
         Args:
             value (bool): File path to a custom logo
         """
-        self._project_settings[constants.ProjectSettingsKeys.CUSTOM_LOGO_PATH] = value
+        self._project_settings.custom_logo_path = value
 
     @property
-    def project_custom_primaries(self) -> Dict[str, List[float]]:
+    def project_custom_primaries(self) -> Dict[str, List[List[float]]]:
         """ Gets all the custom primaries for the project
 
         Returns:
             dict: The dictionary of the custom primaries
         """
-        return self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES]
+        return self._project_settings.project_custom_primaries
 
     @project_custom_primaries.setter
-    def project_custom_primaries(self, value: Dict[str, List[float]]):
+    def project_custom_primaries(self: ProjectSettings, value: Dict[str, List[List[float]]]):
         """ Sets the custom primaries to use for the project
 
         Args:
             value: The dictionary for the custom primaries
         """
-        self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES] = value
+        self._project_settings.project_custom_primaries = value
 
-    def add_custom_primary(self, name: str, primaries: List[float]):
+    def add_custom_primary(self: ProjectSettings, name: str, primaries: List[List[float]]):
         """ Adds a custom primary to the project
 
         Args:
             name (str): The name of the custom primary
             primaries (List[float]): The list of primaries to add
         """
-        if name in self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES]:
+        if name in self._project_settings.project_custom_primaries:
             raise ValueError(f'Custom primary {name} already exists')
 
-        self._project_settings[constants.ProjectSettingsKeys.PROJECT_CUSTOM_PRIMARIES][name] = primaries
+        self._project_settings.project_custom_primaries[name] = primaries
 
     @property
     def project_id(self) -> str:
@@ -115,19 +167,17 @@ class ProjectSettings:
         Returns:
             str: The project id for the current project
         """
-        # If we are loading an old project, we need to generate a new project id
-        if constants.ProjectSettingsKeys.PROJECT_ID not in self._project_settings:
-            self.project_id = utils.generate_truncated_hash()
-        return self._project_settings[constants.ProjectSettingsKeys.PROJECT_ID]
+        # project_id will be generated by default if not exists
+        return self._project_settings.project_id
 
     @project_id.setter
-    def project_id(self, value: str):
+    def project_id(self: ProjectSettings, value: str):
         """Set the project id to the given value
 
         Args:
             value (str): The project id we want to set
         """
-        self._project_settings[constants.ProjectSettingsKeys.PROJECT_ID] = value
+        self._project_settings.project_id = value
 
     @property
     def file_format(self) -> constants.FileFormats:
@@ -136,16 +186,16 @@ class ProjectSettings:
         Returns:
             constants.FileFormats: The file format we want to generate patterns to
         """
-        return self._project_settings[constants.ProjectSettingsKeys.FILE_FORMAT]
+        return self._project_settings.file_format
 
     @file_format.setter
-    def file_format(self, value: constants.FileFormats):
+    def file_format(self: ProjectSettings, value: constants.FileFormats):
         """Set the file format we want to generate patterns to
 
         Args:
             value (constants.FileFormats): The file format we want to generate patterns to
         """
-        self._project_settings[constants.ProjectSettingsKeys.FILE_FORMAT] = value
+        self._project_settings.file_format = value
 
     @property
     def frames_per_patch(self) -> int:
@@ -154,42 +204,40 @@ class ProjectSettings:
         Returns:
             int: The number of frames per patch to generate
         """
-        return self._project_settings[constants.ProjectSettingsKeys.FRAMES_PER_PATCH]
+        return self._project_settings.frames_per_patch
 
     @frames_per_patch.setter
-    def frames_per_patch(self, value: int):
+    def frames_per_patch(self: ProjectSettings, value: int):
         """ The number of frames per patch we want to generate
 
         Args:
             value (int): The number of frames per patch we want to generate
         """
-        self._project_settings[constants.ProjectSettingsKeys.FRAMES_PER_PATCH] = value
+        self._project_settings.frames_per_patch = value
 
     @property
-    def led_walls(self) -> list:
+    def led_walls(self) -> List[LedWallSettings]:
         """Return the LED walls in the project
 
         Returns:
             list: The list of led walls stored in the project
         """
-        if not self._project_settings:
-            raise ValueError("Project settings not set")
-        return self._project_settings[constants.ProjectSettingsKeys.LED_WALLS]
+        return self._led_walls
 
     @led_walls.setter
-    def led_walls(self, value: list):
+    def led_walls(self: ProjectSettings, value: List[LedWallSettings]):
         """Set the LED walls config path.
 
         Args:
             value (list): A list of led walls we want to store in the project
         """
-        values = []
-        for item in value:
-            if isinstance(item, self._led_wall_class):
-                values.append(item)
+        walls = []
+        for wall in value:
+            if isinstance(wall, self._led_wall_class):
+                walls.append(wall)
             else:
-                values.append(self._led_wall_class.from_json_string(self, json.dumps(item)))
-        self._project_settings[constants.ProjectSettingsKeys.LED_WALLS] = values
+                raise ValueError(f'Wall {wall} is not an instance of {self._led_wall_class.__name__}')
+        self._led_walls = walls
 
     @property
     def ocio_config_path(self) -> str:
@@ -198,10 +246,10 @@ class ProjectSettings:
         Returns:
             str: The OCIO config path.
         """
-        return self._project_settings[constants.ProjectSettingsKeys.OCIO_CONFIG_PATH]
+        return self._project_settings.ocio_config_path
 
     @ocio_config_path.setter
-    def ocio_config_path(self, value: str):
+    def ocio_config_path(self: ProjectSettings, value: str):
         """Set the OCIO config path used as the base for writing out the resulting ocio config. This is not used for
             any internal computation
 
@@ -209,7 +257,7 @@ class ProjectSettings:
         Args:
             value (str): The OCIO config path.
         """
-        self._project_settings[constants.ProjectSettingsKeys.OCIO_CONFIG_PATH] = value
+        self._project_settings.ocio_config_path = value
 
     @property
     def output_folder(self) -> str:
@@ -218,16 +266,16 @@ class ProjectSettings:
         Returns:
             str: The folder path
         """
-        return self._project_settings[constants.ProjectSettingsKeys.OUTPUT_FOLDER]
+        return self._project_settings.output_folder
 
     @output_folder.setter
-    def output_folder(self, value: str):
+    def output_folder(self: ProjectSettings, value: str):
         """Set the folder path for the output folder
 
         Args:
             value (str): The folder path for the outputs
         """
-        self._project_settings[constants.ProjectSettingsKeys.OUTPUT_FOLDER] = value
+        self._project_settings.output_folder = value
 
     @property
     def resolution_width(self) -> int:
@@ -236,16 +284,16 @@ class ProjectSettings:
         Returns:
             int: The resolution width of the patterns we are going to generate
         """
-        return self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_WIDTH]
+        return self._project_settings.resolution_width
 
     @resolution_width.setter
-    def resolution_width(self, value: int):
+    def resolution_width(self: ProjectSettings, value: int):
         """Sets the resolution width of the patterns we want to generate
 
         Args:
             value (int): The resolution width
         """
-        self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_WIDTH] = value
+        self._project_settings.resolution_width = value
 
     @property
     def resolution_height(self) -> int:
@@ -254,28 +302,28 @@ class ProjectSettings:
         Returns:
             int: The resolution height of the patterns we are going to generate
         """
-        return self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT]
+        return self._project_settings.resolution_height
 
     @resolution_height.setter
-    def resolution_height(self, value: int):
+    def resolution_height(self: ProjectSettings, value: int):
         """Sets the resolution height of the patterns we want to generate
 
         Args:
             value (int): The resolution height
         """
-        self._project_settings[constants.ProjectSettingsKeys.RESOLUTION_HEIGHT] = value
+        self._project_settings.resolution_height = value
 
     @property
-    def reference_gamut(self) -> constants.ColourSpace:
+    def reference_gamut(self) -> constants.ColourSpace|str:
         """ Returns the reference colorspace of the working space
 
         Returns:
             constants.ColourSpace: Returns the reference colorspace of the working space
         """
-        return self._project_settings[constants.ProjectSettingsKeys.REFERENCE_GAMUT]
+        return self._project_settings.reference_gamut
 
     @reference_gamut.setter
-    def reference_gamut(self, value: constants.ColourSpace):
+    def reference_gamut(self: ProjectSettings, value: constants.ColourSpace|str):
         """ Set the reference colorspace of the working space, defaults to ACES2065-1
             should only be set with extreme care, as other working spaces
             not fully supported
@@ -283,25 +331,25 @@ class ProjectSettings:
         Args:
             value (constants.ColourSpace): The colour space we want to set the input too for the plate
         """
-        self._project_settings[constants.ProjectSettingsKeys.REFERENCE_GAMUT] = value
+        self._project_settings.reference_gamut = value
 
     @property
-    def frame_rate(self) -> float:
+    def frame_rate(self) -> constants.FrameRates|float:
         """ The frame rate for the shooting frame rate for the camera, used in certain SPG patterns
 
         Returns:
             float: The shooting frame rate of the camera
         """
-        return self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE]
+        return self._project_settings.frame_rate
 
     @frame_rate.setter
-    def frame_rate(self, value: float):
+    def frame_rate(self: ProjectSettings, value: constants.FrameRates|float):
         """ Sets the frame rate for the shooting frame rate
 
         Args:
             value (float): The frame rate we want to set
         """
-        self._project_settings[constants.ProjectSettingsKeys.FRAME_RATE] = value
+        self._project_settings.frame_rate = value
 
     @property
     def export_lut_for_aces_cct(self) -> bool:
@@ -310,16 +358,16 @@ class ProjectSettings:
         Returns:
             bool: Whether we want out luts to be exported for aces cct
         """
-        return self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT]
+        return self._project_settings.export_lut_for_aces_cct
 
     @export_lut_for_aces_cct.setter
-    def export_lut_for_aces_cct(self, value: bool):
+    def export_lut_for_aces_cct(self: ProjectSettings, value: bool):
         """ Set whether we want to export out lut for aces cct
 
         Args:
             value (bool): Set whether we want to export out lut for aces cct
         """
-        self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT] = value
+        self._project_settings.export_lut_for_aces_cct = value
 
     @property
     def export_lut_for_aces_cct_in_target_out(self) -> bool:
@@ -328,16 +376,16 @@ class ProjectSettings:
         Returns:
             bool: Whether we want our luts to be exported for aces cct, with cct in and target out
         """
-        return self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT]
+        return self._project_settings.export_lut_for_aces_cct_in_target_out
 
     @export_lut_for_aces_cct_in_target_out.setter
-    def export_lut_for_aces_cct_in_target_out(self, value: bool):
+    def export_lut_for_aces_cct_in_target_out(self: ProjectSettings, value: bool):
         """ Set whether we want to export out lut for aces cct with aces cct in and target out
 
         Args:
             value (bool): Set whether we want to export out lut for aces cct, with cct in and target out
         """
-        self._project_settings[constants.ProjectSettingsKeys.EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT] = value
+        self._project_settings.export_lut_for_aces_cct_in_target_out = value
 
     @property
     def content_max_lum(self) -> float:
@@ -346,19 +394,17 @@ class ProjectSettings:
         Returns:
             int: The content max luminance for the project
         """
-        # To maintain backwards compatability with v1.x we check to see if it exists and if not we call the setter before we return the value
-        if constants.ProjectSettingsKeys.CONTENT_MAX_LUM not in self._project_settings:
-            self.content_max_lum = constants.PQ.PQ_MAX_NITS
-        return self._project_settings[constants.ProjectSettingsKeys.CONTENT_MAX_LUM]
+        # content_max_lum will be set to PQ_MAX_NITS by default when v1.x is loaded
+        return self._project_settings.content_max_lum
 
     @content_max_lum.setter
-    def content_max_lum(self, value: float):
+    def content_max_lum(self: ProjectSettings, value: float):
         """Set the content max luminance for the project
 
         Args:
             value (int): The content max luminance for the project
         """
-        self._project_settings[constants.ProjectSettingsKeys.CONTENT_MAX_LUM] = value
+        self._project_settings.content_max_lum = value
 
     @property
     def lut_size(self):
@@ -367,64 +413,34 @@ class ProjectSettings:
         Returns:
             int: The size of the luz for the project
         """
-        # To maintain backwards compatability with v1.x we check to see if it exists and if not we call the setter before we return the value
-        if constants.ProjectSettingsKeys.LUT_SIZE not in self._project_settings:
-            self.lut_size = constants.DEFAULT_LUZ_SIZE
-        return self._project_settings[constants.ProjectSettingsKeys.LUT_SIZE]
+        # lut_size will be set to DEFAULT_LUZ_SIZE by default when v1.x is loaded
+        return self._project_settings.lut_size
 
     @lut_size.setter
-    def lut_size(self, value: int):
+    def lut_size(self: ProjectSettings, value: int):
         """Set the size of the lut for the project
 
         Args:
             value (int): The size of the lut for the project
         """
-        self._project_settings[constants.ProjectSettingsKeys.LUT_SIZE] = value
+        self._project_settings.lut_size = value
 
     @classmethod
-    def from_json(cls, json_file: str):
+    def from_json(cls: Type[ProjectSettings], json_file: str, led_wall_class: Type[LedWallSettings] = LedWallSettings) -> ProjectSettings:
         """Create a ProjectSettings object from a JSON file.
 
         Args:
             json_file (str): The path to the JSON file.
+            led_wall_class (Type): The class type of the LedWallSettings
+                to use for the project settings
 
         Returns:
             ProjectSettings: A ProjectSettings object.
         """
-        project_settings = cls._settings_from_json_file(json_file)
-        if not project_settings:
+        data = cls._settings_from_json_file(json_file)
+        if not data[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS]:
             raise ValueError(f'No project settings found in {json_file}')
-        instance = cls()
-        default_ocio = instance.ocio_config_path
-        instance._project_settings = project_settings
-        walls = []
-
-        # We cant set up the reference walls until all walls are loaded, so we remove it and create a map
-        reference_wall_map = {}
-        verification_wall_map = {}
-        for wall in instance.led_walls:
-            reference_wall_map[wall[constants.LedWallSettingsKeys.NAME]] = wall[
-                constants.LedWallSettingsKeys.REFERENCE_WALL
-            ]
-            verification_wall_map[wall[constants.LedWallSettingsKeys.NAME]] = wall[
-                constants.LedWallSettingsKeys.VERIFICATION_WALL
-            ]
-            del wall[constants.LedWallSettingsKeys.REFERENCE_WALL]
-            del wall[constants.LedWallSettingsKeys.VERIFICATION_WALL]
-            walls.append(instance._led_wall_class.from_dict(instance, wall))
-        instance.led_walls = walls
-
-        # Now we have all the walls loaded, we can re set up the reference walls and verification wall links
-        for led_wall in instance.led_walls:
-            reference_wall = reference_wall_map[led_wall.name]
-            if reference_wall:
-                led_wall.reference_wall = reference_wall
-            verification_wall = verification_wall_map[led_wall.name]
-            if verification_wall:
-                led_wall.verification_wall = verification_wall
-        if not instance.ocio_config_path:
-            instance.ocio_config_path = default_ocio
-        return instance
+        return cls.from_dict(data, led_wall_class=led_wall_class)
 
     @classmethod
     def _settings_from_json_file(cls, json_file) -> dict:
@@ -438,18 +454,43 @@ class ProjectSettings:
         """
         with open(json_file, 'r', encoding='utf-8') as file:
             data = json.load(file)
-            project_settings = data[constants.ProjectSettingsKeys.PROJECT_SETTINGS]
-            return project_settings
+        return data
 
-    def to_json(self, json_file: str):
+    def to_json(self: ProjectSettings, json_file: str):
         """Save the ProjectSettings object to a JSON file.
 
         Args:
             json_file (str): The path to the JSON file.
         """
-        data = self.to_dict()
         with open(json_file, 'w', encoding='utf-8') as file:
-            json.dump(data, file, indent=4)
+            file.write(self.get_open_vp_cal_model().model_dump_json(indent=4))
+
+    @classmethod
+    def from_dict(cls, data: dict, led_wall_class: Type[LedWallSettings] = LedWallSettings) -> ProjectSettings:
+        """
+        Creates a ProjectSettings object from a dictionary.
+
+        Note that input <data> will be modified.
+
+        Args:
+            data (dict):from_dict The dictionary to create the ProjectSettings object from
+            led_wall_class (Type): The class type of the LedWallSettings to use for the project settings
+
+        Returns:
+            ProjectSettings
+        """
+        instance: ProjectSettings = cls()
+        instance._led_wall_class = led_wall_class
+        instance._project_settings = ProjectSettingsBaseModel.model_validate(
+            data[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS])
+
+        walls = []
+        for wall in instance._project_settings.led_walls:
+            wall_inst = led_wall_class.from_dict(instance, wall.model_dump())
+            walls.append(wall_inst)
+
+        instance.led_walls = walls
+        return instance
 
     def to_dict(self) -> Dict:
         """ Save the ProjectSettings to a dict which can be serialized to JSON
@@ -457,18 +498,16 @@ class ProjectSettings:
         Returns: Dict
 
         """
-        output = self._project_settings.copy()
-        led_wall_serialized = []
-        for led_wall in self.led_walls:
-            led_wall_serialized.append(led_wall.to_dict())
-        output[constants.ProjectSettingsKeys.LED_WALLS] = led_wall_serialized
-        data = {
-            constants.VERSION: open_vp_cal.__version__,
-            constants.ProjectSettingsKeys.PROJECT_SETTINGS: output
-        }
-        return data
+        return self.get_open_vp_cal_model().model_dump()
 
-    def add_led_wall(self, name: str) -> LedWallSettings:
+    def get_open_vp_cal_model(self) -> OpenVPCalSettingsModel:
+        openVpCalSettings = OpenVPCalSettingsModel()
+        openVpCalSettings.openvp_cal_version = open_vp_cal.__version__
+        openVpCalSettings.project_settings = self._project_settings
+        openVpCalSettings.project_settings.led_walls = [led_wall._led_settings for led_wall in self.led_walls]
+        return openVpCalSettings
+
+    def add_led_wall(self: ProjectSettings, name: str) -> LedWallSettings:
         """ Adds a new LED wall to the project settings
 
         Args:
@@ -485,7 +524,7 @@ class ProjectSettings:
         self.led_walls.append(led_wall)
         return led_wall
 
-    def copy_led_wall(self, existing_wall_name, new_name: str) -> LedWallSettings:
+    def copy_led_wall(self: ProjectSettings, existing_wall_name, new_name: str) -> LedWallSettings:
         """ Adds a new LED wall to the project settings based on a copy of an existing wall with a new name
 
         Args:
@@ -510,7 +549,7 @@ class ProjectSettings:
         self.led_walls.append(new_led_wall)
         return new_led_wall
 
-    def add_verification_wall(self, existing_wall_name: str) -> LedWallSettings:
+    def add_verification_wall(self: ProjectSettings, existing_wall_name: str) -> LedWallSettings:
         """ Adds a new LED wall to the project settings which mirrors all the settings from the existing wall,
             and whose settings cannot be changed directly, only via the parent
 
@@ -549,7 +588,7 @@ class ProjectSettings:
         existing_led_wall.verification_wall = new_led_wall.name
         return new_led_wall
 
-    def remove_led_wall(self, name: str):
+    def remove_led_wall(self: ProjectSettings, name: str):
         """ Removes a LED wall from the project
 
         Args:
@@ -570,7 +609,7 @@ class ProjectSettings:
                 led_wall.reference_wall = ""
                 led_wall.match_reference_wall = False
 
-    def get_led_wall(self, name: str) -> LedWallSettings:
+    def get_led_wall(self: ProjectSettings, name: str) -> LedWallSettings:
         """ Returns a LED wall from the project
 
         Args:
@@ -582,7 +621,7 @@ class ProjectSettings:
         raise ValueError(f'Led wall {name} not found')
 
     @property
-    def export_folder(self) -> str:
+    def export_folder(self: ProjectSettings) -> str:
         """ Returns the folder to export the calibration results to
 
         Returns:
@@ -590,7 +629,7 @@ class ProjectSettings:
         """
         return os.path.join(self.output_folder, constants.ProjectFolders.EXPORT)
 
-    def reset_led_wall(self, name: str) -> None:
+    def reset_led_wall(self: ProjectSettings, name: str) -> None:
         """ Resets a LED wall to the default settings but preserves the link to the verification wall
 
         Args:
@@ -602,7 +641,7 @@ class ProjectSettings:
         led_wall.reset_defaults()
         led_wall.verification_wall = verification_wall
 
-    def get_ocio_colorspace_names(self)-> list[str]:
+    def get_ocio_colorspace_names(self: ProjectSettings)-> list[str]:
         """ Gets the colour space names from either the project ocio config, or the
             default config
 

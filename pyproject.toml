@@ -15,7 +15,8 @@ dependencies = [
     "open-vp-cal @ file:///${PROJECT_ROOT}/packages/open_vp_cal",
     "pyinstaller>=6.12.0",
     "pytest",
-    "ruff"
+    "ruff",
+    "pydantic>=2.11.7",
 ]
 
 [project.urls]

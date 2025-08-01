@@ -234,11 +234,13 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             json_file (str): The path to the JSON file.
 
         """
-        project_settings = self._settings_from_json_file(json_file)
-        for key, value in project_settings.items():
+        project_settings = self.from_json(json_file, led_wall_class=self._led_wall_class)
+        for key, _ in project_settings._project_settings:
+            value = getattr(project_settings, key)
             self.set_data(key, value)
 
         for led_wall in self.led_walls:
+            led_wall.project_settings = self
             self.led_wall_added.emit(led_wall)
 
         self.refresh_default_data()
@@ -249,7 +251,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         """ Clears the project settings back to the default settings and emits a signal to inform the views
         """
         super().clear_project_settings()
-        for key, value in self._project_settings.items():
+        for key, value in self._project_settings:
             self.data_changed.emit(key, value)
 
     def add_led_wall(self, name: str) -> Union[LedWallSettings, None]:
@@ -281,13 +283,14 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         """
         self.current_wall = led_wall
         self.led_wall_added.emit(led_wall)
-        for key in self._project_settings:
+        for key, _ in self._project_settings:
             self.data_changed.emit(key, self.get_data(key))
-        for key in self.current_wall.attrs:
+
+        for key, _ in self.current_wall._led_settings:
             self.data_changed.emit(key, self.get_data(key))
         return led_wall
 
-    def copy_led_wall(self, existing_wall_name: str, new_name: str) -> LedWallSettings:
+    def copy_led_wall(self, existing_wall_name: str, new_name: str) -> LedWallSettings | None:
         """ Copies a given led wall and emits a signal to inform the views
 
         Args:
@@ -346,10 +349,10 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         else:
             self.current_wall = led_wall
 
-        for key in self._project_settings:
+        for key, _ in self._project_settings:
             self.data_changed.emit(key, self.get_data(key))
 
-        for key in self.current_wall.attrs:
+        for key, _ in self.current_wall._led_settings:
             self.data_changed.emit(key, self.get_data(key))
 
     def reset_led_wall(self, name: str) -> None:

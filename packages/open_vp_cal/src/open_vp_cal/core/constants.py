@@ -46,7 +46,6 @@ YELLOW = (252, 186, 3)
 KELVIN_TEMPERATURES = [5003, 6000, 6504]
 
 OPEN_VP_CAL_UNIT_TESTING = "OPEN_VP_CAL_UNIT_TESTING"
-VERSION = "openvp_cal_version"
 PRE_PROCESSING_FORMAT_MAP = "PRE_PROCESSING_FORMAT_MAP"
 
 TARGET_MAX_LUM_NITS_NONE_PQ = 100
@@ -88,6 +87,11 @@ class CopyFormats(StrEnum):
     CSV = "CSV"
 
 
+class OpenVPCalSettingsKeys(StrEnum):
+    VERSION = "openvp_cal_version"
+    PROJECT_SETTINGS = "project_settings"
+
+
 class ProjectSettingsKeys(StrEnum):
     """
     Constants for the project settings attribute names
@@ -103,7 +107,6 @@ class ProjectSettingsKeys(StrEnum):
     REFERENCE_GAMUT = 'reference_gamut'
     LED_WALLS = "led_walls"
     PROJECT_CUSTOM_PRIMARIES = "project_custom_primaries"
-    PROJECT_SETTINGS = "project_settings"
     FRAME_RATE = "frame_rate"
     EXPORT_LUT_FOR_ACES_CCT = "export_lut_for_aces_cct"
     EXPORT_LUT_FOR_ACES_CCT_IN_TARGET_OUT = "export_lut_for_aces_cct_in_target_out"
@@ -362,6 +365,18 @@ class CameraColourSpace(StrEnum):
     def default() -> str:
         return CameraColourSpace.CS_ACES
 
+
+class LedColourSpace(StrEnum):
+    """
+    Class to hold the constants to describe the LED colour spaces we can use
+    """
+    CS_BT2020 = "ITU-R BT.2020"
+    CS_SRGB = "sRGB"
+    CS_P3 = "DCI-P3"
+
+    @staticmethod
+    def default_target() ->str:
+        return LedColourSpace.CS_BT2020
 
 
 class EOTF(StrEnum):

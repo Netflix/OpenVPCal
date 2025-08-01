@@ -136,7 +136,7 @@ class TestCalibrate(TestProject):
         expected_file = self.get_post_calibration_ocio_config()
         ps = self.project_settings
         # Override the roi so we have to run the auto detection
-        ps.led_walls[0].roi = None
+        ps.led_walls[0].roi = []
 
         # We set the sequence for the test project
         ps.led_walls[0].input_sequence_folder = self.get_sample_project_plates()

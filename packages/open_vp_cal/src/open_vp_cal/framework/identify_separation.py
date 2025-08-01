@@ -21,7 +21,9 @@ from open_vp_cal.framework.frame import Frame
 from scipy.signal import find_peaks
 
 from open_vp_cal.imaging import imaging_utils
-from open_vp_cal.led_wall_settings import LedWallSettings
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from open_vp_cal.led_wall_settings import LedWallSettings
 
 
 class SeparationResults:
@@ -99,7 +101,7 @@ class IdentifySeparation:
     The main class which deals with identifying the separation of the patches within the image sequence
     """
 
-    def __init__(self, led_wall_settings: LedWallSettings):
+    def __init__(self, led_wall_settings: "LedWallSettings"):
         """
         Initialize an instance of IdentifySeparation.
 
@@ -107,7 +109,7 @@ class IdentifySeparation:
             led_wall_settings (LedWallSettings): The LED wall settings we want to identify the separation
         """
         self.led_wall = led_wall_settings
-        self.separation_results = SeparationResults()
+        self.separation_results:SeparationResults = SeparationResults()
 
     def run(self):
         """

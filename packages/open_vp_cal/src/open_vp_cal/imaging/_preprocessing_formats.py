@@ -19,8 +19,8 @@ the application which logs all errors to a file in the user's home directory.
 """
 
 import open_vp_cal
-from open_vp_cal.core.constants import InputSelectSources, VERSION, \
-    PRE_PROCESSING_FORMAT_MAP, InputFormats, CameraColourSpace, LedWallSettingsKeys
+from open_vp_cal.core.constants import (InputSelectSources, OpenVPCalSettingsKeys,
+    PRE_PROCESSING_FORMAT_MAP, InputFormats, CameraColourSpace, LedWallSettingsKeys)
 
 REDLINE_CMD = "Redline"
 ART_CMD = "art-cmd"
@@ -89,6 +89,6 @@ _FORMAT_MAP = {
 }
 
 PREPROCESSING_CONFIG = {
-    VERSION: open_vp_cal.__version__,
+    OpenVPCalSettingsKeys.VERSION.value: open_vp_cal.__version__,
     PRE_PROCESSING_FORMAT_MAP: _FORMAT_MAP
 }
