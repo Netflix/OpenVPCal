@@ -16,6 +16,7 @@ limitations under the License.
 Module contains the classes associated with handling the project settings including, loading, saving, getting and
 setting
 """
+from __future__ import annotations
 import json
 from typing import List, Union, Any
 from typing import TYPE_CHECKING
@@ -86,7 +87,7 @@ class LedWallSettingsBaseModel(BaseModel):
 
 class LedWallSettings:
     """A class to handle led wall settings."""
-    def __init__(self, project_settings: "ProjectSettings", name="Wall1"):
+    def __init__(self, project_settings: ProjectSettings, name="Wall1"):
         """Initialize an empty LedWallSettings object."""
         self.processing_results:ProcessingResults = ProcessingResults()
         self.separation_results:SeparationResults|None = None
@@ -523,7 +524,7 @@ class LedWallSettings:
         return self._led_settings.reference_wall
 
     @reference_wall.setter
-    def reference_wall(self, value: Union["LedWallSettings", str]):
+    def reference_wall(self, value: Union[LedWallSettings, str]):
         """ Set the reference wall we want to use as the external white point
 
         Args:
@@ -544,7 +545,7 @@ class LedWallSettings:
         self._set_property(constants.LedWallSettingsKeys.REFERENCE_WALL, led_wall.name)
 
     @property
-    def reference_wall_as_wall(self) -> Union["LedWallSettings", None]:
+    def reference_wall_as_wall(self) -> Union[LedWallSettings, None]:
         """ Get the reference wall we want to use as the external white point
 
         Returns:
@@ -601,7 +602,7 @@ class LedWallSettings:
         return self._led_settings.verification_wall
 
     @property
-    def verification_wall_as_wall(self) -> Union["LedWallSettings", None]:
+    def verification_wall_as_wall(self) -> Union[LedWallSettings, None]:
         """ Get the led wall which this wall is linked to for verifying the calibration
 
         Returns:
@@ -613,7 +614,7 @@ class LedWallSettings:
         return None
 
     @verification_wall.setter
-    def verification_wall(self, value: Union["LedWallSettings", str]):
+    def verification_wall(self, value: Union[LedWallSettings, str]):
         """ Set the led wall which this wall is linked to verify the calibration.
             We do not directly set this on the verification wall as this needs to be a bidirectional link
             We leave the setting of this value to the api call within project settings to establish this link
@@ -671,7 +672,7 @@ class LedWallSettings:
         return True
 
     @classmethod
-    def from_json_file(cls, project_settings: "ProjectSettings", json_file: str):
+    def from_json_file(cls, project_settings: ProjectSettings, json_file: str):
         """Create a LedWallSettings object from a JSON file.
 
         Args:
@@ -685,7 +686,7 @@ class LedWallSettings:
         return cls._from_json_data(project_settings, json_data)
 
     @classmethod
-    def from_json_string(cls, project_settings: "ProjectSettings", json_string: str):
+    def from_json_string(cls, project_settings: ProjectSettings, json_string: str):
         """ Creates a LedWallSettings object from a JSON string.
 
         Args:
@@ -705,7 +706,7 @@ class LedWallSettings:
         return instance
 
     @classmethod
-    def from_dict(cls, project_settings: "ProjectSettings", input_dict: dict) -> "LedWallSettings":
+    def from_dict(cls, project_settings: ProjectSettings, input_dict: dict) -> LedWallSettings:
         """ Creates a LedWallSettings object from a dictionary.
 
         Args:

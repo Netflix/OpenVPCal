@@ -234,12 +234,13 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             json_file (str): The path to the JSON file.
 
         """
-        project_settings = self.from_json(json_file)
+        project_settings = self.from_json(json_file, led_wall_class=self._led_wall_class)
         for key, _ in project_settings._project_settings:
             value = getattr(project_settings, key)
             self.set_data(key, value)
 
         for led_wall in self.led_walls:
+            led_wall.project_settings = self
             self.led_wall_added.emit(led_wall)
 
         self.refresh_default_data()
