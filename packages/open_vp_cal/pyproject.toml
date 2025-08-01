@@ -24,6 +24,16 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+open_vp_cal = [
+    "resources/*.png",
+    "resources/*.exr",
+    "resources/*.ttf",
+    "resources/*.json",
+    "resources/*.ico",
+    "resources/*.layout"
+]
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
