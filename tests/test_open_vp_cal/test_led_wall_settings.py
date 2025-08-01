@@ -18,7 +18,7 @@ import os
 import json
 from typing import List
 from open_vp_cal.framework.identify_separation import SeparationResults
-from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsModel, ProcessingResults
+from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsBaseModel, ProcessingResults
 from open_vp_cal.core import constants
 
 from test_utils import TestBase
@@ -114,7 +114,7 @@ class TestLedWallSettings(TestBase):
         # Test for refactoring
         # Check the number of legacy fields is the same as the number of fields in the new model
         # We can remove this test once we add more fields to the new model in future.
-        self.assertEqual(len(self.legacy_default), len(LedWallSettingsModel.model_fields))
+        self.assertEqual(len(self.legacy_default), len(LedWallSettingsBaseModel.model_fields))
 
         # Test for refactoring
         # Check the default values are the same as the legacy default values
@@ -154,7 +154,7 @@ class TestLedWallSettings(TestBase):
         self.wall.reset_defaults()
         self.assertEqual(self.wall.use_white_point_offset, False)
         self.assertEqual(self.wall._led_settings.use_white_point_offset, False)
-        self.assertEqual(self.wall._led_settings, LedWallSettingsModel(name=self.wall.name))
+        self.assertEqual(self.wall._led_settings, LedWallSettingsBaseModel(name=self.wall.name))
 
     def test_clear(self):
         self.wall.roi = upgrade_legacy_roi([1, 2, 3, 4])
@@ -169,7 +169,7 @@ class TestLedWallSettings(TestBase):
     def test_clear_led_settings(self):
         self.wall.target_eotf = constants.EOTF.EOTF_SRGB
         self.wall.clear_led_settings()
-        self.assertEqual(self.wall._led_settings, LedWallSettingsModel(name=self.wall.name))
+        self.assertEqual(self.wall._led_settings, LedWallSettingsBaseModel(name=self.wall.name))
 
     def test_fields_all_included_in_test(self):
         sample_keys = list(self.sample.keys())
@@ -179,14 +179,14 @@ class TestLedWallSettings(TestBase):
         constants_all.sort()
         self.assertEqual(sample_keys, constants_all)
 
-        default_keys = list(LedWallSettingsModel.model_fields.keys())
+        default_keys = list(LedWallSettingsBaseModel.model_fields.keys())
         default_keys.sort()
         self.assertEqual(sample_keys, default_keys)
 
     def test_led_wall_settings_keys(self):
         constants_all = constants.LedWallSettingsKeys.all().copy()
         constants_all.sort()
-        led_settings_keys = list(LedWallSettingsModel.model_fields.keys())
+        led_settings_keys = list(LedWallSettingsBaseModel.model_fields.keys())
         led_settings_keys.sort()
         self.assertEqual(constants_all, led_settings_keys, "LedWallSettingsKeys should reflect all fields in the model. Add new keys to LedWallSettingsKeys.")
 
@@ -284,7 +284,7 @@ class TestLedWallSettings(TestBase):
     def test_roi(self):
         legacy_roi = [1, 2, 3, 4]
         self.assertEqual(upgrade_legacy_roi(legacy_roi),
-            LedWallSettingsModel.upgrade_roi(legacy_roi))
+            LedWallSettingsBaseModel.upgrade_roi(legacy_roi))
 
         roi = upgrade_legacy_roi(legacy_roi)
         self.wall.roi = roi

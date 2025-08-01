@@ -25,11 +25,11 @@ from pydantic import BaseModel, Field, field_validator, field_serializer
 
 import open_vp_cal
 from open_vp_cal.core import constants, ocio_utils, utils
-from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsModel
+from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsBaseModel
 from open_vp_cal.core.resource_loader import ResourceLoader
 
 
-class ProjectSettingsModel(BaseModel):
+class ProjectSettingsBaseModel(BaseModel):
     """Base model for LedWallSettings with typing."""
     content_max_lum: float = Field(default=constants.PQ.PQ_MAX_NITS)
     file_format: constants.FileFormats = Field(default=constants.FileFormats(constants.FileFormats.default()))
@@ -40,7 +40,7 @@ class ProjectSettingsModel(BaseModel):
     custom_logo_path: str = Field(default="")
     frames_per_patch: int = Field(default=1)
     reference_gamut: constants.ColourSpace|str = Field(default=constants.ColourSpace(constants.ColourSpace.CS_ACES))
-    led_walls: List[LedWallSettingsModel] = Field(default=[])
+    led_walls: List[LedWallSettingsBaseModel] = Field(default=[])
     project_custom_primaries: Dict[str, List[List[float]]] = Field(default={})
     frame_rate: constants.FrameRates|float = Field(default=constants.FrameRates(constants.FrameRates.default()))
     export_lut_for_aces_cct: bool = Field(default=False)
@@ -92,21 +92,21 @@ class ProjectSettingsModel(BaseModel):
 class OpenVPCalSettingsModel(BaseModel):
     """Base model for OpenVPCalSettings with typing."""
     openvp_cal_version: str = Field(default=open_vp_cal.__version__)
-    project_settings: ProjectSettingsModel = Field(default=ProjectSettingsModel())
+    project_settings: ProjectSettingsBaseModel = Field(default=ProjectSettingsBaseModel())
 
 
 class ProjectSettings:
     """A class to handle project settings."""
     def __init__(self):
         """Initialize an empty ProjectSettings object."""
-        self._project_settings = ProjectSettingsModel()
+        self._project_settings = ProjectSettingsBaseModel()
         self._led_walls:List[LedWallSettings] = []
 
     def clear_project_settings(self):
         """
         Clear the project settings and restore them to the defaults
         """
-        self._project_settings = ProjectSettingsModel()
+        self._project_settings = ProjectSettingsBaseModel()
         self._led_walls:List[LedWallSettings] = []
 
     @property
@@ -469,10 +469,12 @@ class ProjectSettings:
             ProjectSettings
         """
         instance = cls()
-        instance._project_settings = ProjectSettingsModel.model_validate(
+        instance._project_settings = ProjectSettingsBaseModel.model_validate(
             data[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS])
+
         for wall in instance._project_settings.led_walls:
-            instance.led_walls.append(LedWallSettings.from_dict(instance, wall))
+            wall_inst = LedWallSettings.from_dict(instance, wall)
+            instance.led_walls.append(wall_inst)
         return instance
 
     def to_dict(self) -> Dict:

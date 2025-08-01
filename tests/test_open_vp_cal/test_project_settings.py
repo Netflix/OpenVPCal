@@ -22,7 +22,7 @@ from pathlib import Path
 
 import open_vp_cal
 from open_vp_cal.led_wall_settings import LedWallSettings
-from open_vp_cal.project_settings import ProjectSettings, ProjectSettingsModel
+from open_vp_cal.project_settings import ProjectSettings, ProjectSettingsBaseModel
 from open_vp_cal.core import constants, utils
 from test_utils import TestBase
 from test_led_wall_settings import upgrade_legacy_roi
@@ -141,7 +141,7 @@ class TestProjectSettings(TestBase):
         """Test that all fields in the model are covered by our test sample."""
         test_settings_keys = list(self.test_settings[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS].keys())
         test_settings_keys.sort()
-        model_keys = list(ProjectSettingsModel.model_fields.keys())
+        model_keys = list(ProjectSettingsBaseModel.model_fields.keys())
         model_keys.sort()
         self.assertEqual(test_settings_keys, model_keys)
 
@@ -149,18 +149,18 @@ class TestProjectSettings(TestBase):
         """Test that ProjectSettingsKeys should reflect all fields in the model."""
         constants_all = constants.ProjectSettingsKeys.all().copy()
         constants_all.sort()
-        model_keys = list(ProjectSettingsModel.model_fields.keys())
+        model_keys = list(ProjectSettingsBaseModel.model_fields.keys())
         model_keys.sort()
         self.assertEqual(constants_all, model_keys, "ProjectSettingsKeys should reflect all fields in the model. Add new keys to ProjectSettingsKeys.")
 
     def test_default_values(self):
         """Test for refactoring - check the number of legacy fields is the same as the number of fields in the new model."""
         # We can remove this test once we add more fields to the new model in future.
-        self.assertEqual(len(self.legacy_default), len(ProjectSettingsModel.model_fields))
+        self.assertEqual(len(self.legacy_default), len(ProjectSettingsBaseModel.model_fields))
 
         # Test for refactoring - check the default values are the same as the legacy default values
         # We can remove this test once we update the default values in future.
-        new_settings = ProjectSettingsModel()
+        new_settings = ProjectSettingsBaseModel()
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.CONTENT_MAX_LUM], new_settings.content_max_lum)
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.FILE_FORMAT], new_settings.file_format)
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.RESOLUTION_WIDTH], new_settings.resolution_width)
@@ -290,12 +290,12 @@ class TestProjectSettings(TestBase):
 
     def test_try_convert_to_enum_frame_rates(self):
         """Test try_convert_to_enum_frame_rates function."""
-        self.assertNotEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(23.99), constants.FrameRates.FPS_24)
-        self.assertNotEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(23.998), constants.FrameRates.FPS_24)
-        self.assertEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(23.999), constants.FrameRates.FPS_24)
-        self.assertEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(24.000), constants.FrameRates.FPS_24)
-        self.assertEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(24.001), constants.FrameRates.FPS_24)
-        self.assertNotEqual(ProjectSettingsModel.try_convert_to_enum_frame_rates(24.002), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(23.99), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(23.998), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(23.999), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(24.000), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(24.001), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(24.002), constants.FrameRates.FPS_24)
 
     def test_export_lut_for_aces_cct(self):
         """Test export_lut_for_aces_cct field."""
@@ -323,7 +323,7 @@ class TestProjectSettings(TestBase):
 
     def test_clear_project_settings(self):
         self.project_settings.clear_project_settings()
-        settings_default = ProjectSettingsModel().model_dump()
+        settings_default = ProjectSettingsBaseModel().model_dump()
         for key in constants.ProjectSettingsKeys:
             if key == constants.ProjectSettingsKeys.PROJECT_ID:
                 continue

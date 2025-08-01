@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from open_vp_cal.project_settings import ProjectSettings
 
 
-class LedWallSettingsModel(BaseModel):
+class LedWallSettingsBaseModel(BaseModel):
     """Base model for LedWallSettings with typing."""
     name: str = Field(default="Wall1")
     avoid_clipping: bool = Field(default=False)
@@ -94,11 +94,11 @@ class LedWallSettings:
 
         self._sequence_loader = None
         self._sequence_loader_class = SequenceLoader
-        self._led_settings = LedWallSettingsModel(name=name)
+        self._led_settings = LedWallSettingsBaseModel(name=name)
 
     def reset_defaults(self):
         """Reset the LedWallSettings object to its default values."""
-        self._led_settings = LedWallSettingsModel(name=self._led_settings.name)
+        self._led_settings = LedWallSettingsBaseModel(name=self._led_settings.name)
 
     def clear(self):
         """Clears the roi, processing and separation results. So that we can start fresh with
@@ -111,7 +111,7 @@ class LedWallSettings:
         """
         Clear the LED settings and restore them to the defaults
         """
-        self._led_settings = LedWallSettingsModel(name=self.name)
+        self._led_settings = LedWallSettingsBaseModel(name=self.name)
 
     def _set_property(self, field_name: constants.LedWallSettingsKeys, value: Any) -> None:
         """ Sets the internal property data stores for the given field name, and given value.
@@ -695,13 +695,13 @@ class LedWallSettings:
         Returns: A LedWallSettings object.
         """
         instance = cls(project_settings)
-        instance._led_settings = LedWallSettingsModel.model_validate_json(json_string)
+        instance._led_settings = LedWallSettingsBaseModel.model_validate_json(json_string)
         return instance
 
     @classmethod
     def _from_json_data(cls, project_settings, json_data):
         instance = cls(project_settings)
-        instance._led_settings = LedWallSettingsModel.model_validate(json_data)
+        instance._led_settings = LedWallSettingsBaseModel.model_validate(json_data)
         return instance
 
     @classmethod
@@ -716,7 +716,7 @@ class LedWallSettings:
             LedWallSettings
         """
         instance = cls(project_settings)
-        instance._led_settings = LedWallSettingsModel.model_validate(input_dict)
+        instance._led_settings = LedWallSettingsBaseModel.model_validate(input_dict)
         return instance
 
     def to_dict(self) -> dict:

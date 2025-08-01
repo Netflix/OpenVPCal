@@ -28,7 +28,7 @@ import open_vp_cal.imaging.imaging_utils
 from open_vp_cal.core import constants
 from open_vp_cal.imaging import imaging_utils
 from open_vp_cal.project_settings import ProjectSettings
-from open_vp_cal.led_wall_settings import LedWallSettingsModel
+from open_vp_cal.led_wall_settings import LedWallSettingsBaseModel
 from open_vp_cal.main import run_cli
 
 import OpenImageIO as Oiio
@@ -144,7 +144,7 @@ class TestUtils(unittest.TestCase):
             list: A list of four tuples representing the corners in the following order:
                   top left, top right, bottom right, bottom left.
         """
-        return LedWallSettingsModel.upgrade_roi(roi)
+        return LedWallSettingsBaseModel.upgrade_roi(roi)
 
     def pre_process_vp_cal_1x(self, project_settings, output_folder, input_colour_space="ACES2065-1"):
         """ For all unit tests which where created using v1.x we need to double the
