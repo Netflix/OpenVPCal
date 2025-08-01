@@ -21,6 +21,9 @@ dev = [
     "ruff"
 ]
 
+[tool.uv.sources]
+open_vp_cal = { path = "src", package = false }
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
