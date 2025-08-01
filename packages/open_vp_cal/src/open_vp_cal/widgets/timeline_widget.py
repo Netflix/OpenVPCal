@@ -180,6 +180,7 @@ class TimelineModel(QObject):
         Resets the sequence loader and clears any cached frames or results.
         """
         self.project_settings.current_wall.sequence_loader.reset()
+        self.project_settings.current_wall.input_sequence_folder = ""
 
     def load_all_sequences_for_led_walls(self) -> None:
         """ Loads all sequences for all led walls
