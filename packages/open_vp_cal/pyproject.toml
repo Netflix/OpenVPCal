@@ -18,7 +18,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "ruff"
+    "ruff",
+    "pyright"
 ]
 
 [tool.setuptools.packages.find]
