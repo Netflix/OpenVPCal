@@ -1,4 +1,4 @@
-![OpenVpCal_Full_Logo.png](src%2Fopen_vp_cal%2Fresources%2FOpenVpCal_Full_Logo.png)
+![OpenVpCal_Full_Logo.png](packages%2Fopen_vp_cal%2Fsrc%2Fopen_vp_cal%2Fresources%2FOpenVpCal_Full_Logo.png)
 
 # OpenVPCal
 OpenVPCal is an open-source calibration tool for In-Camera Visual Effects pipelines. 
