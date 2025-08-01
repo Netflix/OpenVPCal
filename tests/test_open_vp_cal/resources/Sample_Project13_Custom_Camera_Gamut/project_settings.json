@@ -12,6 +12,7 @@
         "reference_gamut": "ACES2065-1",
         "export_lut_for_aces_cct": false,
         "export_lut_for_aces_cct_in_target_out": false,
+        "content_max_lum": 10000.0,
         "led_walls": [
             {
                 "name": "ROE_EOTF_CS",

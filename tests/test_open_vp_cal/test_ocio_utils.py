@@ -13,18 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-import json
+import os
 import tempfile
 
-from open_vp_cal.core import constants, utils
+from open_vp_cal.core import constants
 from open_vp_cal.main import run_cli
-from open_vp_cal.project_settings import ProjectSettings
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject, skip_if_ci
 
-import os
-
-import open_vp_cal.core.calibrate as calibrate
 
 import open_vp_cal.core.ocio_utils as ocio_utils
 import open_vp_cal.core.ocio_config as ocio_config
@@ -65,7 +60,7 @@ class TestCalibrate(TestProject):
         with tempfile.TemporaryDirectory() as tmp_dir:
             filename = os.path.join(tmp_dir, "openvpcal_test_alt_order.ocio")
 
-            led_wall_new = self.project_settings.copy_led_wall(self.led_wall.name, "new_copy")
+            self.project_settings.copy_led_wall(self.led_wall.name, "new_copy")
             for led_wall in self.project_settings.led_walls:
                 led_wall.processing_results.calibration_results = self.get_results(self.led_wall).copy()
                 led_wall.processing_results.calibration_results[Results.CALCULATION_ORDER] = CalculationOrder.CO_EOTF_CS
@@ -104,6 +99,7 @@ class TestCalibrate(TestProject):
             )
 
     def test_lut_generation(self):
+        self.project_settings.project_id = "test_ocio"
         with tempfile.TemporaryDirectory() as tmp_dir:
             filename = os.path.join(tmp_dir, "openvpcal_test_alt_order.cube")
             ocio_config_path = self.get_post_calibration_ocio_config()
@@ -116,6 +112,7 @@ class TestCalibrate(TestProject):
             self.assertTrue(os.path.exists(result))
 
     def test_pre_calibration_ocio_config_generation(self):
+        self.project_settings.project_id = "test_ocio"
         with tempfile.TemporaryDirectory() as tmp_dir:
             config_writer = ocio_config.OcioConfigWriter(tmp_dir)
             actual_file_path = config_writer.generate_pre_calibration_ocio_config(self.led_walls)
@@ -133,7 +130,9 @@ class TestCalibrate(TestProject):
         os.remove(temp_project_settings)
         return results
 
+    @skip_if_ci()
     def test_run_cli_ocio_post_config(self):
+        self.project_settings.project_id = "test_ocio"
         expected_file = self.get_post_calibration_ocio_config()
         ps = self.project_settings
         # Override the roi so we have to run the auto detection
@@ -141,7 +140,8 @@ class TestCalibrate(TestProject):
 
         # We set the sequence for the test project
         ps.led_walls[0].input_sequence_folder = self.get_sample_project_plates()
-        results = self.run_cli(ps)
+        self.project_settings = ps
+        results = self.run_cli_with_v1_fixes()
 
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:

@@ -1,0 +1,692 @@
+"""
+Copyright 2024 Netflix Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Module which contains the Processing class, which is responsible for taking in the project settings and a sequence
+loader, and processing the analysis of the images and producing the resulting ocio configs
+"""
+import json
+import os
+import tempfile
+from typing import Union, Tuple, List, Dict, Optional, TYPE_CHECKING
+
+import numpy as np
+from colour import RGB_Colourspace
+
+from open_vp_cal.core import calibrate, constants, utils, ocio_utils, ocio_config
+from open_vp_cal.imaging import macbeth, imaging_utils
+from open_vp_cal.core.constants import DEFAULT_PROJECT_SETTINGS_NAME, Results
+from open_vp_cal.core.resource_loader import ResourceLoader
+from open_vp_cal.core.structures import ProcessingResults, OpenVPCalException
+from open_vp_cal.framework.generation import PatchGeneration
+from open_vp_cal.led_wall_settings import LedWallSettings
+from open_vp_cal.framework.identify_separation import IdentifySeparation, SeparationResults
+from open_vp_cal.project_settings import ProjectSettings
+from open_vp_cal.framework.sample_patch import SamplePatch, SampleRampPatches, MacBethSample, BaseSamplePatch
+from open_vp_cal.framework.auto_roi import AutoROI, AutoROIResults
+
+if TYPE_CHECKING:
+    from OpenImageIO import ImageBuf
+
+
+class SeparationException(Exception):
+    """
+    A Simple exception to raise when the separation detection fails
+    """
+    def __init__(self, message):
+        super().__init__(message)
+
+class Processing:
+    """
+    Class responsible for taking project settings and a sequence loader, processing the image analysis, and
+    producing the resulting OCIO configurations.
+    """
+    def __init__(self, led_wall_settings: LedWallSettings):
+        """ Initialize an instance of Processing.
+
+        Args:
+            led_wall_settings: The LED wall settings to use for the processing
+        """
+        self.macbeth_clipping_idx = -6
+        self.led_wall = led_wall_settings
+        self._samples = {}
+        self._reference_samples = {}
+        self._reference_frames = []
+        self._generation = PatchGeneration(self.led_wall, (200, 200))
+
+    def get_max_white_samples(self, separation_results):
+        """ Get the max white samples
+
+        :param separation_results: Separation results
+        :return: Sample results
+        """
+        results = self._get_samples(separation_results, constants.PATCHES.MAX_WHITE)
+        self._samples[constants.Measurements.MAX_WHITE] = results[0].samples
+        return results
+
+    def get_macbeth_samples(self, separation_results):
+        """
+            Get macbeth chart samples for each of the swatches
+
+        :param separation_results: Separation results
+        :return: Sample results
+        """
+        sample_patch = MacBethSample(
+            self.led_wall, separation_results
+        )
+        results = sample_patch.run()
+        self._samples[constants.Measurements.MACBETH] = results[0].samples
+        colour_space = utils.get_target_colourspace_for_led_wall(self.led_wall)
+        rgb_references = macbeth.get_rgb_references_for_color_checker(colour_space, illuminant=None)
+        peak_lum = self.led_wall.target_max_lum_nits * 0.01
+        rgb_references = rgb_references * peak_lum
+        self._reference_samples[constants.Measurements.MACBETH] = rgb_references.tolist()
+        for reference_patch in rgb_references[:self.macbeth_clipping_idx]:
+            self._reference_frames.append(self._generation.generate_solid_patch(reference_patch)[0])
+        return results
+
+    def get_additional_samples_data(self) -> Tuple[Dict, Dict]:
+        """ Gets the additional samples data from the processing, mainly the primary saturation for the LED wall
+
+        Returns: The samples data from the processing
+
+        """
+        self._samples[constants.Measurements.PRIMARIES_SATURATION] = self.led_wall.primaries_saturation
+        self._reference_samples[constants.Measurements.PRIMARIES_SATURATION] = self.led_wall.primaries_saturation
+        return self._samples, self._reference_samples
+
+    def run_sampling(self):
+        """ Runs the sampling process to extract the samples form the image sequences,
+        and generates the reference swatches from the results
+
+        """
+        self.identify_separation()
+        if not self.led_wall.separation_results or not self.led_wall.separation_results.is_valid:
+            raise SeparationException(
+                "Frame Separation was not successful, please ensure the selected region of interest contains a sizable "
+                "selection of the central calibration patch, especially if the auto detection has failed."
+                "\nIf the region of interest is correct there is likely a sync or multiplexing issue within "
+                "the recording")
+
+        # We get the last slate frame and calculate what it should be based on the
+        # separation.
+        end_slate_sampler = BaseSamplePatch(
+            self.led_wall, self.led_wall.separation_results, constants.PATCHES.END_SLATE)
+        _, last_frame = end_slate_sampler.calculate_first_and_last_patch_frame()
+
+        # If our calculated last frame is greater than the length of the sequence
+        # we remove the end slate frames (1 x separation) to account for someone not
+        # exporting the sequence fully
+        if last_frame > self.led_wall.sequence_loader.end_frame:
+            last_frame -= self.led_wall.separation_results.separation
+
+        # If the last frame is still greater than the end frame of the sequence
+        # then we have to raise an error as someone made a critical mistake
+        if last_frame > self.led_wall.sequence_loader.end_frame:
+            raise OpenVPCalException(f"Separation Calculation was not successful\n"
+                             f"Separation Frames: {self.led_wall.separation_results.separation}\n"
+                             f"First Red Frame: {self.led_wall.separation_results.first_red_frame.frame_num}\n"
+                             f"First Green Frame: {self.led_wall.separation_results.first_green_frame.frame_num}\n"
+                             f"Last Frame Of Sequence: {self.led_wall.sequence_loader.end_frame}\n"
+                             f"Calculated End Slate Last Frame: {last_frame}\n"
+                             f"Separation result will lead to out of frame range result\n\n"
+                             f"Ensure Plate Is In Correct Format {self.led_wall.input_plate_gamut}")
+
+        self.auto_detect_roi(self.led_wall.separation_results)
+
+        self.get_grey_samples(self.led_wall.separation_results)
+        self.get_primaries_samples(self.led_wall.separation_results)
+        self.get_eotf_ramp_samples(self.led_wall.separation_results)
+        self.get_eotf_ramp_signals()
+        self.get_macbeth_samples(self.led_wall.separation_results)
+        self.get_max_white_samples(self.led_wall.separation_results)
+        samples, reference_samples = self.get_additional_samples_data()
+
+
+        results = ProcessingResults()
+        results.samples = samples
+        results.reference_samples = reference_samples
+        results.sample_buffers = []
+        results.sample_reference_buffers = self._reference_frames
+
+        self.led_wall.processing_results = results
+
+    def analyse(self):
+        """
+        Runs an analysis process on the samples to generate the status of the LED wall before calibration
+        """
+        target_cs, target_to_screen_cat, native_camera_cs = self._analysis_prep()
+
+        reference_wall_external_white_balance_matrix = None
+        if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
+            raise OpenVPCalException("Cannot use white point offset and a reference wall")
+
+        if self.led_wall.match_reference_wall:
+            if self.led_wall.reference_wall_as_wall:
+                reference_wall_processing_results = self.led_wall.reference_wall_as_wall.processing_results
+                if not reference_wall_processing_results:
+                    raise OpenVPCalException("Reference wall has not been analysed yet")
+                reference_wall_external_white_balance_matrix = reference_wall_processing_results.pre_calibration_results[
+                    Results.WHITE_BALANCE_MATRIX]
+
+        decoupled_lens_white_samples = None
+        if self.led_wall.use_white_point_offset:
+            decoupled_lens_white_samples = imaging_utils.get_decoupled_white_samples_from_file(
+                self.led_wall.white_point_offset_source)
+
+        default_wall = LedWallSettings("default")
+
+        # In our framework and sampling our samples have already been converted from
+        # the input_plate gamut to the working colour space, this is to ensure things
+        # like the mac beth detection work as expected, from the framework this means
+        # we now set our input_plate_gamut to reference as this is now the colour space
+        # the samples are now in
+        calibration_results = calibrate.run(
+            measured_samples_in=self.led_wall.processing_results.samples,
+            reference_samples_in=self.led_wall.processing_results.reference_samples,
+            input_plate_gamut=self.led_wall.project_settings.reference_gamut,
+            native_camera_gamut=native_camera_cs,
+            target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
+            reference_to_target_cat=default_wall.reference_to_target_cat,
+            target_max_lum_nits=self.led_wall.target_max_lum_nits,
+            target_EOTF=self.led_wall.target_eotf,
+            enable_plate_white_balance=self.led_wall.auto_wb_source,
+            enable_gamut_compression=False, enable_EOTF_correction=False,
+            calculation_order=constants.CalculationOrder.CO_CS_EOTF,
+            gamut_compression_shadow_rolloff=default_wall.shadow_rolloff,
+            reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
+            decoupled_lens_white_samples=decoupled_lens_white_samples,
+            avoid_clipping=self.led_wall.avoid_clipping,
+            reference_gamut=self.led_wall.project_settings.reference_gamut,
+            analyse=True
+        )
+
+        self.led_wall.processing_results.pre_calibration_results = calibration_results
+        return self.led_wall.processing_results
+
+    def _analysis_prep(self) -> tuple[RGB_Colourspace, constants.CAT, RGB_Colourspace]:
+        """ Run the steps which are needed for both calibration and the pre-calibration analysis steps
+
+        Returns: The target colour space and the target to screen CAT
+
+        """
+        if not self.led_wall.processing_results or not self.led_wall.processing_results.samples:
+            self.run_sampling()
+
+        target_to_screen_cat = self.led_wall.target_to_screen_cat
+        if target_to_screen_cat == constants.CAT.CAT_NONE:
+            target_to_screen_cat = None
+
+        return (
+            utils.get_target_colourspace_for_led_wall(self.led_wall),
+            target_to_screen_cat,
+            utils.get_native_camera_colourspace_for_led_wall(self.led_wall)
+        )
+
+    def calibrate(self) -> ProcessingResults:
+        """
+        Runs an analysis process on the samples to generate the calibration results
+        """
+        target_cs, target_to_screen_cat, native_camera_cs = self._analysis_prep()
+
+        reference_wall_external_white_balance_matrix = None
+        if self.led_wall.match_reference_wall and self.led_wall.use_white_point_offset:
+            raise OpenVPCalException("Cannot use white point offset and a reference wall")
+
+        if self.led_wall.match_reference_wall:
+            if self.led_wall.reference_wall_as_wall:
+                reference_wall_processing_results = self.led_wall.reference_wall_as_wall.processing_results
+                if not reference_wall_processing_results:
+                    raise OpenVPCalException("Reference wall has not been analysed yet")
+                reference_wall_external_white_balance_matrix = reference_wall_processing_results.calibration_results[
+                    Results.WHITE_BALANCE_MATRIX]
+
+        decoupled_lens_white_samples = None
+        if self.led_wall.use_white_point_offset:
+            decoupled_lens_white_samples = imaging_utils.get_decoupled_white_samples_from_file(
+                self.led_wall.white_point_offset_source)
+
+        # In our framework and sampling our samples have already been converted from
+        # the input_plate gamut to the working colour space, this is to ensure things
+        # like the mac beth detection work as expected, from the framework this means
+        # we now set our input_plate_gamut to reference as this is now the colour space
+        # the samples are now in
+        calibration_results = calibrate.run(
+            measured_samples_in=self.led_wall.processing_results.samples,
+            reference_samples_in=self.led_wall.processing_results.reference_samples,
+            input_plate_gamut=self.led_wall.project_settings.reference_gamut,
+            native_camera_gamut=native_camera_cs,
+            target_gamut=target_cs, target_to_screen_cat=target_to_screen_cat,
+            reference_to_target_cat=self.led_wall.reference_to_target_cat,
+            target_max_lum_nits=self.led_wall.target_max_lum_nits,
+            target_EOTF=self.led_wall.target_eotf,
+            enable_plate_white_balance=self.led_wall.auto_wb_source,
+            enable_gamut_compression=self.led_wall.enable_gamut_compression,
+            enable_EOTF_correction=self.led_wall.enable_eotf_correction,
+            calculation_order=self.led_wall.calculation_order,
+            gamut_compression_shadow_rolloff=self.led_wall.shadow_rolloff,
+            reference_wall_external_white_balance_matrix=reference_wall_external_white_balance_matrix,
+            decoupled_lens_white_samples=decoupled_lens_white_samples,
+            avoid_clipping=self.led_wall.avoid_clipping,
+            reference_gamut=self.led_wall.project_settings.reference_gamut,
+            analyse = False
+        )
+
+        self.led_wall.processing_results.calibration_results = calibration_results
+
+        # We export and store the results of this in a temporary location, so we can use it for previewing the results
+        temp_dir = tempfile.mkdtemp()
+        self._export_calibration(
+            temp_dir, [self.led_wall], ResourceLoader.ocio_config_path()
+        )
+        return self.led_wall.processing_results
+
+    @staticmethod
+    def _export_calibration(
+            output_folder: str, led_walls: List[LedWallSettings],
+            base_ocio_config: str, export_filter: bool = True,
+            export_lut_for_aces_cct: bool = False,
+            export_lut_for_aces_cct_in_target_out: bool = False) -> List[LedWallSettings]:
+        """ Runs the export process to generate the OCIO configuration files, CLF and luts
+
+        Args:
+            output_folder: The folder to export into
+            led_walls: The LED walls to export
+            base_ocio_config: The base OCIO config to use for the ocio config export
+
+        Returns: The LED walls with the export results stored in the wall processing results
+        """
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        results_folder = os.path.join(output_folder, constants.ProjectFolders.RESULTS)
+        if not os.path.exists(results_folder):
+            os.makedirs(results_folder)
+
+        calibration_folder = os.path.join(output_folder, constants.ProjectFolders.CALIBRATION)
+        if not os.path.exists(calibration_folder):
+            os.makedirs(calibration_folder)
+
+        ocio_config_output_file = os.path.join(
+            calibration_folder, ocio_config.OcioConfigWriter.post_calibration_config_name
+        )
+
+        project_id = led_walls[0].project_settings.project_id
+        ocio_config_output_file = ocio_config_output_file.format(project_id=project_id)
+
+        ocio_config_writer = ocio_config.OcioConfigWriter(calibration_folder)
+        for led_wall in led_walls:
+            samples_output_folder = os.path.join(
+                results_folder, f"{led_wall.name}_samples.json"
+            )
+            with open(samples_output_folder, "w", encoding="utf-8") as handle:
+                json.dump(led_wall.processing_results.samples, handle, indent=4)
+
+            reference_samples_output_folder = os.path.join(
+                results_folder, f"{led_wall.name}_reference_samples.json"
+            )
+
+            with open(reference_samples_output_folder, "w", encoding="utf-8") as handle:
+                json.dump(led_wall.processing_results.reference_samples, handle, indent=4)
+
+            calibration_results_file = os.path.join(
+                results_folder,
+                led_wall.name + "_calibration_results.json"
+            )
+            with open(calibration_results_file, "w", encoding="utf-8") as handle:
+                json.dump(led_wall.processing_results.calibration_results, handle, indent=4)
+
+            led_wall.processing_results.calibration_results_file = calibration_results_file
+
+        do_aces_cct_ocio_export = export_lut_for_aces_cct or export_lut_for_aces_cct_in_target_out
+        ocio_config_writer.generate_post_calibration_ocio_config(
+            led_walls, output_file=ocio_config_output_file, base_ocio_config=base_ocio_config,
+            preview_export_filter=export_filter, export_lut_for_aces_cct=do_aces_cct_ocio_export
+        )
+
+        for led_wall in led_walls:
+            if led_wall.is_verification_wall:
+                continue
+
+            led_wall.processing_results.ocio_config_output_file = ocio_config_output_file
+            if led_wall.calculation_order == constants.CalculationOrder.CO_CS_EOTF:
+                calc_order_string = constants.CalculationOrder.cs_eotf_string()
+            else:
+                calc_order_string = constants.CalculationOrder.eotf_cs_string()
+            if not led_wall.enable_eotf_correction:
+                calc_order_string = constants.CalculationOrder.cs_only_string()
+
+            aces_cct_desc = ""
+            if do_aces_cct_ocio_export:
+                aces_cct_desc = "_ACES_CCT_IN_OUT"
+
+            if export_lut_for_aces_cct_in_target_out:
+                aces_cct_desc = "_ACES_CCT_IN_TARGET_OUT"
+
+
+            lut_name = (f"{led_wall.name}_{led_wall.native_camera_gamut}_"
+                        f"{led_wall.target_gamut}_{led_wall.target_eotf}_"
+                        f"{calc_order_string}{aces_cct_desc}.cube")
+
+            lut_output_file = os.path.join(
+                calibration_folder, lut_name
+            )
+
+            if not do_aces_cct_ocio_export:
+                ocio_utils.bake_3d_lut(
+                    led_wall.processing_results.led_wall_colour_spaces.target_with_inv_eotf_cs.getName(),
+                    led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
+                    ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
+                    ocio_config_output_file, lut_output_file, cube_size=led_wall.project_settings.lut_size
+                )
+
+            if do_aces_cct_ocio_export and export_lut_for_aces_cct_in_target_out:
+                ocio_utils.bake_3d_lut(
+                    constants.CameraColourSpace.CS_ACES_CCT,
+                    led_wall.processing_results.led_wall_colour_spaces.display_colour_space_cs.getName(),
+                    ocio_config_writer.get_calibrated_output_name(led_wall.processing_results.led_wall_colour_spaces),
+                    ocio_config_output_file, lut_output_file, cube_size=led_wall.project_settings.lut_size
+                )
+
+            if do_aces_cct_ocio_export and not export_lut_for_aces_cct_in_target_out:
+                ocio_utils.bake_3d_lut(
+                    constants.CameraColourSpace.CS_ACES_CCT,
+                    led_wall.processing_results.led_wall_colour_spaces.aces_cct_display_colour_space_cs.getName(),
+                    led_wall.processing_results.led_wall_colour_spaces.aces_cct_calibration_view_transform.getName(),
+                    ocio_config_output_file, lut_output_file, cube_size=led_wall.project_settings.lut_size
+                )
+
+            led_wall.processing_results.lut_output_file = lut_output_file
+        return led_walls
+
+    @staticmethod
+    def run_export(project_settings: ProjectSettings, led_walls: List[LedWallSettings]) -> List[LedWallSettings]:
+        """ Runs the export process to generate the OCIO configuration files, CLF, and luts.
+            We also save the project settings
+
+        Args:
+            project_settings: The project settings to use to do the export
+            led_walls: The LED walls to export
+
+        Returns: The LED walls with the export results stored in the wall processing results
+
+        """
+        walls = Processing._export_calibration(
+            project_settings.export_folder,
+            led_walls, project_settings.ocio_config_path, export_filter=False,
+            export_lut_for_aces_cct=project_settings.export_lut_for_aces_cct,
+            export_lut_for_aces_cct_in_target_out=project_settings.export_lut_for_aces_cct_in_target_out
+        )
+
+        project_settings.to_json(
+            os.path.join(project_settings.output_folder, DEFAULT_PROJECT_SETTINGS_NAME)
+        )
+        return walls
+
+    def auto_detect_roi(self, separation_results) -> Union[AutoROIResults, None]:
+        """ Auto-detects the region of interest and returns the results
+
+        :param separation_results:
+        :return:
+        """
+        if not self.led_wall.roi:
+            results = AutoROI(self.led_wall, separation_results).run()
+            if not results.is_valid:
+                raise OpenVPCalException("Auto ROI detection failed, no ROI detected")
+            self.led_wall.roi = results.roi
+            return results
+        return None
+
+    def identify_separation(self):
+        """
+        Identify separation in the sequence.
+
+        :return: Separation results
+        """
+        if not self.led_wall.separation_results or not self.led_wall.separation_results.is_valid:
+            identify_sep = IdentifySeparation(self.led_wall)
+            separation_results = identify_sep.run()
+            return separation_results
+        return self.led_wall.separation_results
+
+    def get_eotf_ramp_signals(self) -> None:
+        """
+        Get EOTF ramp signals.
+        """
+        self._samples[constants.Measurements.EOTF_RAMP_SIGNAL] = utils.get_grey_signals(
+            self.led_wall.target_max_lum_nits, self.led_wall.num_grey_patches
+        )
+        self._reference_samples[constants.Measurements.EOTF_RAMP_SIGNAL] = utils.get_grey_signals(
+            self.led_wall.target_max_lum_nits, self.led_wall.num_grey_patches
+        )
+
+    def get_eotf_ramp_samples(self, separation_results):
+        """
+        Get EOTF ramp samples.
+
+        :param separation_results: Separation results
+        :return: Sample results
+        """
+        sample_patches = SampleRampPatches(
+            self.led_wall, separation_results, constants.PATCHES.EOTF_RAMPS
+        )
+        sample_results = sample_patches.run()
+
+        reference_patches, reference_patch_values = self._generation.find_and_generate_patch_from_map(
+            constants.PATCHES.EOTF_RAMPS
+        )
+        self._reference_samples[constants.Measurements.EOTF_RAMP] = [
+            [value, value, value] for value in reference_patch_values
+        ]
+        self._reference_frames.extend(
+            reference_patches
+        )
+
+        self._samples[constants.Measurements.EOTF_RAMP] = []
+        for sample_result in sample_results:
+            self._samples[constants.Measurements.EOTF_RAMP].append(sample_result.samples)
+        return sample_results
+
+    def get_primaries_samples(self, separation_results):
+        """
+        Get primary samples.
+
+        :param separation_results: Separation results
+        :return: Tuple of red, green, and blue results
+        """
+        red_results = self._get_samples(separation_results, constants.PATCHES.RED_PRIMARY_DESATURATED)
+        self._reference_samples[constants.Measurements.DESATURATED_RGB] = []
+
+        reference_patch, reference_patch_values = self._generation.find_and_generate_patch_from_map(
+            constants.PATCHES.RED_PRIMARY_DESATURATED)
+        self._reference_frames.extend(reference_patch)
+        self._reference_samples[constants.Measurements.DESATURATED_RGB].append(reference_patch_values)
+
+        green_results = self._get_samples(separation_results, constants.PATCHES.GREEN_PRIMARY_DESATURATED)
+        reference_patch, reference_patch_values = self._generation.find_and_generate_patch_from_map(
+            constants.PATCHES.GREEN_PRIMARY_DESATURATED)
+        self._reference_frames.extend(reference_patch)
+        self._reference_samples[constants.Measurements.DESATURATED_RGB].append(reference_patch_values)
+
+        blue_results = self._get_samples(separation_results, constants.PATCHES.BLUE_PRIMARY_DESATURATED)
+        reference_patch, reference_patch_values = self._generation.find_and_generate_patch_from_map(
+            constants.PATCHES.BLUE_PRIMARY_DESATURATED)
+        self._reference_frames.extend(reference_patch)
+        self._reference_samples[constants.Measurements.DESATURATED_RGB].append(reference_patch_values)
+
+        self._samples[constants.Measurements.DESATURATED_RGB] = [
+            red_results[0].samples,
+            green_results[0].samples,
+            blue_results[0].samples
+        ]
+        return red_results, green_results, blue_results
+
+    def get_grey_samples(self, separation_results):
+        """
+        Get grey samples for the 18 percent grey patch.
+
+        :param separation_results: Separation results
+        :return: Sample results
+        """
+        results = self._get_samples(separation_results, constants.PATCHES.GREY_18_PERCENT)
+        self._samples[constants.Measurements.GREY] = results[0].samples
+
+        reference_patch, reference_values = self._generation.find_and_generate_patch_from_map(
+            constants.PATCHES.GREY_18_PERCENT)
+        self._reference_frames.extend(reference_patch)
+        self._reference_samples[constants.Measurements.GREY] = reference_values
+
+        return results
+
+    def _get_samples(self, separation_results, patch):
+        """
+        Get samples for the given patch.
+
+        :param separation_results: Separation results
+        :param patch: Patch to get samples from
+        :return: Sample results
+        """
+        sample_patch = SamplePatch(
+            self.led_wall, separation_results, patch
+        )
+        sample_results = sample_patch.run()
+        return sample_results
+
+    def generate_sample_swatches(self) -> tuple[list["ImageBuf"], list["ImageBuf"]]:
+        """ Generate sample swatches to allow us to compare the samples, to the original references which where
+            sent to the wall.
+
+            The samples are exposed up linearly, so the samples match apart from the
+            gamut changes we expect to see
+
+        Returns: Tuple of sample swatch, and reference swatch
+
+        """
+        if not os.path.exists(self.led_wall.project_settings.export_folder):
+            os.makedirs(self.led_wall.project_settings.export_folder)
+
+        ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
+        led_wall_for_ocio_generation = self.led_wall
+        if self.led_wall.is_verification_wall:
+            led_wall_for_ocio_generation = self.led_wall.verification_wall_as_wall
+
+        generation_ocio_config_path = ocio_config_writer.generate_pre_calibration_ocio_config(
+            [led_wall_for_ocio_generation]
+        )
+
+        converted_sample_buffers = []
+        for img_buf in self.led_wall.processing_results.sample_buffers:
+            converted_sample_buffers.append(img_buf)
+
+        converted_reference_buffers = []
+
+        target_gamut_only_cs_name, _ = ocio_config_writer.target_gamut_only_cs_metadata(self.led_wall)
+        for img_buf in self.led_wall.processing_results.sample_reference_buffers:
+            output_img_buf = imaging_utils.apply_color_conversion(
+                img_buf, target_gamut_only_cs_name, str(self.led_wall.project_settings.reference_gamut),
+                color_config=generation_ocio_config_path)
+            converted_reference_buffers.append(output_img_buf)
+
+        self.led_wall.processing_results.sample_buffers = converted_sample_buffers
+        self.led_wall.processing_results.sample_reference_buffers = converted_reference_buffers
+
+        return converted_sample_buffers, converted_reference_buffers
+
+    def generate_sample_buffers(self):
+        """
+            We now need to create image buffers from our samples so we can display them in the ui
+            we do this after the analysis now that out samples have been converted to the reference colour space,
+            and scaled by half, to account for the overexposing we force in the camera
+        """
+        # We now generate our sample swatches from the scaled and concerted samples now they are halved and in the correct colour space
+        scaled_samples = self.led_wall.processing_results.pre_calibration_results[
+            Results.SCALED_AND_CONVERTED_SAMPLES]
+        for key in self.led_wall.processing_results.samples:
+            if key not in [constants.Measurements.EOTF_RAMP_SIGNAL,
+                           constants.Measurements.PRIMARIES_SATURATION,
+                           constants.Measurements.MAX_WHITE]:
+                value = scaled_samples[key]
+                if all(isinstance(item, list) for item in value):
+                    if key == constants.Measurements.MACBETH:
+                        value = value[: self.macbeth_clipping_idx]
+
+                    for item in value:
+                        self.led_wall.processing_results.sample_buffers.append(
+                            self._generation.generate_solid_patch(item)[0]
+                        )
+                else:
+                    self.led_wall.processing_results.sample_buffers.append(
+                        self._generation.generate_solid_patch(value)[0]
+                    )
+
+        macbeth_samples = self._samples[constants.PATCHES.MACBETH]
+        macbeth_detection_failed = np.allclose(macbeth_samples, 0.0, atol=1e-6)
+        if macbeth_detection_failed:
+            n = 18
+            del self.led_wall.processing_results.sample_buffers[-n:]
+            del self.led_wall.processing_results.sample_reference_buffers[-n:]
+
+
+    @staticmethod
+    def get_separation_results(led_wall_settings: 'LedWallSettings') -> Tuple['Processing', 'SeparationResults']:
+        """ Gets the processing object and the separation results for the given LED wall
+
+        Args:
+            led_wall_settings: The LED wall we want to get the separation results for
+
+        Returns: The processing object and the separation results
+
+        """
+        processing = Processing(led_wall_settings)
+        sep_results = processing.identify_separation()
+        return processing, sep_results
+
+    @staticmethod
+    def run_auto_detect(
+            led_wall_settings: 'LedWallSettings') -> Tuple[Optional[SeparationResults], Optional[AutoROIResults]]:
+        """ For the given led wall, we run the auto-detection algorithm which aims to detect and store the roi from
+            within the image sequence which is loaded
+
+        Args:
+            led_wall_settings: the LED wall, which contains the sequence we want to detect the roi for
+
+        Returns:
+
+        """
+        # We get the current frame and calculate an ROI which would select the whole image
+        current_frame = led_wall_settings.sequence_loader.current_frame
+        frame = led_wall_settings.sequence_loader.get_frame(current_frame)
+        spec = frame.image_buf.spec()
+        roi = [(0, 0), (spec.width, 0), (spec.width, spec.height), (0, spec.height)]
+
+        # We store the ROI into the project settings
+        led_wall_settings.roi = roi
+
+        # Now we have the whole image selected we run the image separation algorithm
+        processing, sep_results = Processing.get_separation_results(led_wall_settings)
+        if not sep_results or not sep_results.is_valid:
+            led_wall_settings.roi = roi
+            return sep_results, None
+
+        # We now remove the ROI so that we can run the autodetect ROI algorithm
+        led_wall_settings.roi = None
+        try:
+            auto_roi_results = processing.auto_detect_roi(sep_results)
+            # If we can not detect the roi automatically, we resort back to the whole image ROI
+            if not auto_roi_results or not auto_roi_results.is_valid:
+                led_wall_settings.roi = roi
+        except OpenVPCalException:
+            led_wall_settings.roi = roi
+            auto_roi_results = None
+        return sep_results, auto_roi_results

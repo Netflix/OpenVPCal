@@ -16,7 +16,7 @@ limitations under the License.
 
 import os
 
-import tests_spgicvfxpatterns.utils as utils
+import utils as utils
 
 from spg_icvfxpatterns.PatternGenerators.referenceImage import ReferenceImage as _ReferenceImage
 
@@ -45,10 +45,6 @@ class TestReferenceImage(utils.TestGenerator):
 
     def setUp(self):
         super(TestReferenceImage, self).setUp()
-
-        # There is a tiny change between windows and mac which even when compared at max exposure in nuke cant even be
-        # seen, so we set the failure count to account
-        self.image_fail_count = 3
 
     def test_fromJson(self):
         super(TestReferenceImage, self).test_fromJson()

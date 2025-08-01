@@ -22,7 +22,7 @@ import open_vp_cal
 from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.core import constants
-from test_open_vp_cal.test_utils import TestBase
+from test_utils import TestBase
 
 
 class TestProjectSettings(TestBase):
@@ -36,6 +36,9 @@ class TestProjectSettings(TestBase):
             constants.VERSION: open_vp_cal.__version__,
             "project_settings":
                 {
+                    constants.ProjectSettingsKeys.PROJECT_ID: "123456",
+                    constants.ProjectSettingsKeys.LUT_SIZE: 66,
+                    constants.ProjectSettingsKeys.CONTENT_MAX_LUM: constants.PQ.PQ_MAX_NITS,
                     constants.ProjectSettingsKeys.FILE_FORMAT: "exr",
                     constants.ProjectSettingsKeys.RESOLUTION_WIDTH: 3840,
                     constants.ProjectSettingsKeys.RESOLUTION_HEIGHT: 2160,
@@ -215,7 +218,7 @@ class TestProjectSettings(TestBase):
     def test_verification_wall(self):
         """Test adding a verification wall to the project settings."""
         new_wall = self.settings.add_led_wall("AnotherWall")
-        verification_wall = self.settings.add_verification_wall(new_wall.name)
+        self.settings.add_verification_wall(new_wall.name)
         temp_json = tempfile.NamedTemporaryFile(suffix=".json", delete=False).name
         self.settings.to_json(temp_json)
 

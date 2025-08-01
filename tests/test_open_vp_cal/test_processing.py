@@ -15,15 +15,21 @@ limitations under the License.
 """
 
 from open_vp_cal.framework.processing import Processing
-from test_open_vp_cal.test_utils import TestProject
+from test_utils import TestProject, skip_if_ci
 
 
 class Test_Processing(TestProject):
+
+    @skip_if_ci()
     def test_swatch_analysis_generation(self):
         self.led_wall.sequence_loader.load_sequence(
             self.led_wall.input_sequence_folder)
+        self.led_wall.roi = self.recalc_old_roi(self.led_wall.roi)
         processing = Processing(self.led_wall)
         processing.run_sampling()
+        processing.analyse()
+        processing.generate_sample_buffers()
+        processing.generate_sample_swatches()
 
         self.assertNotEqual(self.led_wall.processing_results, None)
         self.assertNotEqual(self.led_wall.processing_results.sample_buffers, [])

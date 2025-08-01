@@ -1,10 +1,15 @@
+*.log
 **/__pycache__/**
+**/build/**
+*.egg-info/
 .idea/*
 **/tests/**/output/**
-**/tests/**/results/**
+**/tests/tests_spg/results/**
+**/tests/tests_spgicvfxpatterns/results/**
 dist/**
 **myenv/**
 **venv/**
 openvpcal.egg-info/**
 .pytest_cache/**
 .DS_Store
+/Output

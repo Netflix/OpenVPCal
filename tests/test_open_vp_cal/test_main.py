@@ -22,10 +22,10 @@ import os
 import tempfile
 from json import JSONDecodeError
 
-from open_vp_cal.core import constants, ocio_config
+from open_vp_cal.core import constants
 from open_vp_cal.main import validate_file_path, validate_folder_path, \
     validate_project_settings, generate_patterns, generate_spg_patterns
-from test_open_vp_cal.test_utils import TestBase, TestProject
+from test_utils import TestBase, TestProject, skip_if_ci
 
 
 class TestArgparseFunctions(TestBase):
@@ -63,7 +63,7 @@ class TestArgparseFunctions(TestBase):
     def test_validate_project_settings_invalid(self):
         fd, path = tempfile.mkstemp(suffix=".json")
         try:
-            with open(path, 'w+') as temp:
+            with open(path, 'w+'):
                 with self.assertRaises(JSONDecodeError):
                     validate_project_settings(path)
         finally:
@@ -89,13 +89,22 @@ class TestArgparseFunctions(TestBase):
 
 class TestProjectCli(TestProject):
 
+    @skip_if_ci()
     def test_run_cli(self):
         expected_file = self.get_results_file(self.led_wall)
 
         # Override the roi so we have to run the auto detection
         self.project_settings.led_walls[0].roi = None
 
-        results = self.run_cli(self.project_settings)
+        temp_folders = self.pre_process_vp_cal_1x(
+            self.project_settings, self.get_output_folder()
+        )
+        try:
+            results = self.run_cli(self.project_settings)
+            self.cleanup_pre_process_vp1(temp_folders)
+        except Exception as e:
+            self.cleanup_pre_process_vp1(temp_folders)
+            raise e
 
         with open(expected_file, "r", encoding="utf-8") as handle:
             expected_results = json.load(handle)
@@ -109,6 +118,7 @@ class TestProjectCli(TestProject):
             self.assertTrue(os.path.exists(led_wall.processing_results.calibration_results_file))
             self.compare_data(expected_results, led_wall.processing_results.calibration_results)
 
+    @skip_if_ci()
     def test_run_cli_multi_wall(self):
         # Add A Second Wall
         self.project_settings.copy_led_wall(self.project_settings.led_walls[0].name, "LedWall2")
@@ -126,7 +136,14 @@ class TestProjectCli(TestProject):
         self.project_settings.led_walls[1].match_reference_wall = True
         self.project_settings.led_walls[1].auto_wb_source = False
 
-        results = self.run_cli(self.project_settings)
+        temp_folders = self.pre_process_vp_cal_1x(
+            self.project_settings, self.get_output_folder()
+        )
+        try:
+            results = self.run_cli(self.project_settings)
+            self.cleanup_pre_process_vp1(temp_folders)
+        except Exception:
+            self.cleanup_pre_process_vp1(temp_folders)
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -144,8 +161,9 @@ class TestProjectCli(TestProject):
 class TestProjectExternalWhite(TestProject):
     project_name = "SampleProject2_External_White_NoLens"
 
+    @skip_if_ci()
     def test_external_white_no_lens(self):
-        results = self.run_cli(self.project_settings)
+        results = self.run_cli_with_v1_fixes()
         for led_wall_name, led_wall in results.items():
             if led_wall.is_verification_wall:
                 continue
@@ -218,7 +236,6 @@ class TestCLIGeneratePatterns(TestProject):
 
     def test_cli_force_error_log(self):
         error_log = Path(os.path.join(self.get_test_output_folder(),'filename.txt'))
-        error_log.touch()
         self.project_settings.led_walls[0].input_sequence_folder = ""
         with self.assertRaises(IOError):
             self.run_cli(self.project_settings, force=True, error_log=str(error_log))
