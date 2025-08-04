@@ -174,7 +174,7 @@ jobs:
             fi
 
         - name: Upload nightly build artifact
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: nightly-${{ matrix.os }}
             path: out/nightly-build.tar.gz
