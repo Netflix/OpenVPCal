@@ -79,6 +79,17 @@ Linux - :warning: (Supported But Untested)
 For most users the easiest way to install OpenVPCal is to download the latest release from the [Release](https://github.com/Netflix-Skunkworks/OpenVPCal/releases/),
 and download the pre built installer for your platform.
 
+## Nightly Builds
+
+[![Nightly Build Status](https://github.com/OWNER/REPO/actions/workflows/python-ci-cd-workflow.yml/badge.svg?branch=dev)](https://github.com/OWNER/REPO/actions/workflows/python-ci-cd-workflow.yml/runs?branch=dev)
+
+Download the latest artifacts for the **dev** branch’s nightly build on each platform:
+
+- MacOS & Linux:  
+  https://github.com/OWNER/REPO/actions/artifacts  
+- Windows:  
+  https://github.com/OWNER/REPO/actions/artifacts
+
 ## From Source
 #### Install Dependencies
 Ensure the following dependencies are installed on your system:
