@@ -200,7 +200,7 @@ jobs:
 
             # print out to confirm
             ver = re.search(r'__version__\s*=\s*"([^"]+)"', new_text).group(1)
-            print(f"✅ bumped version to: {ver}")
+            print(f"bumped version to: {ver}")
 
         # On Windows, run build.bat via PowerShell
         - name: Run Windows build
