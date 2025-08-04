@@ -81,14 +81,10 @@ and download the pre built installer for your platform.
 
 ## Nightly Builds
 
-[![Nightly Build Status](https://github.com/netflix/OpenVPCal/actions/workflows/python-ci-cd-workflow.yml/badge.svg?branch=dev)](https://github.com/netflix/OpenVPCal/actions/workflows/python-ci-cd-workflow.yml/runs?branch=dev)
-
 Download the latest artifacts for the **dev** branch’s nightly build on each platform:
 
-- MacOS & Linux:  
-  https://github.com/netflix/OpenVPCal/actions/artifacts  
-- Windows:  
-  https://github.com/netflix/OpenVPCal/actions/artifacts
+- Download The Artifacts from the latest workflow run for the dev branch:
+  https://github.com/Netflix/OpenVPCal/actions/workflows/main.yml?query=event%3Aworkflow_dispatch+is%3Acompleted  
 
 ## From Source
 #### Install Dependencies

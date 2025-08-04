@@ -225,15 +225,6 @@ jobs:
             echo "Recursive listing:"
             ls -R ./dist
 
-        - name: List files in dist (Windows)
-          if: runner.os == 'Windows'
-          shell: pwsh
-          run: |
-            Write-Host "Files under Output/:"
-            Get-ChildItem Output -File | Format-Table
-            Write-Host "`nRecursive listing:"
-            Get-ChildItem Output -Recurse | Format-Table
-
         - name: Upload macOS nightly artifact
           if: runner.os == 'macOS'
           uses: actions/upload-artifact@v4
@@ -241,14 +232,20 @@ jobs:
             name: nightly-macos
             path: './dist/OpenVPCal-*.dmg'
 
-        - name: Upload Windows nightly artifact
+        - name: Upload Windows nightly artifact - Zip
           if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
-            name: nightly-windows
-            path: |
-              Output/OpenVPCal-*.exe
-              Output/OpenVPCal-*.zip
+            name: nightly-windows-setup
+            path: 'Output/OpenVPCal-*.exe'
+
+        - name: Upload Windows nightly artifact - Setup
+          if: runner.os == 'Windows'
+          uses: actions/upload-artifact@v4
+          with:
+            name: nightly-windows-zip
+            path: 'Output/OpenVPCal-*.zip'
+        
 
         - name: Upload Linux nightly artifact
           if: runner.os == 'Linux'
