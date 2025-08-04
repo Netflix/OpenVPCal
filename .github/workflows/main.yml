@@ -52,6 +52,15 @@ jobs:
           choco install git-lfs -y
           git lfs install --skip-smudge
 
+      # ← Cache all LFS objects between runs
+      - name: Cache Git LFS objects
+        uses: actions/cache@v3
+        with:
+          path: .git/lfs/objects
+          key: ${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
+          restore-keys: |
+            ${{ runner.os }}-git-lfs-
+
       # Fetch only the LFS objects you need
       - name: Fetch specific LFS folders (non-Windows)
         if: runner.os != 'Windows'
@@ -175,6 +184,15 @@ jobs:
           run: |
             choco install git-lfs -y
             git lfs install --skip-smudge
+
+        # ← Cache LFS objects for nightly packaging too
+        - name: Cache Git LFS objects
+          uses: actions/cache@v3
+          with:
+            path: .git/lfs/objects
+            key: nightly-${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
+            restore-keys: |
+              nightly-${{ runner.os }}-git-lfs-
 
         - name: Fetch only needed LFS resources
           run: |
