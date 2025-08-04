@@ -3,9 +3,13 @@ name: Python CI/CD Workflow
 on:
   push:
   pull_request:
+  schedule:    # Nightly at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}
     strategy:
       fail-fast: false
       matrix:
@@ -117,3 +121,60 @@ jobs:
           name: pytest results (${{matrix.os }})
           path: test-results/junit-report.xml
           reporter: java-junit
+
+  nightly_compile:
+      if: ${{ github.event_name == 'schedule' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' }}
+      strategy:
+        fail-fast: false
+        matrix:
+          os: [ubuntu-latest, macos-latest, windows-latest]
+
+      runs-on: ${{ matrix.os }}
+
+      steps:
+        - name: Checkout code (no LFS)
+          uses: actions/checkout@v3
+          with:
+            lfs: false
+
+        # Install Git LFS and disable auto-smudge on each OS
+        - name: Install Git LFS & disable auto-smudge (Ubuntu)
+          if: runner.os == 'Linux'
+          run: |
+            sudo apt-get update
+            sudo apt-get install git-lfs -y
+            git lfs install --skip-smudge
+
+        - name: Install Git LFS & disable auto-smudge (macOS)
+          if: runner.os == 'macOS'
+          run: |
+            brew install git-lfs
+            git lfs install --skip-smudge
+
+        - name: Install Git LFS & disable auto-smudge (Windows)
+          if: runner.os == 'Windows'
+          shell: pwsh
+          run: |
+            choco install git-lfs -y
+            git lfs install --skip-smudge
+
+        - name: Fetch only needed LFS resources
+          run: |
+            git lfs fetch --include="packages/open_vp_cal/src/open_vp_cal/resources/**"
+            git lfs checkout packages/open_vp_cal/src/open_vp_cal/resources/**
+
+        - name: Run nightly build script
+          shell: bash
+          run: |
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              build.bat
+            else
+              chmod +x build.sh
+              ./build.sh
+            fi
+
+        - name: Upload nightly build artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: nightly-${{ matrix.os }}
+            path: out/nightly-build.tar.gz
