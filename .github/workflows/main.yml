@@ -1,8 +1,9 @@
-name: ${{ 
-  github.event_name == 'schedule' && 'OpenVPCal Nightly Build' ||
-  github.event_name == 'workflow_dispatch' && 'OpenVPCal Manual Build' ||
-  'OpenVPCal CI/CD'
-}}
+name: Python CI/CD Workflow
+#name: ${{
+#  github.event_name == 'schedule' && 'OpenVPCal Nightly Build' ||
+#  github.event_name == 'workflow_dispatch' && 'OpenVPCal Manual Build' ||
+#  'OpenVPCal CI/CD'
+#}}
 
 on:
   push:
