@@ -305,7 +305,7 @@ class OcioConfigWriter:
             elif tgt_eotf == EOTF.EOTF_BT1886:
                 inverse_eotf_group_transform.appendTransform(
                     ocio.ExponentTransform(
-                        value=2.4, negativeStyle=ocio.NegativeStyle.NEGATIVE_PASS_THRU,
+                        value=[2.4, 2.4, 2.4, 2.4], negativeStyle=ocio.NegativeStyle.NEGATIVE_PASS_THRU,
                         direction=ocio.TransformDirection.TRANSFORM_DIR_INVERSE,
                     )
                 )
