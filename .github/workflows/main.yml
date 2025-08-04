@@ -1,9 +1,4 @@
 name: Python CI/CD Workflow
-#name: ${{
-#  github.event_name == 'schedule' && 'OpenVPCal Nightly Build' ||
-#  github.event_name == 'workflow_dispatch' && 'OpenVPCal Manual Build' ||
-#  'OpenVPCal CI/CD'
-#}}
 
 on:
   push:
@@ -15,7 +10,6 @@ on:
 jobs:
   test:
     name: Unit Tests (${{ matrix.os }})
-    if: ${{ github.event_name != 'workflow_dispatch' }}
     strategy:
       fail-fast: false
       matrix:
@@ -140,7 +134,7 @@ jobs:
 
   nightly_compile:
       name: Nightly Build & Artifact Upload (${{ matrix.os }})
-#      needs: test
+      needs: test
       if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/dev' }}
       strategy:
         fail-fast: false
