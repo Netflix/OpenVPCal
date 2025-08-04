@@ -341,7 +341,7 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
     )
 
     # make a zip file of the distribution_folder called OpenVPCal-{version}-x86.zip
-    zip_file_name = os.path.join(current_script_directory, f"OpenVPCal-{version}-x86.zip")
+    zip_file_name = os.path.join(current_script_directory, "Output", f"OpenVPCal-{version}-x86.zip")
     shutil.make_archive(zip_file_name.replace('.zip', ''), 'zip', distribution_folder)
     return return_code
 
