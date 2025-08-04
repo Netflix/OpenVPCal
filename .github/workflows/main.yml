@@ -233,7 +233,7 @@ jobs:
             ver = re.search(r'__version__\s*=\s*"([^"]+)"', new_text).group(1)
             print(f"Bumped version to: {ver}")
 
-        # 1) Create a temporary keychain and make it default
+        # Create a temporary keychain and make it default
         - name: Create & unlock keychain
           if: runner.os == 'macOS'
           run: |
@@ -241,7 +241,7 @@ jobs:
             security default-keychain -s build.keychain
             security unlock-keychain -p "" build.keychain
 
-        # 2) Decode & import your P12 into that keychain
+        # Decode & import your P12 into that keychain
         - name: Import signing certificate
           if: runner.os == 'macOS'
           run: |
@@ -254,31 +254,18 @@ jobs:
               -S apple-tool:,apple: \
               -s -k "" build.keychain
 
-        - name: Dump signing identity (macOS only debug)
-          if: runner.os == 'macOS'
-          run: echo "APPLE_SIGN_IDENTITY=$APPLE_SIGN_IDENTITY"
-
         # On Windows, run build.bat via PowerShell
-        - name: Run Windows build
+        - name: Run Windows Build
           if: runner.os == 'Windows'
           shell: pwsh
           run: .\build.bat
 
         # On macOS/Linux, run build.sh via Bash
-        - name: Run *nix build
+        - name: Run Build
           if: runner.os != 'Windows'
           run: |
             chmod +x build.sh
             ./build.sh
-
-        - name: List files in dist (macOS/Linux)
-          if: runner.os != 'Windows'
-          run: |
-            echo "Files under dist/:"
-            ls -lah ./dist
-            echo ""
-            echo "Recursive listing:"
-            ls -R ./dist
 
         - name: Upload macOS nightly artifact
           if: runner.os == 'macOS'
