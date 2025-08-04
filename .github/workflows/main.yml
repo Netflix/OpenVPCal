@@ -13,8 +13,9 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  build:
-    name: Build & Test (${{ matrix.os }})
+  test:
+    name: Unit Tests (${{ matrix.os }})
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     strategy:
       fail-fast: false
       matrix:
@@ -138,8 +139,8 @@ jobs:
           reporter: java-junit
 
   nightly_compile:
-      name: Nightly Build & Upload (${{ matrix.os }})
-      needs: build
+      name: Nightly Build & Artifact Upload (${{ matrix.os }})
+#      needs: test
       if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/dev' }}
       strategy:
         fail-fast: false
@@ -250,6 +251,10 @@ jobs:
               -S apple-tool:,apple: \
               -s -k "" build.keychain
 
+        - name: Dump signing identity (macOS only debug)
+          if: runner.os == 'macOS'
+          run: echo "CODE_SIGN_IDENTITY=$CODE_SIGN_IDENTITY"
+
         # On Windows, run build.bat via PowerShell
         - name: Run Windows build
           if: runner.os == 'Windows'
@@ -300,3 +305,8 @@ jobs:
           with:
             name: nightly-linux
             path: 'Output/OpenVPCal*.zip'
+
+        - name: Delete temporary keychain
+          if: runner.os == 'macOS'
+          run: |
+            security delete-keychain build.keychain
