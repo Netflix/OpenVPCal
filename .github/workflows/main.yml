@@ -253,7 +253,7 @@ jobs:
 
         - name: Dump signing identity (macOS only debug)
           if: runner.os == 'macOS'
-          run: echo "APPLE_SIGN_IDENTITY=APPLE_SIGN_IDENTITY"
+          run: echo "APPLE_SIGN_IDENTITY=$APPLE_SIGN_IDENTITY"
 
         # On Windows, run build.bat via PowerShell
         - name: Run Windows build
