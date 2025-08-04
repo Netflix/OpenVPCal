@@ -307,6 +307,12 @@ def main() -> int:
     if platform.system() == 'Windows':
         return_code = build_windows_installer([], version, icon_file_path)
 
+    if platform.system() == 'Linux':
+        current_script_directory = get_current_folder()
+        distribution_folder = os.path.join(current_script_directory, "dist", "OpenVPCal")
+        zip_file_name = os.path.join(current_script_directory, "Output", f"OpenVPCal-{version}-Ubuntu-x86_64.zip")
+        shutil.make_archive(zip_file_name.replace('.zip', ''), 'zip', distribution_folder)
+
     print('Return code:', return_code)
     return return_code
 
@@ -341,7 +347,7 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
     )
 
     # make a zip file of the distribution_folder called OpenVPCal-{version}-x86.zip
-    zip_file_name = os.path.join(current_script_directory, "Output", f"OpenVPCal-{version}-x86.zip")
+    zip_file_name = os.path.join(current_script_directory, "Output", f"OpenVPCal-{version}-Windows-x86_64.zip")
     shutil.make_archive(zip_file_name.replace('.zip', ''), 'zip', distribution_folder)
     return return_code
 
