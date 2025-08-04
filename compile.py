@@ -323,8 +323,8 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
 
     """
     current_script_directory = get_current_folder()
+    distribution_folder = os.path.join(current_script_directory, "dist", "OpenVPCal")
     for manual_path in manual_paths:
-        distribution_folder = os.path.join(current_script_directory, "dist", "OpenVPCal")
         target_file = os.path.join(
             distribution_folder,
             os.path.basename(manual_path)
@@ -339,6 +339,10 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
         iss_file_name,
         iss_vars
     )
+
+    # make a zip file of the distribution_folder called OpenVPCal-{version}-x86.zip
+    zip_file_name = os.path.join(current_script_directory, f"OpenVPCal-{version}-x86.zip")
+    shutil.make_archive(zip_file_name.replace('.zip', ''), 'zip', distribution_folder)
     return return_code
 
 def remove_ds_store(root_dir):

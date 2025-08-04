@@ -174,33 +174,34 @@ jobs:
             git lfs fetch --include="packages/open_vp_cal/src/open_vp_cal/resources/**"
             git lfs checkout packages/open_vp_cal/src/open_vp_cal/resources/**
 
-        - name: Stamp version with build ID
+        - name: Stamp version with date and build ID
           shell: python
           run: |
             import re, os, pathlib
+            from datetime import datetime
 
-            # pick a unique build ID
+            # unique build ID (short SHA or “local”)
             build_id = os.getenv("GITHUB_SHA", "")[:8] or "local"
+            # day_month_year
+            date_str = datetime.utcnow().strftime("%d_%m_%Y")
+
             init_py = pathlib.Path("packages/open_vp_cal/src/open_vp_cal/__init__.py")
             text = init_py.read_text(encoding="utf8")
 
-            # Regex with three groups: 
-            # 1: the `__version__ = "` prefix  
-            # 2: the existing version (e.g. 2.1.0-rc.1)  
-            # 3: the closing quote  
+            # 1: prefix, 2: existing semver, 3: closing quote
             pattern = re.compile(r'(__version__\s*=\s*")([^"]+)(")')
 
-            def add_build_id(m):
+            def add_date_and_build(m):
                 prefix, version, suffix = m.group(1), m.group(2), m.group(3)
-                # append underscore + build_id
-                return f"{prefix}{version}_{build_id}{suffix}"
+                # now append _DD_MM_YYYY_BUILDID
+                return f"{prefix}{version}_{date_str}_{build_id}{suffix}"
 
-            new_text = pattern.sub(add_build_id, text)
+            new_text = pattern.sub(add_date_and_build, text)
             init_py.write_text(new_text, encoding="utf8")
 
-            # print out to confirm
+            # confirm
             ver = re.search(r'__version__\s*=\s*"([^"]+)"', new_text).group(1)
-            print(f"bumped version to: {ver}")
+            print(f"Bumped version to: {ver}")
 
         # On Windows, run build.bat via PowerShell
         - name: Run Windows build

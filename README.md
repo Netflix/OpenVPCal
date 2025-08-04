@@ -85,7 +85,7 @@ and download the pre built installer for your platform.
 
 Download the latest artifacts for the **dev** branch’s nightly build on each platform:
 
-- MacOS & Linux:
+- MacOS & Linux:  
   https://github.com/netflix/OpenVPCal/actions/artifacts  
 - Windows:  
   https://github.com/netflix/OpenVPCal/actions/artifacts
