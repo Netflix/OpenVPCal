@@ -174,18 +174,53 @@ jobs:
             git lfs fetch --include="packages/open_vp_cal/src/open_vp_cal/resources/**"
             git lfs checkout packages/open_vp_cal/src/open_vp_cal/resources/**
 
-        - name: Run nightly build script
-          shell: bash
+        - name: Stamp version with build ID
+          shell: python
           run: |
-            if [[ "${{ runner.os }}" == "Windows" ]]; then
-              build.bat
-            else
-              chmod +x build.sh
-              ./build.sh
-            fi
+            import re, os, pathlib
 
-        - name: Upload nightly build artifact
+            build_id = os.getenv("GITHUB_SHA", "")[:8] or "local"
+            init_py = pathlib.Path("packages/open_vp_cal/src/open_vp_cal/__init__.py")
+            text = init_py.read_text(encoding="utf8")
+
+            # Insert the +build_id after the existing version
+            new_text = re.sub(
+                r'(__version__\s*=\s*")[^"]+(")',
+                rf'\1{build_id}\2',
+                text,
+            )
+            init_py.write_text(new_text, encoding="utf8")
+
+        # On Windows, run build.bat via PowerShell
+        - name: Run Windows build
+          if: runner.os == 'Windows'
+          shell: pwsh
+          run: .\build.bat
+
+        # On macOS/Linux, run build.sh via Bash
+        - name: Run *nix build
+          if: runner.os != 'Windows'
+          run: |
+            chmod +x build.sh
+            ./build.sh
+
+        - name: Upload macOS nightly artifact
+          if: runner.os == 'macOS'
           uses: actions/upload-artifact@v4
           with:
-            name: nightly-${{ matrix.os }}
-            path: out/nightly-build.tar.gz
+            name: nightly-macos
+            path: 'dist/OpenVPCal-*.dmg'
+
+        - name: Upload Windows nightly artifact
+          if: runner.os == 'Windows'
+          uses: actions/upload-artifact@v4
+          with:
+            name: nightly-windows
+            path: 'out/nightly-build.zip'
+
+        - name: Upload Linux nightly artifact
+          if: runner.os == 'Linux'
+          uses: actions/upload-artifact@v4
+          with:
+            name: nightly-linux
+            path: 'out/nightly-build.tar.gz'
