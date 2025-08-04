@@ -215,12 +215,21 @@ jobs:
             chmod +x build.sh
             ./build.sh
 
+        - name: List files in dist (macOS/Linux)
+          if: runner.os != 'Windows'
+          run: |
+            echo "Files under dist/:"
+            ls -lah ./dist
+            echo ""
+            echo "Recursive listing:"
+            ls -R ./dist
+
         - name: Upload macOS nightly artifact
           if: runner.os == 'macOS'
           uses: actions/upload-artifact@v4
           with:
             name: nightly-macos
-            path: 'dist/OpenVPCal-*.dmg'
+            path: './dist/OpenVPCal-*.dmg'
 
         - name: Upload Windows nightly artifact
           if: runner.os == 'Windows'
