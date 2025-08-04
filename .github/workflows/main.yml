@@ -123,7 +123,7 @@ jobs:
           reporter: java-junit
 
   nightly_compile:
-      if: ${{ github.event_name == 'schedule' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' }}
+      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/dev' }}
       strategy:
         fail-fast: false
         matrix:
