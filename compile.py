@@ -297,7 +297,7 @@ def main() -> int:
     # Wait for the process to finish and get the return code.
     return_code = process.wait()
     if platform.system() == 'Darwin':
-        certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "")
+        certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "") or os.getenv("APPLE_SIGN_IDENTITY", "")
         if certificate_name:
             return_code = osx_sign_app_and_build_dmg(
                 app_name, certificate_name, version)

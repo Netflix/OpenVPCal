@@ -24,6 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CI: true
+      APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
 
     steps:
       - name: Checkout repository (no LFS)
@@ -227,6 +228,27 @@ jobs:
             # confirm
             ver = re.search(r'__version__\s*=\s*"([^"]+)"', new_text).group(1)
             print(f"Bumped version to: {ver}")
+
+        # 1) Create a temporary keychain and make it default
+        - name: Create & unlock keychain
+          if: runner.os == 'macOS'
+          run: |
+            security create-keychain -p "" build.keychain
+            security default-keychain -s build.keychain
+            security unlock-keychain -p "" build.keychain
+
+        # 2) Decode & import your P12 into that keychain
+        - name: Import signing certificate
+          if: runner.os == 'macOS'
+          run: |
+            echo "${{ secrets.APPLE_CERTIFICATE_P12 }}" | base64 --decode > cert.p12
+            security import cert.p12 \
+              -k ~/Library/Keychains/build.keychain \
+              -P "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" \
+              -T /usr/bin/codesign
+            security set-key-partition-list \
+              -S apple-tool:,apple: \
+              -s -k "" build.keychain
 
         # On Windows, run build.bat via PowerShell
         - name: Run Windows build
