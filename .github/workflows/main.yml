@@ -22,7 +22,15 @@ jobs:
       APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
 
     steps:
-      - name: Checkout repository (no LFS)
+      - name: Checkout code (no LFS)
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+          lfs: false
+
+      - name: Checkout code (no LFS)
+        if: ${{ github.event_name != 'schedule' }}
         uses: actions/checkout@v3
         with:
           lfs: false
@@ -135,7 +143,7 @@ jobs:
   nightly_compile:
       name: Nightly Build & Artifact Upload (${{ matrix.os }})
       needs: test
-      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/dev' }}
+      if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
       strategy:
         fail-fast: false
         matrix:
@@ -148,6 +156,14 @@ jobs:
 
       steps:
         - name: Checkout code (no LFS)
+          if: ${{ github.event_name == 'schedule' }}
+          uses: actions/checkout@v3
+          with:
+            ref: dev
+            lfs: false
+
+        - name: Checkout code (no LFS)
+          if: ${{ github.event_name != 'schedule' }}
           uses: actions/checkout@v3
           with:
             lfs: false
