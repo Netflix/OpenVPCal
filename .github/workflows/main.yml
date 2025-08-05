@@ -8,8 +8,8 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  build:
-    if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
+  test:
+    name: Unit Tests (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -19,9 +19,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CI: true
+      APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
 
     steps:
-      - name: Checkout repository (no LFS)
+      - name: Checkout code (no LFS)
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+          lfs: false
+
+      - name: Checkout code (no LFS)
+        if: ${{ github.event_name != 'schedule' }}
         uses: actions/checkout@v3
         with:
           lfs: false
@@ -46,6 +55,15 @@ jobs:
         run: |
           choco install git-lfs -y
           git lfs install --skip-smudge
+
+      # ← Cache all LFS objects between runs
+      - name: Cache Git LFS objects
+        uses: actions/cache@v3
+        with:
+          path: .git/lfs/objects
+          key: ${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
+          restore-keys: |
+            ${{ runner.os }}-git-lfs-
 
       # Fetch only the LFS objects you need
       - name: Fetch specific LFS folders (non-Windows)
@@ -123,19 +141,43 @@ jobs:
           reporter: java-junit
 
   nightly_compile:
-      if: ${{ github.event_name == 'schedule' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' }}
+      name: Nightly Build & Artifact Upload (${{ matrix.os }})
+      needs: test
+      if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
       strategy:
         fail-fast: false
         matrix:
           os: [ubuntu-latest, macos-latest, windows-latest]
 
       runs-on: ${{ matrix.os }}
+      env:
+        CI: true
+        APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
 
       steps:
         - name: Checkout code (no LFS)
+          if: ${{ github.event_name == 'schedule' }}
+          uses: actions/checkout@v3
+          with:
+            ref: dev
+            lfs: false
+
+        - name: Checkout code (no LFS)
+          if: ${{ github.event_name != 'schedule' }}
           uses: actions/checkout@v3
           with:
             lfs: false
+
+        # Common Python setup + build + test
+        - name: Set up Python 3.11
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.11'
+
+        - name: Install UV CLI
+          run: |
+            python -m pip install --upgrade pip
+            pip install uv
 
         # Install Git LFS and disable auto-smudge on each OS
         - name: Install Git LFS & disable auto-smudge (Ubuntu)
@@ -158,23 +200,111 @@ jobs:
             choco install git-lfs -y
             git lfs install --skip-smudge
 
+        # ← Cache LFS objects for nightly packaging too
+        - name: Cache Git LFS objects
+          uses: actions/cache@v3
+          with:
+            path: .git/lfs/objects
+            key: nightly-${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
+            restore-keys: |
+              nightly-${{ runner.os }}-git-lfs-
+
         - name: Fetch only needed LFS resources
           run: |
             git lfs fetch --include="packages/open_vp_cal/src/open_vp_cal/resources/**"
             git lfs checkout packages/open_vp_cal/src/open_vp_cal/resources/**
 
-        - name: Run nightly build script
-          shell: bash
+        - name: Stamp version with date and build ID
+          shell: python
           run: |
-            if [[ "${{ runner.os }}" == "Windows" ]]; then
-              build.bat
-            else
-              chmod +x build.sh
-              ./build.sh
-            fi
+            import re, os, pathlib
+            from datetime import datetime
 
-        - name: Upload nightly build artifact
-          uses: actions/upload-artifact@v3
+            build_id = os.getenv("GITHUB_SHA", "")[:8] or "local"
+            date_str = datetime.utcnow().strftime("%d_%m_%Y")
+
+            init_py = pathlib.Path("packages/open_vp_cal/src/open_vp_cal/__init__.py")
+            text = init_py.read_text(encoding="utf8")
+
+            # 1: prefix (`__version__ = "`), 2: existing version, 3: closing quote
+            pattern = re.compile(r'(__version__\s*=\s*")([^"]+)(")')
+
+            def add_date_and_build(m):
+                prefix, version, suffix = m.group(1), m.group(2), m.group(3)
+                # append +DD_MM_YYYY.BUILDID
+                return f"{prefix}{version}+{date_str}.{build_id}{suffix}"
+
+            new_text = pattern.sub(add_date_and_build, text)
+            init_py.write_text(new_text, encoding="utf8")
+
+            # confirm
+            ver = re.search(r'__version__\s*=\s*"([^"]+)"', new_text).group(1)
+            print(f"Bumped version to: {ver}")
+
+        # Create a temporary keychain and make it default
+        - name: Create & unlock keychain
+          if: runner.os == 'macOS'
+          run: |
+            security create-keychain -p "" build.keychain
+            security default-keychain -s build.keychain
+            security unlock-keychain -p "" build.keychain
+
+        # Decode & import your P12 into that keychain
+        - name: Import signing certificate
+          if: runner.os == 'macOS'
+          run: |
+            echo "${{ secrets.APPLE_CERTIFICATE_P12 }}" | base64 --decode > cert.p12
+            security import cert.p12 \
+              -k ~/Library/Keychains/build.keychain \
+              -P "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}" \
+              -T /usr/bin/codesign
+            security set-key-partition-list \
+              -S apple-tool:,apple: \
+              -s -k "" build.keychain
+
+        # On Windows, run build.bat via PowerShell
+        - name: Run Windows Build
+          if: runner.os == 'Windows'
+          shell: pwsh
+          run: .\build.bat
+
+        # On macOS/Linux, run build.sh via Bash
+        - name: Run Build
+          if: runner.os != 'Windows'
+          run: |
+            chmod +x build.sh
+            ./build.sh
+
+        - name: Upload macOS nightly artifact
+          if: runner.os == 'macOS'
+          uses: actions/upload-artifact@v4
           with:
-            name: nightly-${{ matrix.os }}
-            path: out/nightly-build.tar.gz
+            name: nightly-macos
+            path: './dist/OpenVPCal-*.dmg'
+
+        - name: Upload Windows nightly artifact - Zip
+          if: runner.os == 'Windows'
+          uses: actions/upload-artifact@v4
+          with:
+            name: nightly-windows-setup
+            path: 'Output/OpenVPCal*.exe'
+
+        - name: Upload Windows nightly artifact - Setup
+          if: runner.os == 'Windows'
+          uses: actions/upload-artifact@v4
+          with:
+            name: nightly-windows-zip
+            path: 'Output/OpenVPCal*.zip'
+
+
+        - name: Upload Linux nightly artifact
+          if: runner.os == 'Linux'
+          uses: actions/upload-artifact@v4
+          with:
+            name: nightly-linux
+            path: 'Output/OpenVPCal*.zip'
+
+        - name: Delete temporary keychain
+          if: runner.os == 'macOS'
+          run: |
+            security delete-keychain build.keychain
