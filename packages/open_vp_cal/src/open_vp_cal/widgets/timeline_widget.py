@@ -249,6 +249,12 @@ class TimelineLoader(SequenceLoader):
         SequenceLoader.__init__(self, led_wall_settings)
         self.frame_class = PixMapFrame
 
+    def reset(self):
+        """ Resets the sequence loader and clears any cached frames or results.
+        """
+        super().reset()
+        self.frame_class = PixMapFrame
+
     def _load_and_cache(self, frame):
         super()._load_and_cache(frame)
         self.cache[frame].load_pixmap()
