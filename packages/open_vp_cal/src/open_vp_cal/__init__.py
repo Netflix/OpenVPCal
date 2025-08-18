@@ -15,7 +15,7 @@ limitations under the License.
 
 Init Module defines a few module level variables
 """
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 __authors__ = [
     "Adam Davis", "Adrian Pueyo", "Carol Payne", "Francesco Luigi Giardiello", "Daniel Heckenberg"
 ]
