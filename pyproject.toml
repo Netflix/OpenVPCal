@@ -9,10 +9,10 @@ authors = [
 ]
 license-files = ["LICENSE.md"]
 dependencies = [
-    "open-vp-cal-spg @ file:///${PROJECT_ROOT}/packages/spg",
-    "open-vp-cal-spg-icvfxpatterns @ file:///${PROJECT_ROOT}/packages/spg_icvfxpatterns",
-    "open-vp-cal-stageassets @ file:///${PROJECT_ROOT}/packages/stageassets",
-    "open-vp-cal @ file:///${PROJECT_ROOT}/packages/open_vp_cal",
+    "open-vp-cal-spg",
+    "open-vp-cal-spg-icvfxpatterns", 
+    "open-vp-cal-stageassets",
+    "open-vp-cal",
     "pyinstaller>=6.12.0",
     "pytest",
     "ruff",
@@ -37,6 +37,12 @@ target-version = "py311"  # Set your Python version
 [tool.ruff.lint]
 select = ["E", "F", "W"]
 ignore = ["E501"]
+
+[tool.uv.sources]
+open-vp-cal = { path = "packages/open_vp_cal" }
+open-vp-cal-spg = { path = "packages/spg" }
+open-vp-cal-spg-icvfxpatterns = { path = "packages/spg_icvfxpatterns" }
+open-vp-cal-stageassets = { path = "packages/stageassets" }
 
 [tool.setuptools]
 packages = []
