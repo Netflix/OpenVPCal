@@ -297,7 +297,7 @@ def main() -> int:
     # Wait for the process to finish and get the return code.
     return_code = process.wait()
     if platform.system() == 'Darwin':
-        certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "")
+        certificate_name = os.getenv("CODE_SIGNING_CERTIFICATE", "") or os.getenv("APPLE_SIGN_IDENTITY", "")
         if certificate_name:
             return_code = osx_sign_app_and_build_dmg(
                 app_name, certificate_name, version)
@@ -306,6 +306,12 @@ def main() -> int:
 
     if platform.system() == 'Windows':
         return_code = build_windows_installer([], version, icon_file_path)
+
+    if platform.system() == 'Linux':
+        current_script_directory = get_current_folder()
+        distribution_folder = os.path.join(current_script_directory, "dist", "OpenVPCal")
+        zip_file_name = os.path.join(current_script_directory, "Output", f"OpenVPCal-{version}-Ubuntu-x86_64.zip")
+        shutil.make_archive(zip_file_name.replace('.zip', ''), 'zip', distribution_folder)
 
     print('Return code:', return_code)
     return return_code
@@ -323,8 +329,8 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
 
     """
     current_script_directory = get_current_folder()
+    distribution_folder = os.path.join(current_script_directory, "dist", "OpenVPCal")
     for manual_path in manual_paths:
-        distribution_folder = os.path.join(current_script_directory, "dist", "OpenVPCal")
         target_file = os.path.join(
             distribution_folder,
             os.path.basename(manual_path)
@@ -339,6 +345,10 @@ def build_windows_installer(manual_paths, version, icon_path) -> int:
         iss_file_name,
         iss_vars
     )
+
+    # make a zip file of the distribution_folder called OpenVPCal-{version}-x86.zip
+    zip_file_name = os.path.join(current_script_directory, "Output", f"OpenVPCal-{version}-Windows-x86_64.zip")
+    shutil.make_archive(zip_file_name.replace('.zip', ''), 'zip', distribution_folder)
     return return_code
 
 def remove_ds_store(root_dir):
