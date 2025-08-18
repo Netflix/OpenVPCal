@@ -3,6 +3,7 @@ name: Python CI/CD Workflow
 # Grant permission to create releases
 permissions:
   contents: write
+  checks: write
 
 on:
   push:
