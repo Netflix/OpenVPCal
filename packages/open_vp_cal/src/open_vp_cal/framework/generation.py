@@ -1113,27 +1113,32 @@ class PatchGeneration:
         )
         return output_img_buf
 
-    def write_to_disk(self, img_buf, patch_name) -> str:
-        """ Writes the given image buffer to disk using the output folder parameter name from the project settings.
+    @staticmethod
+    def base_name(led_wall: LedWallSettings) -> str:
+        led_wall_name_cleaned: str = utils.replace_non_alphanumeric(led_wall.name, "_")
+        target_gamut_cleaned: str = utils.replace_non_alphanumeric(str(led_wall.target_gamut), "_")
+        target_eotf_cleaned: str = utils.replace_non_alphanumeric(str(led_wall.target_eotf), "_")
+        return f"OpenVPCal_{led_wall_name_cleaned}_{target_gamut_cleaned}_{target_eotf_cleaned}"
+
+    @staticmethod
+    def generated_patches_dir(led_wall: LedWallSettings) -> str:
+        return os.path.join(
+            led_wall.project_settings.export_folder,
+            constants.ProjectFolders.PATCHES,
+            PatchGeneration.base_name(led_wall),
+            led_wall.project_settings.file_format.replace(".", "")
+        )
+
+    def write_to_disk(self, img_buf, patch_file_path:str) -> str:
+        """ Writes the given image buffer to disk using the specified patch file path.
 
         Parameters:
             img_buf (Oiio.ImageBuf): The image buffer to write to disk.
-            patch_name (str): The name of the patch.
+            patch_file_path (str): The path of the patch file.
         """
-        folder_path = os.path.join(
-            self.led_wall.project_settings.export_folder, constants.ProjectFolders.PATCHES)
-
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-        folder_path = os.path.join(
-            folder_path, self.base_name,
-            self.led_wall.project_settings.file_format.replace(".", "")
-        )
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-        file_path = os.path.join(folder_path, f"{patch_name}{self.led_wall.project_settings.file_format}")
+        parent_dir:str = os.path.dirname(patch_file_path)
+        if not os.path.exists(parent_dir):
+            os.makedirs(parent_dir)
 
         bit_depth = 10
         if self.led_wall.project_settings.file_format == constants.FileFormats.FF_EXR:
@@ -1150,21 +1155,20 @@ class PatchGeneration:
                 self.led_wall.project_settings.resolution_height)
 
         imaging_utils.write_image(
-            img_buf, file_path, bit_depth, channel_mapping=None)
-        return file_path
+            img_buf, patch_file_path, bit_depth, channel_mapping=None)
+        return patch_file_path
 
     def generate_patches(self, patch_names: list[constants.PATCHES]):
         """
         Generates colour squares for the given patch names, applies colour convert, and writes them to disk.
 
-        # 1. Load The OCIO Config
-        # 2. Now have a virtual colour config
-        # 3. Add a new colourspace which is just the target gamut (linear gamut rec2020)
-
-        # 4. Apply this to the macbeth chart
-        # 5. Add another colour space which has the target gamut and the transfer function (2020 pq)
-        # 6. Apply the transfer function (ST-2084_to_LINEAR) to the legal patches only
-        # 7. Apply for all things that are not EXR add, the forward colour space from 5 to everything with 3 as an input
+        1. Load The OCIO Config
+        2. Now have a virtual colour config
+        3. Add a new colourspace which is just the target gamut (linear gamut rec2020)
+        4. Apply this to the macbeth chart
+        5. Add another colour space which has the target gamut and the transfer function (2020 pq)
+        6. Apply the transfer function (ST-2084_to_LINEAR) to the legal patches only
+        7. Apply for all things that are not EXR add, the forward colour space from 5 to everything with 3 as an input
 
         Parameters:
             patch_names (list[str]): The list of patch names.
@@ -1173,10 +1177,8 @@ class PatchGeneration:
         self.calc_constants()
         ocio_config_writer = ocio_config.OcioConfigWriter(self.led_wall.project_settings.export_folder)
         self.generation_ocio_config_path = ocio_config_writer.generate_pre_calibration_ocio_config([self.led_wall])
-        led_wall_name_cleaned = utils.replace_non_alphanumeric(self.led_wall.name, "_")
-        target_gamut_cleaned = utils.replace_non_alphanumeric(str(self.led_wall.target_gamut), "_")
-        target_eotf_cleaned = utils.replace_non_alphanumeric(str(self.led_wall.target_eotf), "_")
-        self.base_name = f"OpenVPCal_{led_wall_name_cleaned}_{target_gamut_cleaned}_{target_eotf_cleaned}"
+        base_name: str = PatchGeneration.base_name(self.led_wall)
+        generated_patches_dir: str = self.generated_patches_dir(self.led_wall)
 
         count = 0
         file_paths = []
@@ -1186,9 +1188,10 @@ class PatchGeneration:
                 if self.led_wall.project_settings.file_format != constants.FileFormats.FF_EXR:
                     img_buf = self.apply_color_convert(img_buf)
                 for _ in range(self.led_wall.project_settings.frames_per_patch):
-                    file_name = f"{self.base_name}.{str(count).zfill(6)}"
+                    file_name = f"{base_name}.{str(count).zfill(6)}{self.led_wall.project_settings.file_format}"
+                    file_path = os.path.join(generated_patches_dir, file_name)
                     file_paths.append(
-                        self.write_to_disk(img_buf, str(file_name))
+                        self.write_to_disk(img_buf, file_path)
                     )
                     count += 1
         return file_paths
