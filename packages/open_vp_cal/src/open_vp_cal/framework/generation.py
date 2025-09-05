@@ -1115,6 +1115,19 @@ class PatchGeneration:
 
     @staticmethod
     def base_name(led_wall: LedWallSettings) -> str:
+        """
+        Generates a standardized base name from LED wall settings.
+
+        The base name is used for:
+        - Directory name to store generated patches
+        - File name prefix for generated patch files
+
+        Parameters:
+            led_wall (LedWallSettings): The LED wall settings to generate base name from
+
+        Returns:
+            str: Formatted base name in the format "OpenVPCal_{wall_name}_{gamut}_{eotf}"
+        """
         led_wall_name_cleaned: str = utils.replace_non_alphanumeric(led_wall.name, "_")
         target_gamut_cleaned: str = utils.replace_non_alphanumeric(str(led_wall.target_gamut), "_")
         target_eotf_cleaned: str = utils.replace_non_alphanumeric(str(led_wall.target_eotf), "_")
@@ -1122,6 +1135,18 @@ class PatchGeneration:
 
     @staticmethod
     def generated_patches_dir(led_wall: LedWallSettings) -> str:
+        """
+        Constructs the full directory path where generated patches will be stored.
+
+        The directory structure follows the pattern:
+        {export_folder}/patches/{base_name}/{file_format}/
+
+        Parameters:
+            led_wall (LedWallSettings): The LED wall settings containing project configuration
+
+        Returns:
+            str: Full path to the directory where patch files should be generated
+        """
         return os.path.join(
             led_wall.project_settings.export_folder,
             constants.ProjectFolders.PATCHES,
