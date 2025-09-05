@@ -53,3 +53,19 @@ class TestGeneration(TestBase):
 
             comparison_image = os.path.join(reference_root_folder, base_name)
             self.compare_image_files(comparison_image, file_path, self.project_settings.file_format)
+
+    def test_base_name(self):
+        """Test The Base Name of the Led Wall Settings"""
+        self.assertEqual(PatchGeneration.base_name( self.led_wall),
+                         "OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084")
+
+    def test_generated_patches_dir(self):
+        """Test The Generated Patches Directory of the Led Wall Settings"""
+        expected_generated_patches_dir = os.path.join(
+            self.led_wall.project_settings.export_folder,
+            "patches",
+            "OpenVPCal_Wall1_ITU_R_BT_2020_ST_2084",
+            "exr")
+
+        self.assertEqual(PatchGeneration.generated_patches_dir(self.led_wall),
+                         expected_generated_patches_dir)
