@@ -147,10 +147,9 @@ def get_rgb_references_for_color_checker(colour_space, illuminant=None):
     illuminant = illuminant if illuminant else colour_checker_reference.illuminant
     xyz_references = colour.xyY_to_XYZ(xyY_references)
     rgb_references = colour.XYZ_to_RGB(
-        xyz_references,
-        illuminant,
-        colour_space.whitepoint,
-        colour_space.matrix_XYZ_to_RGB,
+        XYZ=xyz_references,
+        colourspace=colour_space,
+        illuminant=illuminant
     )
     return rgb_references
 

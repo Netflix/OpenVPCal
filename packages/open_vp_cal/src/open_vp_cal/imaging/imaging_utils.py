@@ -431,12 +431,10 @@ def generate_image_cie(scale: int, file_path: str) -> bool:
                 ]["D65"]
 
                 rgb = colour.XYZ_to_RGB(
-                    XYZ,
-                    illuminant,
-                    RGB_COLOURSPACE_ACES2065_1.whitepoint,
-                    RGB_COLOURSPACE_ACES2065_1.matrix_XYZ_to_RGB,
-                    "Cat02",
-                    None,
+                    XYZ=XYZ,
+                    colourspace = RGB_COLOURSPACE_ACES2065_1,
+                    illuminant = illuminant,
+                    chromatic_adaptation_transform="CAT02"
                 )
                 # rgb = [max(0, min(1, channel)) for channel in colour.XYZ_to_sRGB(XYZ)]
                 buf.setpixel(x_pos, y_pos, (rgb[0], rgb[1], rgb[2]))
