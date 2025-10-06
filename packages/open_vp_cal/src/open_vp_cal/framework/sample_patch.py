@@ -43,18 +43,18 @@ class BaseSamplePatch:
         self.required_sample_frames = 3
         self.min_required_sample_frames = 2
 
-    def get_num_patches_relative_to_red(self, red_patch_index) -> int:
+    def get_num_patches_relative_to_red(self) -> int:
         """ Returns the number of patches relative to the red patch index, accounting
         for if the patch occurs before or after the eotf ramp patches
-
-        Args:
-            red_patch_index (int): The index of the red patch.
 
         Returns:
             int: The number of patches relative to the red patch index.
         """
-        eotf_ramp_index = constants.PATCHES.patch_index(
-            constants.PATCHES.EOTF_RAMPS)
+        red_patch_index: int = constants.PATCHES.patch_index(
+            constants.PATCHES.RED_PRIMARY_DESATURATED.value)
+
+        eotf_ramp_index: int = constants.PATCHES.patch_index(
+            constants.PATCHES.EOTF_RAMPS.value)
         patch_index = constants.PATCHES.patch_index(self.patch)
         if patch_index > eotf_ramp_index:
             return patch_index - red_patch_index + self.led_wall.num_grey_patches
@@ -141,11 +141,7 @@ class BaseSamplePatch:
         return sample_frames
 
     def calculate_first_and_last_patch_frame(self):
-        red_patch_index = constants.PATCHES.patch_index(
-            constants.PATCHES.RED_PRIMARY_DESATURATED)
-        number_of_patches_relative_to_red = self.get_num_patches_relative_to_red(
-            red_patch_index
-        )
+        number_of_patches_relative_to_red = self.get_num_patches_relative_to_red()
 
         if not self.separation_results.is_valid:
             raise OpenVPCalException("Separation results are not valid")
