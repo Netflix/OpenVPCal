@@ -350,9 +350,7 @@ def extract_screen_cs(
 
     primaries_XYZ_calibrated = colour.RGB_to_XYZ(
         calibrated_saturated_primaries_target,
-        target_cs.whitepoint,
-        target_cs.whitepoint,
-        target_cs.matrix_RGB_to_XYZ
+        target_cs
     )
 
     # White Point
@@ -369,9 +367,7 @@ def extract_screen_cs(
 
     white_point_XYZ_calibrated = colour.RGB_to_XYZ(
         calibrated_white_point_target,
-        target_cs.whitepoint,
-        target_cs.whitepoint,
-        target_cs.matrix_RGB_to_XYZ
+        target_cs
     )
     white_point_xy_calibrated = colour.XYZ_to_xy(white_point_XYZ_calibrated)
 
@@ -1162,9 +1158,7 @@ def run(
 def convert_samples_to_xyY(samples, samples_color_space):
     XYZ_eotf = colour.RGB_to_XYZ(
         samples,
-        samples_color_space.whitepoint,
-        samples_color_space.whitepoint,
-        samples_color_space.matrix_RGB_to_XYZ
+        samples_color_space
     )
     # Convert rthe XYZ_eotf to xyY values
     xyY_eotf = colour.XYZ_to_xyY(XYZ_eotf)

@@ -806,9 +806,7 @@ def convert_to_grayscale(input_image_buf, input_colour_space="sRGB") -> Oiio.Ima
 
     numpy_array_XYZ = colour.RGB_to_XYZ(
         flattened_arr,
-        input_colour_space_cs.whitepoint,
-        input_colour_space_cs.whitepoint,
-        input_colour_space_cs.matrix_RGB_to_XYZ
+        input_colour_space_cs
     )
     numpy_array_xyY = colour.XYZ_to_xyY(numpy_array_XYZ)
 
@@ -904,9 +902,7 @@ def _get_xyY_values(values: np.array, colour_space: str = "ACES2065-1") -> np.ar
     input_colour_space_cs = colour.RGB_COLOURSPACES[colour_space]
     numpy_array_XYZ = colour.RGB_to_XYZ(
         values,
-        input_colour_space_cs.whitepoint,
-        input_colour_space_cs.whitepoint,
-        input_colour_space_cs.matrix_RGB_to_XYZ
+        input_colour_space_cs
     )
 
     return colour.XYZ_to_xyY(numpy_array_XYZ)
