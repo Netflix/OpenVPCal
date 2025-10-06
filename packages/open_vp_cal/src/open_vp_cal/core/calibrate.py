@@ -341,11 +341,11 @@ def extract_screen_cs(
     )
 
     saturated_primaries_target_gamut = [
-        ca.vector_dot(reference_to_target_matrix, m) for m in saturated_primaries_input_plate_gamut
+        ca.vecmul(reference_to_target_matrix, m) for m in saturated_primaries_input_plate_gamut
     ]
 
     calibrated_saturated_primaries_target = [
-        ca.vector_dot(target_to_screen_matrix, m) for m in saturated_primaries_target_gamut
+        ca.vecmul(target_to_screen_matrix, m) for m in saturated_primaries_target_gamut
     ]
 
     primaries_XYZ_calibrated = colour.RGB_to_XYZ(
@@ -360,10 +360,10 @@ def extract_screen_cs(
         white_point_measurements, native_camera_gamut_cs, input_plate_cs, camera_conversion_cat
     )
 
-    white_point_measurements_target_gamut = ca.vector_dot(
+    white_point_measurements_target_gamut = ca.vecmul(
         reference_to_target_matrix, white_measurements_input_plate_gamut)
 
-    calibrated_white_point_target = ca.vector_dot(
+    calibrated_white_point_target = ca.vecmul(
         target_to_screen_matrix, white_point_measurements_target_gamut
     )
 
@@ -934,11 +934,11 @@ def run(
                 rgbw_measurements_camera_native_gamut, native_camera_gamut_cs, target_cs, None
             )
 
-            eotf_ramp_screen_target = [ca.vector_dot(target_to_screen_matrix, m) for m in eotf_ramp_target]
-            rgbw_measurements_target = ca.vector_dot(target_to_screen_matrix, rgbw_measurements_target)
+            eotf_ramp_screen_target = [ca.vecmul(target_to_screen_matrix, m) for m in eotf_ramp_target]
+            rgbw_measurements_target = ca.vecmul(target_to_screen_matrix, rgbw_measurements_target)
             white_balance_offset_matrix = utils.create_white_balance_matrix(rgbw_measurements_target[3])
 
-            eotf_ramp_screen_target = [ca.vector_dot(white_balance_offset_matrix, m) for m in eotf_ramp_screen_target]
+            eotf_ramp_screen_target = [ca.vecmul(white_balance_offset_matrix, m) for m in eotf_ramp_screen_target]
 
             lut_r, lut_g, lut_b = eotf_correction_calculation(
                 eotf_ramp_screen_target,
@@ -952,7 +952,7 @@ def run(
                 eotf_ramp_camera_native_gamut_calibrated, native_camera_gamut_cs, target_cs, None
             )
 
-            eotf_ramp_target_calibrated = ca.vector_dot(
+            eotf_ramp_target_calibrated = ca.vecmul(
                 target_to_screen_matrix, eotf_ramp_target_calibrated
             )
 
@@ -964,7 +964,7 @@ def run(
                 macbeth_measurements_camera_native_gamut_calibrated, native_camera_gamut_cs, target_cs, None
             )
 
-            macbeth_measurements_target_calibrated = ca.vector_dot(
+            macbeth_measurements_target_calibrated = ca.vecmul(
                 target_to_screen_matrix, macbeth_measurements_target_calibrated
             )
 
@@ -1010,7 +1010,7 @@ def run(
 
         # eotf_white_balance_matrix = utils.create_white_balance_matrix(rgbw_measurements_target[3])
         # eotf_white_balance_matrix = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-        # eotf_ramp_target = [ca.vector_dot(eotf_white_balance_matrix, m) for m in eotf_ramp_target]
+        # eotf_ramp_target = [ca.vecmul(eotf_white_balance_matrix, m) for m in eotf_ramp_target]
 
         # 1: Compute LUTs for EOTF correction
         lut_r, lut_g, lut_b, = eotf_correction_calculation(
@@ -1076,7 +1076,7 @@ def run(
 
         if calculation_order == CalculationOrder.CO_EOTF_CS:
             eotf_ramp_camera_target_calibrated = [
-                ca.vector_dot(target_to_screen_matrix, m) for m in eotf_ramp_camera_target_calibrated]
+                ca.vecmul(target_to_screen_matrix, m) for m in eotf_ramp_camera_target_calibrated]
 
         eotf_ramp_camera_native_gamut_calibrated = colour.RGB_to_RGB(
             eotf_ramp_camera_target_calibrated, target_cs, native_camera_gamut_cs, None
@@ -1192,16 +1192,16 @@ def apply_matrix_to_samples(
 
     """
 
-    eotf_ramp_camera_native_gamut = [ca.vector_dot(input_matrix, m) for m in
+    eotf_ramp_camera_native_gamut = [ca.vecmul(input_matrix, m) for m in
                                      eotf_ramp_camera_native_gamut]
-    rgbw_measurements_camera_native_gamut = ca.vector_dot(input_matrix,
+    rgbw_measurements_camera_native_gamut = ca.vecmul(input_matrix,
                                                           rgbw_measurements_camera_native_gamut)
-    macbeth_measurements_camera_native_gamut = ca.vector_dot(input_matrix,
+    macbeth_measurements_camera_native_gamut = ca.vecmul(input_matrix,
                                                              macbeth_measurements_camera_native_gamut)
 
-    grey_measurements_native_camera_gamut = ca.vector_dot(input_matrix,
+    grey_measurements_native_camera_gamut = ca.vecmul(input_matrix,
                                                           grey_measurements_native_camera_gamut)
-    max_white_camera_native_gamut = ca.vector_dot(
+    max_white_camera_native_gamut = ca.vecmul(
         input_matrix,
         max_white_camera_native_gamut)
 

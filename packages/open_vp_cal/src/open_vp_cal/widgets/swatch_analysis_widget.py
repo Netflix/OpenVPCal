@@ -280,7 +280,7 @@ class SwatchViewer(QWidget):
                             )
 
                             # Apply the white balance matrix
-                            sp_np = [ca.vector_dot(white_balance_matrix, m) for m in sp_np]
+                            sp_np = [ca.vecmul(white_balance_matrix, m) for m in sp_np]
 
                             # Convert the samples from camera native gamut to working
                             sp_np = colour.RGB_to_RGB(
