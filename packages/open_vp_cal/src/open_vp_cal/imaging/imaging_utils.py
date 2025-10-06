@@ -1023,7 +1023,8 @@ def apply_matrix_to_img_buf(
         Oiio.ImageBuf: The image buffer with the matrix applied
 
     """
-    frame_np_array = image_buf_to_np_array(image_buf)
+    # matrix is 3x3; hence, we should drop alpha channel and only use RGB channel
+    frame_np_array = image_buf_to_np_array(image_buf)[:, :, :3]
     image_reshaped = frame_np_array.reshape((-1, 3))
     white_balanced_image = image_reshaped @ matrix
     white_balanced_image = white_balanced_image.reshape(frame_np_array.shape)
