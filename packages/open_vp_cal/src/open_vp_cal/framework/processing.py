@@ -192,7 +192,7 @@ class Processing:
         # like the mac beth detection work as expected, from the framework this means
         # we now set our input_plate_gamut to reference as this is now the colour space
         # the samples are now in
-        calibration_results = calibrate.run(
+        calibration_results: calibrate.CalibrationResult = calibrate.run(
             measured_samples_in=self.led_wall.processing_results.samples,
             reference_samples_in=self.led_wall.processing_results.reference_samples,
             input_plate_gamut=self.led_wall.project_settings.reference_gamut,
@@ -262,7 +262,7 @@ class Processing:
         # like the mac beth detection work as expected, from the framework this means
         # we now set our input_plate_gamut to reference as this is now the colour space
         # the samples are now in
-        calibration_results = calibrate.run(
+        calibration_results: calibrate.CalibrationResult = calibrate.run(
             measured_samples_in=self.led_wall.processing_results.samples,
             reference_samples_in=self.led_wall.processing_results.reference_samples,
             input_plate_gamut=self.led_wall.project_settings.reference_gamut,
