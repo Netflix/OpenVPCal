@@ -21,9 +21,8 @@ from open_vp_cal.core.constants import ValidationStatus
 
 
 class CalibrationResult(TypedDict):
-    """TypedDict representing the results of the calibration process in a JSON serializable format.
-
-    All fields are optional (total=False) as different calibration modes may include different fields.
+    """
+    TypedDict representing the results of the calibration process in a JSON serializable format.
     """
 
     # Target and configuration
