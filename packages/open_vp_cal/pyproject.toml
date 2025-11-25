@@ -23,7 +23,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-open_vp_cal = { path = "src", package = false }
+open_vp_cal = { path = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
