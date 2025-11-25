@@ -409,7 +409,7 @@ class LedWallSettings:
         self._set_property(constants.LedWallSettingsKeys.SHADOW_ROLLOFF, value)
 
     @property
-    def target_gamut(self) -> constants.ColourSpace:
+    def target_gamut(self) -> constants.ColourSpace|str:
         """Returns the target colorspace
 
         Returns:
@@ -418,7 +418,7 @@ class LedWallSettings:
         return self._get_property(constants.LedWallSettingsKeys.TARGET_GAMUT)
 
     @target_gamut.setter
-    def target_gamut(self, value: constants.ColourSpace):
+    def target_gamut(self, value: constants.ColourSpace|str):
         """Set the target colorspace
 
         Args:

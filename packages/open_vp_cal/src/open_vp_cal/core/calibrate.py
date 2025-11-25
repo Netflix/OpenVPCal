@@ -28,6 +28,7 @@ from colour import RGB_Colourspace
 from open_vp_cal.core import constants
 from open_vp_cal.core.constants import Measurements, Results, CAT, EOTF, CalculationOrder
 from open_vp_cal.core import utils
+from open_vp_cal.core.structures import CalibrationResult
 from open_vp_cal.core.structures import OpenVPCalException
 
 
@@ -646,7 +647,7 @@ def run(
         avoid_clipping: bool = True,
         reference_gamut = constants.ColourSpace.CS_ACES,
         analyse: bool = True
-    ):
+    ) -> CalibrationResult:
     """ Run the entire calibration process.
 
     Args:
@@ -1111,47 +1112,46 @@ def run(
 
     # Return the results using simple, serializable types
     return {
-        Results.SCALED_AND_CONVERTED_SAMPLES: half_stop_samples_for_swatches,
-        Results.PRE_CALIBRATION_SCREEN_PRIMARIES: screen_cs.primaries.tolist(),
-        Results.PRE_CALIBRATION_SCREEN_WHITEPOINT: screen_cs.whitepoint.tolist(),
-        Results.TARGET_GAMUT: target_cs.name,
-        Results.ENABLE_PLATE_WHITE_BALANCE: enable_plate_white_balance,
-        Results.ENABLE_GAMUT_COMPRESSION: enable_gamut_compression,
-        Results.ENABLE_EOTF_CORRECTION: enable_EOTF_correction,
-        Results.CALCULATION_ORDER: calculation_order,
-        Results.WHITE_BALANCE_MATRIX: white_balance_matrix.tolist(),
-        Results.TARGET_TO_SCREEN_MATRIX: target_to_screen_matrix.tolist(),
-        Results.REFERENCE_TO_SCREEN_MATRIX: reference_to_target_matrix.tolist(),
-        Results.REFERENCE_TO_TARGET_MATRIX: reference_to_target_matrix.tolist(),
-        Results.EOTF_LUT_R: lut_r.tolist(),
-        Results.EOTF_LUT_G: lut_g.tolist(),
-        Results.EOTF_LUT_B: lut_b.tolist(),
-        Results.MAX_DISTANCES: max_distances.tolist(),
-        Results.TARGET_EOTF: target_EOTF,
-        Results.NATIVE_CAMERA_GAMUT:  native_camera_gamut if isinstance(native_camera_gamut, str)
-            else native_camera_gamut.name,
-        Results.OCIO_REFERENCE_GAMUT: ocio_reference_cs.name,
-        Results.POST_CALIBRATION_SCREEN_PRIMARIES: calibrated_screen_cs.primaries.tolist(),
-        Results.POST_CALIBRATION_SCREEN_WHITEPOINT: calibrated_screen_cs.whitepoint.tolist(),
-        Results.PRE_EOTF_RAMPS: np.array(eotf_ramp_camera_native_gamut).tolist(),
-        Results.POST_EOTF_RAMPS: np.array(eotf_ramp_camera_native_gamut_calibrated).tolist(),
-        Results.PRE_MACBETH_SAMPLES_XY: np.array(macbeth_measurements_camera_native_gamut_xy).tolist(),
-        Results.POST_MACBETH_SAMPLES_XY: np.array(macbeth_measurements_camera_native_gamut_calibrated_xy).tolist(),
-        Results.DELTA_E_RGBW: delta_e_wrgb.tolist(),
-        Results.DELTA_E_EOTF_RAMP: delta_e_eotf_ramp.tolist(),
-        Results.DELTA_E_MACBETH: delta_e_macbeth.tolist(),
-        Results.EXPOSURE_SCALING_FACTOR: exposure_scaling_factor,
-        Results.TARGET_MAX_LUM_NITS: target_max_lum_nits,
-        Results.MEASURED_18_PERCENT_SAMPLE: xyY_grey_measurement[2],
-        Results.MEASURED_MAX_LUM_NITS: measured_peak_lum_nits,
-        Results.REFERENCE_EOTF_RAMP: eotf_signal_values,
-        Results.TARGET_TO_XYZ_MATRIX: target_to_XYZ_matrix.tolist(),
-        Results.REFERENCE_TO_XYZ_MATRIX: reference_to_XYZ_matrix.tolist(),
-        Results.REFERENCE_TO_INPUT_MATRIX: reference_to_input_matrix.tolist(),
-        Results.MAX_WHITE_DELTA: max_white_delta,
-        Results.EOTF_LINEARITY: eotf_linearity,
-        Results.AVOID_CLIPPING: avoid_clipping,
-        Results.CAMERA_WHITE_BALANCE_MATRIX: camera_white_balance_matrix.tolist()
+        Results.SCALED_AND_CONVERTED_SAMPLES.value: half_stop_samples_for_swatches,
+        Results.PRE_CALIBRATION_SCREEN_PRIMARIES.value: screen_cs.primaries.tolist(),
+        Results.PRE_CALIBRATION_SCREEN_WHITEPOINT.value: screen_cs.whitepoint.tolist(),
+        Results.TARGET_GAMUT.value: target_cs.name,
+        Results.ENABLE_PLATE_WHITE_BALANCE.value: enable_plate_white_balance,
+        Results.ENABLE_GAMUT_COMPRESSION.value: enable_gamut_compression,
+        Results.ENABLE_EOTF_CORRECTION.value: enable_EOTF_correction,
+        Results.CALCULATION_ORDER.value: calculation_order,
+        Results.WHITE_BALANCE_MATRIX.value: white_balance_matrix.tolist(),
+        Results.TARGET_TO_SCREEN_MATRIX.value: target_to_screen_matrix.tolist(),
+        Results.REFERENCE_TO_SCREEN_MATRIX.value: reference_to_target_matrix.tolist(),
+        Results.REFERENCE_TO_TARGET_MATRIX.value: reference_to_target_matrix.tolist(),
+        Results.EOTF_LUT_R.value: lut_r.tolist(),
+        Results.EOTF_LUT_G.value: lut_g.tolist(),
+        Results.EOTF_LUT_B.value: lut_b.tolist(),
+        Results.MAX_DISTANCES.value: max_distances.tolist(),
+        Results.TARGET_EOTF.value: target_EOTF,
+        Results.NATIVE_CAMERA_GAMUT.value:  native_camera_gamut if isinstance(native_camera_gamut, str) else native_camera_gamut.name,
+        Results.OCIO_REFERENCE_GAMUT.value: ocio_reference_cs.name,
+        Results.POST_CALIBRATION_SCREEN_PRIMARIES.value: calibrated_screen_cs.primaries.tolist(),
+        Results.POST_CALIBRATION_SCREEN_WHITEPOINT.value: calibrated_screen_cs.whitepoint.tolist(),
+        Results.PRE_EOTF_RAMPS.value: np.array(eotf_ramp_camera_native_gamut).tolist(),
+        Results.POST_EOTF_RAMPS.value: np.array(eotf_ramp_camera_native_gamut_calibrated).tolist(),
+        Results.PRE_MACBETH_SAMPLES_XY.value: np.array(macbeth_measurements_camera_native_gamut_xy).tolist(),
+        Results.POST_MACBETH_SAMPLES_XY.value: np.array(macbeth_measurements_camera_native_gamut_calibrated_xy).tolist(),
+        Results.DELTA_E_RGBW.value: delta_e_wrgb.tolist(),
+        Results.DELTA_E_EOTF_RAMP.value: delta_e_eotf_ramp.tolist(),
+        Results.DELTA_E_MACBETH.value: delta_e_macbeth.tolist(),
+        Results.EXPOSURE_SCALING_FACTOR.value: exposure_scaling_factor,
+        Results.TARGET_MAX_LUM_NITS.value: target_max_lum_nits,
+        Results.MEASURED_18_PERCENT_SAMPLE.value: xyY_grey_measurement[2],
+        Results.MEASURED_MAX_LUM_NITS.value: measured_peak_lum_nits,
+        Results.REFERENCE_EOTF_RAMP.value: eotf_signal_values,
+        Results.TARGET_TO_XYZ_MATRIX.value: target_to_XYZ_matrix.tolist(),
+        Results.REFERENCE_TO_XYZ_MATRIX.value: reference_to_XYZ_matrix.tolist(),
+        Results.REFERENCE_TO_INPUT_MATRIX.value: reference_to_input_matrix.tolist(),
+        Results.MAX_WHITE_DELTA.value: max_white_delta,
+        Results.EOTF_LINEARITY.value: eotf_linearity,
+        Results.AVOID_CLIPPING.value: avoid_clipping,
+        Results.CAMERA_WHITE_BALANCE_MATRIX.value: camera_white_balance_matrix.tolist()
     }
 
 
