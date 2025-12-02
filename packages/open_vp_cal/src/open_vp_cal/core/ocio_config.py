@@ -188,7 +188,7 @@ class OcioConfigWriter:
         return calibration_cs_name, calibration_cs_description
 
     @staticmethod
-    def get_calibration_space_metadata(led_wall_settings: LedWallSettings) -> [str, str]:
+    def get_calibration_space_metadata(led_wall_settings: LedWallSettings) -> tuple[str, str]:
         """ Get the calibration colour space name
 
         Args:
@@ -914,8 +914,12 @@ class OcioConfigWriter:
         )
 
     def generate_pre_calibration_ocio_config(
-            self, led_walls: List[LedWallSettings],
-            output_file: str = None, base_ocio_config: str = None, preview_export_filter: bool = True) -> str:
+        self,
+        led_walls: List[LedWallSettings],
+        output_file: str | None = None,
+        base_ocio_config: str | None = None,
+        preview_export_filter: bool = True
+    ) -> str:
         """ Generate an OCIO config for pre-calibration with all the necessary colour spaces and transforms.
 
         Args:
@@ -945,8 +949,13 @@ class OcioConfigWriter:
             preview_export_filter=preview_export_filter)
 
     def generate_post_calibration_ocio_config(
-            self, led_walls: List[LedWallSettings], output_file: str = None, base_ocio_config: str = None,
-            preview_export_filter: bool = False, export_lut_for_aces_cct: bool = False) -> str:
+        self,
+        led_walls: List[LedWallSettings],
+        output_file: str | None = None,
+        base_ocio_config: str | None = None,
+        preview_export_filter: bool = False,
+        export_lut_for_aces_cct: bool = False
+    ) -> str:
         """ Generate an OCIO config for post-calibration with all the necessary colour spaces and transforms.
 
         Args:
