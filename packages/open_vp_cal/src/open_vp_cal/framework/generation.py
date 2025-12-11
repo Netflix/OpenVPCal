@@ -51,7 +51,6 @@ class PatchGeneration:
         """
         self.led_wall = led_wall
         self.patch_size = patch_size
-        self.base_name = None
         self.generation_ocio_config_path = None
 
         self.peak_lum = None
