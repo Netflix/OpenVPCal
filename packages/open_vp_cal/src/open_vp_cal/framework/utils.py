@@ -161,7 +161,11 @@ def generate_spg_patterns_for_led_walls(
         ResourceLoader.spg_pattern_basic_config()
     )
 
-def generate_patterns_for_led_walls(project_settings: 'ProjectSettings', led_walls: List['LedWallSettings']) -> str:
+def generate_patterns_for_led_walls(
+    project_settings: 'ProjectSettings',
+    led_walls: List['LedWallSettings'],
+    base_ocio_config: str|None = None,
+) -> str:
     """ For the given list of led walls filter out any walls which are verification walls, then generate the
         calibration patterns for the remaining walls.
 
@@ -180,15 +184,17 @@ def generate_patterns_for_led_walls(project_settings: 'ProjectSettings', led_wal
         patch_generator = PatchGeneration(led_wall)
         patch_generator.generate_patches(constants.PATCHES.patch_order())
 
-    _, ocio_config_path = export_pre_calibration_ocio_config(project_settings, led_walls)
+    _, ocio_config_path = export_pre_calibration_ocio_config(project_settings, led_walls, base_ocio_config)
     return ocio_config_path
 
 
 def export_pre_calibration_ocio_config(
-        project_settings: 'ProjectSettings',
-        led_walls: List['LedWallSettings']) -> tuple[OcioConfigWriter, str]:
+    project_settings: 'ProjectSettings',
+    led_walls: List['LedWallSettings'],
+    base_ocio_config: str|None = None,
+) -> tuple[OcioConfigWriter, str]:
     """ Export the pre calibration ocio config file for the given walls and project settings
 
     """
     config_writer = ocio_config.OcioConfigWriter(project_settings.export_folder)
-    return config_writer, config_writer.generate_pre_calibration_ocio_config(led_walls)
+    return config_writer, config_writer.generate_pre_calibration_ocio_config(led_walls, base_ocio_config=base_ocio_config)
