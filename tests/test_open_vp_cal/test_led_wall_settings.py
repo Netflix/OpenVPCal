@@ -658,3 +658,101 @@ class TestLedWallSettings(TestBase):
                     except Exception as e:
                         self.fail(f"Failed to load LedWallSettings from {project_settings_path}: {e}")
                     self.assertIsInstance(led_wall_settings, LedWallSettings)
+
+    def test_base_model_adjust_target_max_lum_nits_st2084(self):
+        """Test that target_max_lum_nits is clamped correctly for ST2084 (PQ) EOTF."""
+        # Test with valid value within range
+        model = LedWallSettingsBaseModel(
+            target_eotf=constants.EOTF.EOTF_ST2084,
+            target_max_lum_nits=2000
+        )
+        self.assertEqual(model.target_max_lum_nits, 2000)
+
+        # Test with value at PQ_MAX_NITS
+        model = LedWallSettingsBaseModel(
+            target_eotf=constants.EOTF.EOTF_ST2084,
+            target_max_lum_nits=constants.PQ.PQ_MAX_NITS
+        )
+        self.assertEqual(model.target_max_lum_nits, constants.PQ.PQ_MAX_NITS)
+
+    def test_base_model_adjust_target_max_lum_nits_hlg(self):
+        """Test that target_max_lum_nits is set to HLG value for HLG EOTF."""
+        # Test with HLG EOTF - should override to TARGET_MAX_LUM_NITS_HLG
+        model = LedWallSettingsBaseModel(
+            target_eotf=constants.EOTF.EOTF_HLG,
+            target_max_lum_nits=500
+        )
+        self.assertEqual(model.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_HLG)
+
+        # Test with higher value - should still be overridden
+        model = LedWallSettingsBaseModel(
+            target_eotf=constants.EOTF.EOTF_HLG,
+            target_max_lum_nits=5000
+        )
+        self.assertEqual(model.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_HLG)
+
+    def test_base_model_adjust_target_max_lum_nits_non_pq(self):
+        """Test that target_max_lum_nits is set to 100 for non-PQ EOTFs."""
+        non_pq_eotfs = [
+            constants.EOTF.EOTF_GAMMA_1_8,
+            constants.EOTF.EOTF_GAMMA_2_2,
+            constants.EOTF.EOTF_GAMMA_2_4,
+            constants.EOTF.EOTF_GAMMA_2_6,
+            constants.EOTF.EOTF_BT1886,
+            constants.EOTF.EOTF_SRGB,
+        ]
+
+        for eotf in non_pq_eotfs:
+            with self.subTest(eotf=eotf):
+                model = LedWallSettingsBaseModel(
+                    target_eotf=eotf,
+                    target_max_lum_nits=2000
+                )
+                self.assertEqual(
+                    model.target_max_lum_nits,
+                    constants.TARGET_MAX_LUM_NITS_NONE_PQ,
+                    f"Expected {constants.TARGET_MAX_LUM_NITS_NONE_PQ} for {eotf}, got {model.target_max_lum_nits}"
+                )
+
+    def test_base_model_adjust_target_max_lum_nits_default(self):
+        """Test that default values work correctly with the validator."""
+        model = LedWallSettingsBaseModel()
+        # Default EOTF is ST2084, so target_max_lum_nits should remain at default (1000)
+        self.assertEqual(model.target_eotf, constants.EOTF.EOTF_ST2084)
+        self.assertEqual(model.target_max_lum_nits, 1000)
+
+    def test_base_model_adjust_target_max_lum_nits_from_dict(self):
+        """Test that the validator works when creating model from dict."""
+        # Test with non-PQ EOTF from dict
+        data = {
+            "target_eotf": constants.EOTF.EOTF_BT1886,
+            "target_max_lum_nits": 3000
+        }
+        model = LedWallSettingsBaseModel(**data)
+        self.assertEqual(model.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
+
+        # Test with HLG from dict
+        data = {
+            "target_eotf": constants.EOTF.EOTF_HLG,
+            "target_max_lum_nits": 500
+        }
+        model = LedWallSettingsBaseModel(**data)
+        self.assertEqual(model.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_HLG)
+
+        # Test with ST2084 from dict
+        data = {
+            "target_eotf": constants.EOTF.EOTF_ST2084,
+            "target_max_lum_nits": 2000
+        }
+        model = LedWallSettingsBaseModel(**data)
+        self.assertEqual(model.target_max_lum_nits, 2000)
+
+    def test_base_model_adjust_target_max_lum_nits_from_json(self):
+        """Test that the validator works when loading from JSON."""
+        json_data = {
+            "target_eotf": constants.EOTF.EOTF_GAMMA_2_2,
+            "target_max_lum_nits": 5000
+        }
+        json_str = json.dumps(json_data)
+        model = LedWallSettingsBaseModel.model_validate_json(json_str)
+        self.assertEqual(model.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)

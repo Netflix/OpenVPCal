@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 from typing import List, Union, Any
 from typing import TYPE_CHECKING
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.structures import ProcessingResults
@@ -83,6 +83,18 @@ class LedWallSettingsBaseModel(BaseModel):
             bottom_left:List[int] = [left, bottom]
             return [top_left, top_right, bottom_right, bottom_left]
         return value
+
+    @model_validator(mode='after')
+    def adjust_target_max_lum_nits(self):
+        """Adjust target_max_lum_nits based on target_eotf after all fields are set."""
+        if self.target_eotf == constants.EOTF.EOTF_HLG:
+            self.target_max_lum_nits = constants.TARGET_MAX_LUM_NITS_HLG
+        elif self.target_eotf != constants.EOTF.EOTF_ST2084:
+            self.target_max_lum_nits = constants.TARGET_MAX_LUM_NITS_NONE_PQ
+        else:
+            # For ST2084 (PQ), clamp to max allowed
+            self.target_max_lum_nits = min(self.target_max_lum_nits, int(constants.PQ.PQ_MAX_NITS.value))
+        return self
 
 
 class LedWallSettings:
