@@ -84,7 +84,6 @@ class LedWallSettingsBaseModel(BaseModel):
             return [top_left, top_right, bottom_right, bottom_left]
         return value
 
-    @model_validator(mode='after')
     def adjust_target_max_lum_nits(self):
         """Adjust target_max_lum_nits based on target_eotf after all fields are set."""
         if self.target_eotf == constants.EOTF.EOTF_HLG:
@@ -96,6 +95,9 @@ class LedWallSettingsBaseModel(BaseModel):
             self.target_max_lum_nits = min(self.target_max_lum_nits, int(constants.PQ.PQ_MAX_NITS.value))
         return self
 
+    @model_validator(mode='after')
+    def post_validate_update(self):
+        return self.adjust_target_max_lum_nits()
 
 class LedWallSettings:
     """A class to handle led wall settings."""
