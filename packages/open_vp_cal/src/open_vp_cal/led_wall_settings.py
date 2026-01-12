@@ -21,6 +21,7 @@ import json
 from typing import List, Union, Any, Optional
 from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field, field_validator, PrivateAttr, ConfigDict
+from pydantic.json_schema import SkipJsonSchema
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.structures import ProcessingResults
@@ -81,11 +82,11 @@ class LedWallSettings(BaseModel):
     verification_wall: str = Field(default="")
 
     # ===== Runtime Fields (excluded from serialization) =====
-    processing_results: ProcessingResults = Field(
+    processing_results: SkipJsonSchema[ProcessingResults] = Field(
         default_factory=ProcessingResults,
         exclude=True
     )
-    separation_results: Optional[SeparationResults] = Field(
+    separation_results: SkipJsonSchema[Optional[SeparationResults]] = Field(
         default=None,
         exclude=True
     )
