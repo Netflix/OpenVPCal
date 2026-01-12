@@ -174,6 +174,33 @@ class LedWallSettingsKeys(StrEnum):
         """ Returns the list of all Enum values"""
         return [member.value for member in LedWallSettingsKeys]
 
+
+# Properties that are linked between a wall and its verification wall.
+# When set on the parent wall, these propagate to the verification wall.
+# When accessed on a verification wall, these read from the parent wall.
+LINKED_LED_WALL_PROPERTIES: frozenset[str] = frozenset({
+    LedWallSettingsKeys.AVOID_CLIPPING,
+    LedWallSettingsKeys.ENABLE_EOTF_CORRECTION,
+    LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION,
+    LedWallSettingsKeys.AUTO_WB_SOURCE,
+    LedWallSettingsKeys.CALCULATION_ORDER,
+    LedWallSettingsKeys.PRIMARIES_SATURATION,
+    LedWallSettingsKeys.INPUT_PLATE_GAMUT,
+    LedWallSettingsKeys.NATIVE_CAMERA_GAMUT,
+    LedWallSettingsKeys.NUM_GREY_PATCHES,
+    LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT,
+    LedWallSettingsKeys.SHADOW_ROLLOFF,
+    LedWallSettingsKeys.TARGET_GAMUT,
+    LedWallSettingsKeys.TARGET_EOTF,
+    LedWallSettingsKeys.TARGET_MAX_LUM_NITS,
+    LedWallSettingsKeys.TARGET_TO_SCREEN_CAT,
+    LedWallSettingsKeys.MATCH_REFERENCE_WALL,
+    LedWallSettingsKeys.REFERENCE_WALL,
+    LedWallSettingsKeys.USE_WHITE_POINT_OFFSET,
+    LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE,
+})
+
+
 class PATCHES(StrEnum):
     """ Constants to define the names of the patches we use for the calibration, and a small helper function to get the
     order of the patches

@@ -35,8 +35,8 @@ class LedWallTimelineLoader(LedWallSettings):
 
     A specialization of the LedWallSettings which allows us to override the sequence loader class
     """
-    def __init__(self, project_settings: ProjectSettings, name="Wall1"):
-        super().__init__(project_settings, name)
+    def __init__(self, project_settings: ProjectSettings = None, name: str = "Wall1", **data):
+        super().__init__(project_settings, name=name, **data)
         self._sequence_loader_class = TimelineLoader
 
 

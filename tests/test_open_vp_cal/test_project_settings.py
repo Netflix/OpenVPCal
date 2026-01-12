@@ -22,7 +22,7 @@ from pathlib import Path
 
 import open_vp_cal
 from open_vp_cal.led_wall_settings import LedWallSettings
-from open_vp_cal.project_settings import ProjectSettings, ProjectSettingsBaseModel
+from open_vp_cal.project_settings import ProjectSettings
 from open_vp_cal.core import constants, utils
 from test_utils import TestBase
 from test_led_wall_settings import upgrade_legacy_roi
@@ -141,7 +141,8 @@ class TestProjectSettings(TestBase):
         """Test that all fields in the model are covered by our test sample."""
         test_settings_keys = list(self.test_settings[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS].keys())
         test_settings_keys.sort()
-        model_keys = list(ProjectSettingsBaseModel.model_fields.keys())
+        # Get model fields but exclude openvp_cal_version (handled at outer level)
+        model_keys = [k for k in ProjectSettings.model_fields.keys() if k != 'openvp_cal_version']
         model_keys.sort()
         self.assertEqual(test_settings_keys, model_keys)
 
@@ -149,18 +150,21 @@ class TestProjectSettings(TestBase):
         """Test that ProjectSettingsKeys should reflect all fields in the model."""
         constants_all = constants.ProjectSettingsKeys.all().copy()
         constants_all.sort()
-        model_keys = list(ProjectSettingsBaseModel.model_fields.keys())
+        # Get model fields but exclude openvp_cal_version (handled separately)
+        model_keys = [k for k in ProjectSettings.model_fields.keys() if k != 'openvp_cal_version']
         model_keys.sort()
         self.assertEqual(constants_all, model_keys, "ProjectSettingsKeys should reflect all fields in the model. Add new keys to ProjectSettingsKeys.")
 
     def test_default_values(self):
         """Test for refactoring - check the number of legacy fields is the same as the number of fields in the new model."""
         # We can remove this test once we add more fields to the new model in future.
-        self.assertEqual(len(self.legacy_default), len(ProjectSettingsBaseModel.model_fields))
+        # Note: ProjectSettings now includes openvp_cal_version, so we exclude it from count
+        model_fields_count = len([k for k in ProjectSettings.model_fields.keys() if k != 'openvp_cal_version'])
+        self.assertEqual(len(self.legacy_default), model_fields_count)
 
         # Test for refactoring - check the default values are the same as the legacy default values
         # We can remove this test once we update the default values in future.
-        new_settings = ProjectSettingsBaseModel()
+        new_settings = ProjectSettings()
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.CONTENT_MAX_LUM], new_settings.content_max_lum)
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.FILE_FORMAT], new_settings.file_format)
         self.assertEqual(self.legacy_default[constants.ProjectSettingsKeys.RESOLUTION_WIDTH], new_settings.resolution_width)
@@ -290,12 +294,12 @@ class TestProjectSettings(TestBase):
 
     def test_try_convert_to_enum_frame_rates(self):
         """Test try_convert_to_enum_frame_rates function."""
-        self.assertNotEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(23.99), constants.FrameRates.FPS_24)
-        self.assertNotEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(23.998), constants.FrameRates.FPS_24)
-        self.assertEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(23.999), constants.FrameRates.FPS_24)
-        self.assertEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(24.000), constants.FrameRates.FPS_24)
-        self.assertEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(24.001), constants.FrameRates.FPS_24)
-        self.assertNotEqual(ProjectSettingsBaseModel.try_convert_to_enum_frame_rates(24.002), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettings.try_convert_to_enum_frame_rates(23.99), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettings.try_convert_to_enum_frame_rates(23.998), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettings.try_convert_to_enum_frame_rates(23.999), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettings.try_convert_to_enum_frame_rates(24.000), constants.FrameRates.FPS_24)
+        self.assertEqual(ProjectSettings.try_convert_to_enum_frame_rates(24.001), constants.FrameRates.FPS_24)
+        self.assertNotEqual(ProjectSettings.try_convert_to_enum_frame_rates(24.002), constants.FrameRates.FPS_24)
 
     def test_export_lut_for_aces_cct(self):
         """Test export_lut_for_aces_cct field."""
@@ -323,23 +327,25 @@ class TestProjectSettings(TestBase):
 
     def test_clear_project_settings(self):
         self.project_settings.clear_project_settings()
-        settings_default = ProjectSettingsBaseModel().model_dump()
+        settings_default = ProjectSettings().model_dump()[constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS]
         for key in constants.ProjectSettingsKeys:
             if key == constants.ProjectSettingsKeys.PROJECT_ID:
                 continue
             self.assertEqual(getattr(self.project_settings, key), settings_default[key])
 
     def test_set_get_input_sequence_folder(self):
-        """Test setting and getting input sequence folder."""
+        """Test setting and getting input sequence folder on a wall."""
         test_value = "/new/path/"
-        self.settings.input_sequence_folder = test_value
-        self.assertEqual(self.settings.input_sequence_folder, test_value)
+        wall = self.settings.add_led_wall("TestWall")
+        wall.input_sequence_folder = test_value
+        self.assertEqual(wall.input_sequence_folder, test_value)
 
-    def test_set_get_input_sequence_input_transform(self):
-        """Test setting and getting input sequence input transform."""
-        test_value = "ACES2065-1"
-        self.settings.input_sequence_input_transform = test_value
-        self.assertEqual(self.settings.input_sequence_input_transform, test_value)
+    def test_set_get_input_plate_gamut(self):
+        """Test setting and getting input plate gamut on a wall."""
+        test_value = constants.ColourSpace.CS_ACES
+        wall = self.settings.add_led_wall("TestWall")
+        wall.input_plate_gamut = test_value
+        self.assertEqual(wall.input_plate_gamut, test_value)
 
     def test_set_get_ocio_config_path(self):
         """Test setting and getting OCIO config path."""
@@ -348,16 +354,18 @@ class TestProjectSettings(TestBase):
         self.assertEqual(self.settings.ocio_config_path, test_value)
 
     def test_set_get_primaries_saturation(self):
-        """Test setting and getting primaries saturation."""
+        """Test setting and getting primaries saturation on a wall."""
         test_value = 0.8
-        self.settings.primaries_saturation = test_value
-        self.assertEqual(self.settings.primaries_saturation, test_value)
+        wall = self.settings.add_led_wall("TestWall")
+        wall.primaries_saturation = test_value
+        self.assertEqual(wall.primaries_saturation, test_value)
 
     def test_set_get_num_grey_patches(self):
-        """Test setting and getting the num_grey_patches"""
+        """Test setting and getting the num_grey_patches on a wall."""
         test_value = 10
-        self.settings.num_grey_patches = test_value
-        self.assertEqual(self.settings.num_grey_patches, test_value)
+        wall = self.settings.add_led_wall("TestWall")
+        wall.num_grey_patches = test_value
+        self.assertEqual(wall.num_grey_patches, test_value)
 
     def test_from_json(self):
         """Test creating a ProjectSettings object from a JSON file and saving it back."""
@@ -377,7 +385,8 @@ class TestProjectSettings(TestBase):
         self.assertEqual(len(test_led_walls), len(loaded_led_walls))
         for test_led_wall, loaded_led_wall in zip(test_led_walls, loaded_led_walls):
             for test_key in constants.LedWallSettingsKeys:
-                self.assertEqual(test_led_wall[test_key], getattr(loaded_led_wall._led_settings, test_key))
+                # Access fields directly on the led wall (it's now a pydantic model)
+                self.assertEqual(test_led_wall[test_key], getattr(loaded_led_wall, test_key))
             for loaded_led_wall in loaded_led_walls:
                 self.assertIsInstance(loaded_led_wall, LedWallSettings)
 

@@ -18,9 +18,9 @@ setting
 """
 from __future__ import annotations
 import json
-from typing import List, Union, Any
+from typing import List, Union, Any, Optional
 from typing import TYPE_CHECKING
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, PrivateAttr, ConfigDict
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.structures import ProcessingResults
@@ -31,8 +31,15 @@ if TYPE_CHECKING:
     from open_vp_cal.project_settings import ProjectSettings
 
 
-class LedWallSettingsBaseModel(BaseModel):
-    """Base model for LedWallSettings with typing."""
+class LedWallSettings(BaseModel):
+    """A pydantic model class to handle led wall settings with serialization and business logic."""
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=True,
+    )
+
+    # ===== Serialized Fields (from former LedWallSettingsBaseModel) =====
     name: str = Field(default="Wall1")
     avoid_clipping: bool = Field(default=False)
     enable_eotf_correction: bool = Field(default=True)
@@ -41,15 +48,30 @@ class LedWallSettingsBaseModel(BaseModel):
     input_sequence_folder: str = Field(default="")
     num_grey_patches: int = Field(default=30, ge=0, le=100)
     primaries_saturation: float = Field(default=0.7, ge=0, le=1)
-    calculation_order: constants.CalculationOrder = Field(default=constants.CalculationOrder(constants.CalculationOrder.default()))
-    input_plate_gamut: constants.ColourSpace|str = Field(default=constants.ColourSpace(constants.ColourSpace.default_ref()))
-    native_camera_gamut: constants.CameraColourSpace|str = Field(default=constants.CameraColourSpace(constants.CameraColourSpace.default()))
-    reference_to_target_cat: constants.CAT = Field(default=constants.CAT(constants.CAT.CAT_BRADFORD))
-    roi: List[List[int]] = Field(default=[], description="roi is consist of 4 points [[tl.x,tl.y],[tr.x,tr.y],[br.x,br.y],[bl.x,bl.y]]")
+    calculation_order: constants.CalculationOrder = Field(
+        default=constants.CalculationOrder(constants.CalculationOrder.default())
+    )
+    input_plate_gamut: constants.ColourSpace | str = Field(
+        default=constants.ColourSpace(constants.ColourSpace.default_ref())
+    )
+    native_camera_gamut: constants.CameraColourSpace | str = Field(
+        default=constants.CameraColourSpace(constants.CameraColourSpace.default())
+    )
+    reference_to_target_cat: constants.CAT = Field(
+        default=constants.CAT(constants.CAT.CAT_BRADFORD)
+    )
+    roi: List[List[int]] = Field(
+        default=[],
+        description="roi is consist of 4 points [[tl.x,tl.y],[tr.x,tr.y],[br.x,br.y],[bl.x,bl.y]]"
+    )
     shadow_rolloff: float = Field(default=0.008)
     target_max_lum_nits: int = Field(default=1000, ge=0, le=constants.PQ.PQ_MAX_NITS)
-    target_gamut: constants.LedColourSpace|str = Field(default=constants.LedColourSpace(constants.LedColourSpace.default_target()))
-    target_eotf: constants.EOTF = Field(default=constants.EOTF(constants.EOTF.default()))
+    target_gamut: constants.LedColourSpace | str = Field(
+        default=constants.LedColourSpace(constants.LedColourSpace.default_target())
+    )
+    target_eotf: constants.EOTF = Field(
+        default=constants.EOTF(constants.EOTF.default())
+    )
     target_to_screen_cat: constants.CAT = Field(default=constants.CAT.CAT_NONE)
     match_reference_wall: bool = Field(default=False)
     reference_wall: str = Field(default="")
@@ -57,6 +79,21 @@ class LedWallSettingsBaseModel(BaseModel):
     use_white_point_offset: bool = Field(default=False)
     is_verification_wall: bool = Field(default=False)
     verification_wall: str = Field(default="")
+
+    # ===== Runtime Fields (excluded from serialization) =====
+    processing_results: ProcessingResults = Field(
+        default_factory=ProcessingResults,
+        exclude=True
+    )
+    separation_results: Optional[SeparationResults] = Field(
+        default=None,
+        exclude=True
+    )
+
+    # ===== Private Attributes (not in schema at all) =====
+    _sequence_loader: Optional[SequenceLoader] = PrivateAttr(default=None)
+    _sequence_loader_class: type = PrivateAttr(default=SequenceLoader)
+    _project_settings: Optional["ProjectSettings"] = PrivateAttr(default=None)
 
     @field_validator(
         "roi",
@@ -77,29 +114,211 @@ class LedWallSettingsBaseModel(BaseModel):
         """
         if isinstance(value, list) and len(value) == 4 and all(isinstance(e, int) for e in value):
             left, right, top, bottom = value
-            top_left:List[int] = [left, top]
-            top_right:List[int] = [right, top]
-            bottom_right:List[int] = [right, bottom]
-            bottom_left:List[int] = [left, bottom]
+            top_left: List[int] = [left, top]
+            top_right: List[int] = [right, top]
+            bottom_right: List[int] = [right, bottom]
+            bottom_left: List[int] = [left, bottom]
             return [top_left, top_right, bottom_right, bottom_left]
         return value
 
+    def __init__(self, project_settings: Optional["ProjectSettings"] = None, **data):
+        """Initialize a LedWallSettings object.
 
-class LedWallSettings:
-    """A class to handle led wall settings."""
-    def __init__(self, project_settings: ProjectSettings, name="Wall1"):
-        """Initialize an empty LedWallSettings object."""
-        self.processing_results:ProcessingResults = ProcessingResults()
-        self.separation_results:SeparationResults|None = None
-        self.project_settings = project_settings
-
+        Args:
+            project_settings: The project this LED wall belongs to
+            **data: Field values to initialize
+        """
+        super().__init__(**data)
+        self._project_settings = project_settings
         self._sequence_loader = None
         self._sequence_loader_class = SequenceLoader
-        self._led_settings = LedWallSettingsBaseModel(name=name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Custom setattr to handle verification wall linking and validation.
+
+        For linked properties:
+        - Verification walls cannot modify these (changes are ignored)
+        - Parent walls propagate changes to their verification wall
+
+        For reference_wall and verification_wall:
+        - Validates the wall exists and isn't itself
+
+        For target_eotf:
+        - Sets target_max_lum_nits appropriately for non-PQ EOTFs
+        """
+        # Handle reference_wall validation
+        if name == 'reference_wall':
+            value = self._validate_reference_wall(value)
+
+        # Handle verification_wall validation
+        if name == 'verification_wall':
+            value = self._validate_verification_wall(value)
+
+        # Handle target_eotf - set target_max_lum_nits for non-PQ EOTFs
+        if name == 'target_eotf' and value != constants.EOTF.EOTF_ST2084:
+            # For non-PQ EOTFs, set the appropriate max lum
+            if value == constants.EOTF.EOTF_HLG:
+                max_lum = constants.TARGET_MAX_LUM_NITS_HLG
+            else:
+                max_lum = constants.TARGET_MAX_LUM_NITS_NONE_PQ
+            # Set target_max_lum_nits after setting target_eotf
+            super().__setattr__(name, value)
+            self.target_max_lum_nits = max_lum
+            return
+
+        # Handle target_max_lum_nits - enforce limits based on current EOTF
+        if name == 'target_max_lum_nits':
+            current_eotf = getattr(self, 'target_eotf', constants.EOTF.EOTF_ST2084)
+            if current_eotf != constants.EOTF.EOTF_ST2084:
+                # For non-PQ EOTFs, override the value
+                if current_eotf == constants.EOTF.EOTF_HLG:
+                    value = constants.TARGET_MAX_LUM_NITS_HLG
+                else:
+                    value = constants.TARGET_MAX_LUM_NITS_NONE_PQ
+
+        # Check if this is a linked property and we're a verification wall
+        if name in constants.LINKED_LED_WALL_PROPERTIES:
+            # Verification walls can't modify linked properties directly
+            if getattr(self, 'is_verification_wall', False):
+                return
+            # Set the value on self
+            super().__setattr__(name, value)
+            # Propagate to verification wall if it exists
+            verification_wall = self.verification_wall_as_wall
+            if verification_wall is not None:
+                # Use object.__setattr__ to bypass the verification wall's blocking logic
+                object.__setattr__(verification_wall, name, value)
+        else:
+            super().__setattr__(name, value)
+
+    def _validate_reference_wall(self, value: Any) -> str:
+        """Validate and normalize reference_wall value."""
+        if not value:
+            return ""
+
+        ref_wall_name = value.name if isinstance(value, LedWallSettings) else str(value)
+
+        # Can't set reference wall to itself
+        if ref_wall_name == getattr(self, 'name', ''):
+            raise ValueError("Cannot set the reference wall to be the same as the current wall")
+
+        # Verify the wall exists in the project (if we have a project_settings reference)
+        project = getattr(self, '_project_settings', None)
+        if project is not None:
+            # This will raise ValueError if the wall doesn't exist
+            led_wall = project.get_led_wall(ref_wall_name)
+            return led_wall.name
+
+        return ref_wall_name
+
+    def _validate_verification_wall(self, value: Any) -> str:
+        """Validate and normalize verification_wall value."""
+        if not value:
+            return ""
+
+        wall_name = value.name if isinstance(value, LedWallSettings) else str(value)
+
+        # Can't set verification wall to itself
+        if wall_name == getattr(self, 'name', ''):
+            raise ValueError("Cannot set the verification wall to be the same as the current wall")
+
+        return wall_name
+
+    def __getattribute__(self, name: str) -> Any:
+        """Custom getattribute to handle verification wall linking.
+
+        For linked properties, verification walls read from their parent wall.
+        If the parent wall was removed (verification_wall=""), fall back to local values.
+        """
+        # For non-linked properties, just use normal attribute access
+        if name not in constants.LINKED_LED_WALL_PROPERTIES:
+            return super().__getattribute__(name)
+
+        # For linked properties, check if this is a verification wall
+        try:
+            is_verification = object.__getattribute__(self, '__dict__').get('is_verification_wall', False)
+        except (AttributeError, KeyError):
+            # Model might not be fully initialized yet
+            return super().__getattribute__(name)
+
+        if not is_verification:
+            return super().__getattribute__(name)
+
+        # This is a verification wall - get value from parent
+        try:
+            project_settings = object.__getattribute__(self, '__pydantic_private__').get('_project_settings')
+            verification_wall_name = object.__getattribute__(self, '__dict__').get('verification_wall', '')
+        except (AttributeError, KeyError, TypeError):
+            return super().__getattribute__(name)
+
+        # If parent wall was removed (verification_wall=""), fall back to local value
+        if not verification_wall_name:
+            return super().__getattribute__(name)
+
+        if project_settings is not None:
+            try:
+                parent_wall = project_settings.get_led_wall(verification_wall_name)
+                if parent_wall is not None:
+                    return getattr(parent_wall, name)
+            except ValueError:
+                # Parent wall was removed, fall back to local value
+                return super().__getattribute__(name)
+
+        raise ValueError("The Wall is a verification wall, but the parent wall was removed")
+
+    @property
+    def project_settings(self) -> Optional["ProjectSettings"]:
+        """The project settings this wall belongs to."""
+        return self._project_settings
+
+    @project_settings.setter
+    def project_settings(self, value: "ProjectSettings") -> None:
+        """Set the project settings reference."""
+        self._project_settings = value
+
+    @property
+    def verification_wall_as_wall(self) -> Union["LedWallSettings", None]:
+        """Get the led wall which this wall is linked to for verifying the calibration.
+
+        Returns:
+            LedWallSettings: The LED wall this wall is linked to for verifying the calibration
+        """
+        wall_name = object.__getattribute__(self, 'verification_wall')
+        if wall_name and self._project_settings is not None:
+            try:
+                return self._project_settings.get_led_wall(wall_name)
+            except ValueError:
+                return None
+        return None
+
+    @property
+    def reference_wall_as_wall(self) -> Union["LedWallSettings", None]:
+        """Get the reference wall we want to use as the external white point.
+
+        Returns:
+            LedWallSettings: The LED wall we want to use as the reference wall
+        """
+        wall_name = self.reference_wall
+        if wall_name and self._project_settings is not None:
+            try:
+                return self._project_settings.get_led_wall(wall_name)
+            except ValueError:
+                return None
+        return None
 
     def reset_defaults(self):
         """Reset the LedWallSettings object to its default values."""
-        self._led_settings = LedWallSettingsBaseModel(name=self._led_settings.name)
+        name = self.name
+        defaults = LedWallSettings(project_settings=self._project_settings, name=name)
+
+        # Set target_eotf first to ensure correct target_max_lum_nits behavior
+        if 'target_eotf' in LedWallSettings.model_fields:
+            setattr(self, 'target_eotf', getattr(defaults, 'target_eotf'))
+
+        # Copy all field values except name and target_eotf (already set)
+        for field_name in LedWallSettings.model_fields:
+            if field_name not in ('name', 'target_eotf'):
+                setattr(self, field_name, getattr(defaults, field_name))
 
     def clear(self):
         """Clears the roi, processing and separation results. So that we can start fresh with
@@ -109,562 +328,14 @@ class LedWallSettings:
         self.roi = []
 
     def clear_led_settings(self):
-        """
-        Clear the LED settings and restore them to the defaults
-        """
-        self._led_settings = LedWallSettingsBaseModel(name=self.name)
-
-    def _set_property(self, field_name: constants.LedWallSettingsKeys, value: Any) -> None:
-        """ Sets the internal property data stores for the given field name, and given value.
-            If the led wall is a verification wall, it will not set the verification wall's settings
-            If the led wall has a verification wall, it will also set the value on the verification wall
-
-        Args:
-            field_name: The name of the property to set in the data store
-            value: The value we want to set the property to
-        """
-        if self.is_verification_wall:
-            return
-
-        setattr(self._led_settings, field_name, value)
-
-        if not self.verification_wall_as_wall:
-            return
-        setattr(self.verification_wall_as_wall._led_settings, field_name, value)
-
-    def _get_property(self, field_name: constants.LedWallSettingsKeys) -> Any:
-        """ Gets the internal property data stores for the given field name, and given value.
-            This is used when its important for verification walls to refer to their parent wall for settings which should be joined
-
-            Fields which are not hard linked such as name, should directly access internally via their own property
-
-        Args:
-            field_name: The name of the property to set in the data store
-        """
-        if not self.is_verification_wall:
-            return getattr(self._led_settings, field_name)
-
-        wall = self.verification_wall_as_wall
-        if wall is not None:
-            return getattr(wall._led_settings, field_name)
-
-        raise ValueError("The Wall is a verification wall, but the parent wall was removed")
-
-    @property
-    def name(self) -> str:
-        """The name of the LED wall
-
-        Returns:
-            str: A list of custom primaries and a custom name for led wall we are calibrating
-        """
-        return self._led_settings.name
-
-    @name.setter
-    def name(self, value: str):
-        """ Sets the name of the LED wall
-
-        Args:
-            value (str): The name of the LED wall
-        """
-        self._led_settings.name = value
-
-    @property
-    def avoid_clipping(self) -> bool:
-        """ Whether we want to avoid clipping by the LED wall.
-        Ensures that we scale the results of the calibrations down to ensure that any values pushed above the actual
-        peak are scaled back
-
-        Returns:
-            bool: Whether we want to avoid clipping or not
-        """
-        return self._get_property(constants.LedWallSettingsKeys.AVOID_CLIPPING)
-
-    @avoid_clipping.setter
-    def avoid_clipping(self, value: bool):
-        """ Set whether we want to avoid clipping on the LED wall or not
-
-        Args:
-            value (bool): Whether we want to avoid clipping on the LED wall or not
-        """
-        self._set_property(constants.LedWallSettingsKeys.AVOID_CLIPPING, value)
-
-    @property
-    def enable_eotf_correction(self) -> bool:
-        """Whether enable eotf correction is enabled or disabled
-
-        Returns:
-            bool: Whether eotf correction is enabled or disabled
-        """
-        return self._get_property(constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION)
-
-    @enable_eotf_correction.setter
-    def enable_eotf_correction(self, value: bool):
-        """Set the eotf correction to be enabled or disabled
-
-        Args:
-            value (bool): Whether eotf correction is enabled or disabled
-        """
-        self._set_property(constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION, value)
-
-    @property
-    def enable_gamut_compression(self) -> bool:
-        """Whether enable gamut compression is enabled or disabled
-
-        Returns:
-            bool: Whether enable gamut compression is enabled or disabled
-        """
-        return self._get_property(constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION)
-
-    @enable_gamut_compression.setter
-    def enable_gamut_compression(self, value: bool):
-        """Set the gamut compression to be enabled or disabled
-
-        Args:
-            value (bool): Whether enable gamut compression is enabled or disabled
-        """
-        self._set_property(constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION, value)
-
-    @property
-    def auto_wb_source(self) -> bool:
-        """Whether auto-white-balance is enabled or disabled
-
-        Returns:
-            bool: Whether auto white balance is enabled or disabled
-        """
-        return self._get_property(constants.LedWallSettingsKeys.AUTO_WB_SOURCE)
-
-    @auto_wb_source.setter
-    def auto_wb_source(self, value: bool):
-        """Set the auto white balance to be enabled or disabled
-
-        Args:
-            value (bool): Whether auto white balance is enabled or disabled
-        """
-        self._set_property(constants.LedWallSettingsKeys.AUTO_WB_SOURCE, value)
-
-    @property
-    def input_sequence_folder(self) -> str:
-        """ Return the input sequence folder.
-
-        Verification walls have to have unique input sequence folders, so we access the led_settings directly
-
-        Returns:
-            str: The input sequence folder.
-        """
-        return self._led_settings.input_sequence_folder
-
-    @input_sequence_folder.setter
-    def input_sequence_folder(self, value: str):
-        """Set the input sequence folder. We do not set this on the verification wall as this needs to be unique
-
-        Args:
-            value (str): The input sequence folder.
-        """
-        self._led_settings.input_sequence_folder = value
-
-    @property
-    def calculation_order(self) -> constants.CalculationOrder:
-        """Return the Calculation Order
-
-        Returns:
-            constants.CalculationOrder: The calculation order of the calculations
-        """
-        return self._get_property(constants.LedWallSettingsKeys.CALCULATION_ORDER)
-
-    @calculation_order.setter
-    def calculation_order(self, value: str):
-        """Set the Calculation Order
-
-        Args:
-            value (constants.CalculationOrder): The calculation order of the calculations
-        """
-        self._set_property(constants.LedWallSettingsKeys.CALCULATION_ORDER, value)
-
-    @property
-    def primaries_saturation(self) -> float:
-        """Return the primaries' saturation.
-
-        Returns:
-            float: The primaries saturation.
-        """
-        return self._get_property(constants.LedWallSettingsKeys.PRIMARIES_SATURATION)
-
-    @primaries_saturation.setter
-    def primaries_saturation(self, value: float):
-        """Set the primaries' saturation.
-
-        Args:
-            value (float): The primaries saturation.
-        """
-        self._set_property(constants.LedWallSettingsKeys.PRIMARIES_SATURATION, value)
-
-    @property
-    def input_plate_gamut(self) -> constants.ColourSpace:
-        """Returns the input colorspace of the plate
-
-        Returns:
-            constants.ColourSpace: The input colorspace of the plate
-        """
-        return self._get_property(constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT)
-
-    @input_plate_gamut.setter
-    def input_plate_gamut(self, value: constants.ColourSpace):
-        """Set the reference colorspace of the plate
-
-        Args:
-            value (constants.ColourSpace): The colour space we want to set the input too for the plate
-        """
-        self._set_property(constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT, value)
-
-    @property
-    def native_camera_gamut(self) -> constants.CameraColourSpace:
-        """Returns the native colorspace of the camera the plate was shot with originally
-
-        Returns:
-            constants.ColourSpace: The native colorspace of the camera the plate was shot with originally
-        """
-        return self._get_property(constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT)
-
-    @native_camera_gamut.setter
-    def native_camera_gamut(self, value: constants.CameraColourSpace):
-        """Set the native colorspace of the camera the plate was shot with originally
-
-        Args:
-            value (constants.CameraColourSpace): The native colorspace of the camera the plate was shot with originally
-        """
-        self._set_property(constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT, value)
-
-    @property
-    def num_grey_patches(self) -> int:
-        """Return the num_grey_patches.
-
-        Returns:
-            int: The number of grey patches used to ramp the number of nits
-        """
-        return self._get_property(constants.LedWallSettingsKeys.NUM_GREY_PATCHES)
-
-    @num_grey_patches.setter
-    def num_grey_patches(self, value: int):
-        """Set the num_grey_patches.
-
-        Args:
-            value (int): The number of grey patches used to ramp the number of nits
-        """
-        self._set_property(constants.LedWallSettingsKeys.NUM_GREY_PATCHES, value)
-
-    @property
-    def reference_to_target_cat(self) -> constants.CAT:
-        """Returns the reference to target cat
-
-        Returns:
-            constants.ColourSpace: The reference to target cat
-        """
-        return self._get_property(constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT)
-
-    @reference_to_target_cat.setter
-    def reference_to_target_cat(self, value: constants.CAT):
-        """Set the reference to target cat
-
-        Args:
-            value (constants.CAT): The reference to a target cat
-        """
-        self._set_property(constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT, value)
-
-    @property
-    def roi(self) -> List[List[int]]:
-        """Return the region of interest (ROI).
-
-        Verification walls have to have unique ROI, so we access the led_settings directly
-
-        Returns:
-            Any: The region of interest (ROI).
-        """
-        return self._led_settings.roi
-
-    @roi.setter
-    def roi(self, value: List[List[int]]):
-        """ Set the region of interest (ROI). We do not set this on the verification wall as this needs to be unique
-
-        Args:
-            value (Any): The region of interest (ROI).
-        """
-        self._led_settings.roi = value
-
-    @property
-    def shadow_rolloff(self) -> float:
-        """Returns the shadow rolloff
-
-        Returns:
-            float: The shadow rolloff
-        """
-        return self._get_property(constants.LedWallSettingsKeys.SHADOW_ROLLOFF)
-
-    @shadow_rolloff.setter
-    def shadow_rolloff(self, value: float):
-        """Set the shadow rolloff
-
-        Args:
-            value (float): the shadow rolloff
-        """
-        self._set_property(constants.LedWallSettingsKeys.SHADOW_ROLLOFF, value)
-
-    @property
-    def target_gamut(self) -> constants.ColourSpace|str:
-        """Returns the target colorspace
-
-        Returns:
-            constants.ColourSpace: The target colorspace
-        """
-        return self._get_property(constants.LedWallSettingsKeys.TARGET_GAMUT)
-
-    @target_gamut.setter
-    def target_gamut(self, value: constants.ColourSpace|str):
-        """Set the target colorspace
-
-        Args:
-            value (constants.ColourSpace): the colour space we want to set the target as
-        """
-        self._set_property(constants.LedWallSettingsKeys.TARGET_GAMUT, value)
-
-    @property
-    def target_eotf(self) -> constants.EOTF:
-        """Returns the target eotf
-
-        Returns:
-            constants.EOTF: The target eotf
-        """
-        return self._get_property(constants.LedWallSettingsKeys.TARGET_EOTF)
-
-    @target_eotf.setter
-    def target_eotf(self, value: constants.EOTF):
-        """Set the target eotf, which also forces the target max lum to be 100, if not using PQ.
-
-        Args:
-            value (constants.EOTF): the eotf for the target
-        """
-        target_max_lum_nits = (
-            constants.TARGET_MAX_LUM_NITS_HLG if value == constants.EOTF.EOTF_HLG
-            else constants.TARGET_MAX_LUM_NITS_NONE_PQ if value != constants.EOTF.EOTF_ST2084
-            else None
-        )
-
-        self._set_property(constants.LedWallSettingsKeys.TARGET_EOTF, value)
-        if target_max_lum_nits is not None:
-            self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS,
-                               target_max_lum_nits)
-
-    @property
-    def target_max_lum_nits(self) -> int:
-        """Return the target max luminance in nits.
-
-        Returns:
-            int: target max luminance in nits.
-        """
-        return self._get_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS)
-
-    @target_max_lum_nits.setter
-    def target_max_lum_nits(self, value: int):
-        """ Set the target max luminance in nits, unless you are using an eotf which is not PQ, in which case
-           we force 100 nits, aka 1.0
-
-        Args:
-            value (int): target max luminance in nits.
-        """
-        if self.target_eotf != constants.EOTF.EOTF_ST2084:
-            value = constants.TARGET_MAX_LUM_NITS_NONE_PQ
-
-        if  self.target_eotf == constants.EOTF.EOTF_HLG:
-            value = constants.TARGET_MAX_LUM_NITS_HLG
-
-        self._set_property(constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS, value)
-
-    @property
-    def target_to_screen_cat(self) -> constants.CAT:
-        """Returns the target screen cat
-
-        Returns:z
-            constants.CAT: The target screen cat
-        """
-        return self._get_property(constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT)
-
-    @target_to_screen_cat.setter
-    def target_to_screen_cat(self, value: constants.CAT):
-        """Set the target screen cat
-
-        Args:
-            value (constants.CAT): the target screen cat
-        """
-        self._set_property(constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT, value)
-
-    @property
-    def match_reference_wall(self) -> bool:
-        """ Whether we are using an external white point from a reference LED wall or not
-
-        Returns:
-            bool: Gets whether we want to use an external white point from a reference LED or not
-        """
-        return self._get_property(constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL)
-
-    @match_reference_wall.setter
-    def match_reference_wall(self, value: bool):
-        """ Set whether we are using an external white point from a reference LED wall or not
-
-        Args:
-            value (bool): Whether to use the external white point from a reference LED or not
-        """
-        self._set_property(constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL, value)
-
-    @property
-    def reference_wall(self) -> str:
-        """ Get the reference wall we want to use as the external white point
-
-        Returns:
-            str: The name of the led wall we want to use as the reference wall
-        """
-        return self._led_settings.reference_wall
-
-    @reference_wall.setter
-    def reference_wall(self, value: Union[LedWallSettings, str]):
-        """ Set the reference wall we want to use as the external white point
-
-        Args:
-            value: The LED wall we want to set as the reference wall
-        """
-        if not value:
-            # Changed behaviour so we fall back to the default value
-            self._led_settings.reference_wall = ""
-            return
-
-        ref_wall_name:str = value.name if isinstance(value, LedWallSettings) else value
-        if ref_wall_name == self.name:
-            raise ValueError("Cannot set the reference wall to be the same as the current wall")
-
-        # We get the led wall to make sure it exists and is added to the project
-        # raise <ValueError> if the wall does not exist
-        led_wall = self.project_settings.get_led_wall(ref_wall_name)
-        self._set_property(constants.LedWallSettingsKeys.REFERENCE_WALL, led_wall.name)
-
-    @property
-    def reference_wall_as_wall(self) -> Union[LedWallSettings, None]:
-        """ Get the reference wall we want to use as the external white point
-
-        Returns:
-            LedWallSettings: The LED wall we want to use as the reference wall
-        """
-        wall_name = self.reference_wall
-        if wall_name:
-            return self.project_settings.get_led_wall(wall_name)
-        return None
-
-    @property
-    def use_white_point_offset(self) -> bool:
-        """ Whether we are using a white point offset for the LED wall or not
-
-        Returns:
-            bool: Gets whether we want to use a white point offset or not
-        """
-        return self._get_property(constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET)
-
-    @use_white_point_offset.setter
-    def use_white_point_offset(self, value: bool):
-        """ Set whether we are using a white point offset or not
-
-        Args:
-            value (bool): Whether to use the external white point or not
-        """
-        self._set_property(constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET, value)
-
-    @property
-    def white_point_offset_source(self) -> str:
-        """ The source which contains an image sample from which we want to calculate the white point offset from
-
-        Returns:
-            str: The filepath which contains the image we want to sample to calculate the white point offset from
-        """
-        return self._get_property(constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE)
-
-    @white_point_offset_source.setter
-    def white_point_offset_source(self, value: str):
-        """ Set the source which contains an image sample from which we want to calculate the white point offset from
-
-        Args:
-            value (str): The filepath which contains the image we want to sample to calculate the white point offset from
-        """
-        self._set_property(constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE, value)
-
-    @property
-    def verification_wall(self) -> str:
-        """ Get the name of the led wall which this wall is linked to for verifying the calibration
-
-        Returns:
-            str: The name of the led wall which this wall linked for verification
-        """
-        return self._led_settings.verification_wall
-
-    @property
-    def verification_wall_as_wall(self) -> Union[LedWallSettings, None]:
-        """ Get the led wall which this wall is linked to for verifying the calibration
-
-        Returns:
-            LedWallSettings: The LED wall this wall is linked to for verifying the calibration
-        """
-        wall_name = self.verification_wall
-        if wall_name:
-            return self.project_settings.get_led_wall(wall_name)
-        return None
-
-    @verification_wall.setter
-    def verification_wall(self, value: Union[LedWallSettings, str]):
-        """ Set the led wall which this wall is linked to verify the calibration.
-            We do not directly set this on the verification wall as this needs to be a bidirectional link
-            We leave the setting of this value to the api call within project settings to establish this link
-
-        Args:
-            value: The LED wall which this instance is intended to verify
-        """
-        if not value:
-            # Changed behaviour so we fall back to the default value
-            self._led_settings.verification_wall = ""
-            return
-
-        ver_wall_name = value.name if isinstance(value, LedWallSettings) else value
-        if ver_wall_name == self.name:
-            raise ValueError("Cannot set the verification wall to be the same as the current wall")
-
-        # We get the led wall to make sure it exists and is added to the project
-        # raise <ValueError> if the wall does not exist
-        led_wall = self.project_settings.get_led_wall(ver_wall_name)
-        self._led_settings.verification_wall = led_wall.name
-
-    @property
-    def is_verification_wall(self) -> bool:
-        """ Whether this wall is a verification wall which should take settings from the linked wall,
-        or if this is the original wall which should be dictating the settings to the linked wall
-
-        Returns:
-            bool: Whether this wall is a verification wall or not
-        """
-        return self._led_settings.is_verification_wall
-
-    @is_verification_wall.setter
-    def is_verification_wall(self, value: bool) -> None:
-        """ Set whether this wall is a verification wall which should take settings from the linked wall,
-            or if this is the original wall which should be dictating the settings to the linked wall
-
-            We do not set this on the verification wall directly, as this needs to be unique we leave this
-            to the project settings api to establish the correct values
-
-        Args:
-            value: Whether this wall is to be set as a Verification wall or not
-        """
-        self._led_settings.is_verification_wall = value
+        """Clear the LED settings and restore them to the defaults."""
+        self.reset_defaults()
 
     def has_valid_white_balance_options(self) -> bool:
-        """ Checks whether the white balance options are valid or not, we can only have one of these options
+        """Checks whether the white balance options are valid or not, we can only have one of these options
             set at anyone time
 
         Returns: True or False depending on whether the white balance options are valid or not
-
         """
         values = [self.auto_wb_source, self.match_reference_wall, self.use_white_point_offset].count(True)
         if values > 1:
@@ -672,12 +343,12 @@ class LedWallSettings:
         return True
 
     @classmethod
-    def from_json_file(cls, project_settings: ProjectSettings, json_file: str):
+    def from_json_file(cls, project_settings: "ProjectSettings", json_file: str) -> "LedWallSettings":
         """Create a LedWallSettings object from a JSON file.
 
         Args:
-            project_settings (ProjectSettings): The project we want the LED wall to belong to
-            json_file (str): The path to the JSON file.
+            project_settings: The project we want the LED wall to belong to
+            json_file: The path to the JSON file.
 
         Returns:
             LedWallSettings: A LedWallSettings object.
@@ -686,8 +357,8 @@ class LedWallSettings:
         return cls._from_json_data(project_settings, json_data)
 
     @classmethod
-    def from_json_string(cls, project_settings: ProjectSettings, json_string: str):
-        """ Creates a LedWallSettings object from a JSON string.
+    def from_json_string(cls, project_settings: "ProjectSettings", json_string: str) -> "LedWallSettings":
+        """Creates a LedWallSettings object from a JSON string.
 
         Args:
             project_settings: The project we want the LED wall to belong to
@@ -695,48 +366,47 @@ class LedWallSettings:
 
         Returns: A LedWallSettings object.
         """
-        instance = cls(project_settings)
-        instance._led_settings = LedWallSettingsBaseModel.model_validate_json(json_string)
+        instance = cls.model_validate_json(json_string)
+        instance._project_settings = project_settings
         return instance
 
     @classmethod
-    def _from_json_data(cls, project_settings, json_data):
-        instance = cls(project_settings)
-        instance._led_settings = LedWallSettingsBaseModel.model_validate(json_data)
+    def _from_json_data(cls, project_settings: "ProjectSettings", json_data: dict) -> "LedWallSettings":
+        """Create a LedWallSettings from a dictionary."""
+        instance = cls.model_validate(json_data)
+        instance._project_settings = project_settings
         return instance
 
     @classmethod
-    def from_dict(cls, project_settings: ProjectSettings, input_dict: dict) -> LedWallSettings:
-        """ Creates a LedWallSettings object from a dictionary.
+    def from_dict(cls, project_settings: "ProjectSettings", input_dict: dict) -> "LedWallSettings":
+        """Creates a LedWallSettings object from a dictionary.
 
         Args:
-            project_settings:
-            input_dict:
+            project_settings: The project we want the LED wall to belong to
+            input_dict: The dictionary with settings
 
         Returns:
             LedWallSettings
         """
-        instance = cls(project_settings)
-        instance._led_settings = LedWallSettingsBaseModel.model_validate(input_dict)
+        instance = cls.model_validate(input_dict)
+        instance._project_settings = project_settings
         return instance
 
     def to_dict(self) -> dict:
-        """ Returns a dictionary representation of the LedWallSettings object.
+        """Returns a dictionary representation of the LedWallSettings object.
 
         Returns: A dictionary representation of the LedWallSettings object.
-
         """
-        return self._led_settings.model_dump()
+        return self.model_dump()
 
     @classmethod
-    def _settings_from_json_file(cls, json_file) -> dict:
-        """ Returns the project settings from a JSON file.
+    def _settings_from_json_file(cls, json_file: str) -> dict:
+        """Returns the project settings from a JSON file.
 
         Args:
             json_file: The path to the JSON file.
 
         Returns: The project settings from a JSON file
-
         """
         with open(json_file, 'r', encoding='utf-8') as file:
             data = json.load(file)
@@ -746,14 +416,14 @@ class LedWallSettings:
         """Save the LedWallSettings object to a JSON file.
 
         Args:
-            json_file (str): The path to the JSON file.
+            json_file: The path to the JSON file.
         """
         with open(json_file, 'w', encoding='utf-8') as file:
-            file.write(self._led_settings.model_dump_json(indent=4))
+            file.write(self.model_dump_json(indent=4))
 
     @property
-    def sequence_loader(self):
-        """Returns the sequence loader for the LED wall"""
+    def sequence_loader(self) -> SequenceLoader:
+        """Returns the sequence loader for the LED wall."""
         if not self._sequence_loader:
             self._sequence_loader = self._sequence_loader_class(self)
         return self._sequence_loader

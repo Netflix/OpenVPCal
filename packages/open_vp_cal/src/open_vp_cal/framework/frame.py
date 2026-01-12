@@ -21,7 +21,7 @@ from open_vp_cal.imaging import imaging_utils
 
 if TYPE_CHECKING:
     from OpenImageIO import ImageBuf
-    from open_vp_cal.project_settings import ProjectSettings
+    from open_vp_cal.led_wall_settings import LedWallSettings
 
 
 class Frame:
@@ -29,14 +29,14 @@ class Frame:
     A class to represent a single frame of an image sequence.
     """
 
-    def __init__(self, project_settings: "ProjectSettings"):
+    def __init__(self, led_wall_settings: "LedWallSettings"):
         """
         Initializes a Frame instance with frame number, file name, and image buffer set to None.
         """
         self._frame_num = None
         self._file_name = None
         self._image_buf = None
-        self._project_settings = project_settings
+        self._led_wall_settings = led_wall_settings
 
     @property
     def frame_num(self) -> int:

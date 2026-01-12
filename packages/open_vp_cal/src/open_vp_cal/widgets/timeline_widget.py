@@ -39,8 +39,8 @@ class PixMapFrame(Frame):
     """
     A Frame which holds a QPixmap instead of an ImageBuf
     """
-    def __init__(self, project_settings: ProjectSettingsModel):
-        super().__init__(project_settings)
+    def __init__(self, led_wall_settings: LedWallSettings):
+        super().__init__(led_wall_settings)
         self._pixmap = None
 
     @property
@@ -59,7 +59,8 @@ class PixMapFrame(Frame):
         """ Load the pixmap from the image buffer if it does not exist
         """
         if not self._pixmap:
-            self._pixmap = load_image_buffer_to_qpixmap(self._image_buf, self._project_settings)
+            self._pixmap = load_image_buffer_to_qpixmap(
+                self._image_buf, self._led_wall_settings.input_plate_gamut)
 
     def clear_pixmap(self) -> None:
         """ Clears the pixmap

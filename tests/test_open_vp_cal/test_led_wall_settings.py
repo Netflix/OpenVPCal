@@ -18,7 +18,8 @@ import os
 import json
 from typing import List
 from open_vp_cal.framework.identify_separation import SeparationResults
-from open_vp_cal.led_wall_settings import LedWallSettings, LedWallSettingsBaseModel, ProcessingResults
+from open_vp_cal.led_wall_settings import LedWallSettings
+from open_vp_cal.core.structures import ProcessingResults
 from open_vp_cal.core import constants
 
 from test_utils import TestBase
@@ -112,49 +113,55 @@ class TestLedWallSettings(TestBase):
 
     def test_default_values(self):
         # Test for refactoring
-        # Check the number of legacy fields is the same as the number of fields in the new model
+        # Check the number of legacy fields is the same as the number of serialized fields in the new model
         # We can remove this test once we add more fields to the new model in future.
-        self.assertEqual(len(self.legacy_default), len(LedWallSettingsBaseModel.model_fields))
+        # Note: model_fields includes runtime fields (processing_results, separation_results) which are excluded
+        serialized_fields = {k: v for k, v in LedWallSettings.model_fields.items()
+                            if not v.json_schema_extra or not v.json_schema_extra.get('exclude', False)}
+        serialized_fields = {k: v for k, v in LedWallSettings.model_fields.items()
+                            if k not in ('processing_results', 'separation_results')}
+        self.assertEqual(len(self.legacy_default), len(serialized_fields))
 
         # Test for refactoring
         # Check the default values are the same as the legacy default values
         # We can remove this test once we update the default values in future.
         newWall: LedWallSettings = LedWallSettings(self.project_settings)
-        new_default_values = newWall._led_settings
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.NAME], new_default_values.name)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.AVOID_CLIPPING], new_default_values.avoid_clipping)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION], new_default_values.enable_eotf_correction)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION], new_default_values.enable_gamut_compression)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.AUTO_WB_SOURCE], new_default_values.auto_wb_source)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER], new_default_values.input_sequence_folder)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.NUM_GREY_PATCHES], new_default_values.num_grey_patches)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.PRIMARIES_SATURATION], new_default_values.primaries_saturation)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.CALCULATION_ORDER], new_default_values.calculation_order)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT], new_default_values.input_plate_gamut)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT], new_default_values.native_camera_gamut)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT], new_default_values.reference_to_target_cat)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.ROI], new_default_values.roi)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.SHADOW_ROLLOFF], new_default_values.shadow_rolloff)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS], new_default_values.target_max_lum_nits)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_GAMUT], new_default_values.target_gamut)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_EOTF], new_default_values.target_eotf)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT], new_default_values.target_to_screen_cat)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL], new_default_values.match_reference_wall)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.REFERENCE_WALL], new_default_values.reference_wall)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET], new_default_values.use_white_point_offset)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE], new_default_values.white_point_offset_source)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.IS_VERIFICATION_WALL], new_default_values.is_verification_wall)
-        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.VERIFICATION_WALL], new_default_values.verification_wall)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.NAME], newWall.name)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.AVOID_CLIPPING], newWall.avoid_clipping)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION], newWall.enable_eotf_correction)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION], newWall.enable_gamut_compression)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.AUTO_WB_SOURCE], newWall.auto_wb_source)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.INPUT_SEQUENCE_FOLDER], newWall.input_sequence_folder)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.NUM_GREY_PATCHES], newWall.num_grey_patches)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.PRIMARIES_SATURATION], newWall.primaries_saturation)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.CALCULATION_ORDER], newWall.calculation_order)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT], newWall.input_plate_gamut)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT], newWall.native_camera_gamut)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT], newWall.reference_to_target_cat)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.ROI], newWall.roi)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.SHADOW_ROLLOFF], newWall.shadow_rolloff)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS], newWall.target_max_lum_nits)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_GAMUT], newWall.target_gamut)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_EOTF], newWall.target_eotf)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT], newWall.target_to_screen_cat)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL], newWall.match_reference_wall)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.REFERENCE_WALL], newWall.reference_wall)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET], newWall.use_white_point_offset)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE], newWall.white_point_offset_source)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.IS_VERIFICATION_WALL], newWall.is_verification_wall)
+        self.assertEqual(self.legacy_default[constants.LedWallSettingsKeys.VERIFICATION_WALL], newWall.verification_wall)
 
     def test_reset_defaults(self):
         self.wall.use_white_point_offset = True
         self.assertEqual(self.wall.use_white_point_offset, True)
-        self.assertEqual(self.wall._led_settings.use_white_point_offset, True)
 
         self.wall.reset_defaults()
         self.assertEqual(self.wall.use_white_point_offset, False)
-        self.assertEqual(self.wall._led_settings.use_white_point_offset, False)
-        self.assertEqual(self.wall._led_settings, LedWallSettingsBaseModel(name=self.wall.name))
+        # Check that all fields match defaults except name
+        defaults = LedWallSettings(self.project_settings, name=self.wall.name)
+        for field in LedWallSettings.model_fields:
+            if field not in ('processing_results', 'separation_results'):
+                self.assertEqual(getattr(self.wall, field), getattr(defaults, field))
 
     def test_clear(self):
         self.wall.roi = upgrade_legacy_roi([1, 2, 3, 4])
@@ -162,14 +169,16 @@ class TestLedWallSettings(TestBase):
         self.wall.separation_results = SeparationResults()
         self.wall.clear()
         self.assertEqual(self.wall.roi, [])
-        self.assertEqual(self.wall._led_settings.roi, [])
         self.assertEqual(self.wall.processing_results.__dict__, ProcessingResults().__dict__)
         self.assertIsNone(self.wall.separation_results)
 
     def test_clear_led_settings(self):
         self.wall.target_eotf = constants.EOTF.EOTF_SRGB
         self.wall.clear_led_settings()
-        self.assertEqual(self.wall._led_settings, LedWallSettingsBaseModel(name=self.wall.name))
+        defaults = LedWallSettings(self.project_settings, name=self.wall.name)
+        for field in LedWallSettings.model_fields:
+            if field not in ('processing_results', 'separation_results'):
+                self.assertEqual(getattr(self.wall, field), getattr(defaults, field))
 
     def test_fields_all_included_in_test(self):
         sample_keys = list(self.sample.keys())
@@ -179,117 +188,121 @@ class TestLedWallSettings(TestBase):
         constants_all.sort()
         self.assertEqual(sample_keys, constants_all)
 
-        default_keys = list(LedWallSettingsBaseModel.model_fields.keys())
-        default_keys.sort()
-        self.assertEqual(sample_keys, default_keys)
+        # Only check serialized fields (exclude runtime fields)
+        serialized_fields = [k for k in LedWallSettings.model_fields.keys()
+                            if k not in ('processing_results', 'separation_results')]
+        serialized_fields.sort()
+        self.assertEqual(sample_keys, serialized_fields)
 
     def test_led_wall_settings_keys(self):
         constants_all = constants.LedWallSettingsKeys.all().copy()
         constants_all.sort()
-        led_settings_keys = list(LedWallSettingsBaseModel.model_fields.keys())
+        # Only check serialized fields (exclude runtime fields)
+        led_settings_keys = [k for k in LedWallSettings.model_fields.keys()
+                            if k not in ('processing_results', 'separation_results')]
         led_settings_keys.sort()
         self.assertEqual(constants_all, led_settings_keys, "LedWallSettingsKeys should reflect all fields in the model. Add new keys to LedWallSettingsKeys.")
 
     def test_initialization(self):
         self.assertEqual(self.wall.name, "TestWall")
-        self.assertEqual(self.wall._led_settings.name, "TestWall")
-        self.assertEqual(self.wall._led_settings.avoid_clipping, False)
-        self.assertEqual(self.wall._led_settings.enable_eotf_correction, True)
-        self.assertEqual(self.wall._led_settings.enable_gamut_compression, True)
-        self.assertEqual(self.wall._led_settings.auto_wb_source, False)
-        self.assertEqual(self.wall._led_settings.input_sequence_folder, "")
-        self.assertEqual(self.wall._led_settings.num_grey_patches, 30)
-        self.assertEqual(self.wall._led_settings.primaries_saturation, 0.7)
-        self.assertEqual(self.wall._led_settings.calculation_order, constants.CalculationOrder(constants.CalculationOrder.default()))
-        self.assertEqual(self.wall._led_settings.input_plate_gamut, constants.ColourSpace(constants.ColourSpace.default_ref()))
-        self.assertEqual(self.wall._led_settings.native_camera_gamut, constants.CameraColourSpace(constants.CameraColourSpace.default()))
-        self.assertEqual(self.wall._led_settings.reference_to_target_cat, constants.CAT(constants.CAT.CAT_BRADFORD))
-        self.assertEqual(self.wall._led_settings.roi, [])
-        self.assertEqual(self.wall._led_settings.shadow_rolloff, 0.008)
-        self.assertEqual(self.wall._led_settings.target_max_lum_nits, 1000)
-        self.assertEqual(self.wall._led_settings.target_gamut, constants.LedColourSpace(constants.LedColourSpace.default_target()))
-        self.assertEqual(self.wall._led_settings.target_eotf, constants.EOTF(constants.EOTF.default()))
-        self.assertEqual(self.wall._led_settings.target_to_screen_cat, constants.CAT.CAT_NONE)
-        self.assertEqual(self.wall._led_settings.match_reference_wall, False)
-        self.assertEqual(self.wall._led_settings.reference_wall, "")
-        self.assertEqual(self.wall._led_settings.white_point_offset_source, "")
-        self.assertEqual(self.wall._led_settings.use_white_point_offset, False)
-        self.assertEqual(self.wall._led_settings.is_verification_wall, False)
-        self.assertEqual(self.wall._led_settings.verification_wall, "")
+        self.assertEqual(self.wall.name, "TestWall")
+        self.assertEqual(self.wall.avoid_clipping, False)
+        self.assertEqual(self.wall.enable_eotf_correction, True)
+        self.assertEqual(self.wall.enable_gamut_compression, True)
+        self.assertEqual(self.wall.auto_wb_source, False)
+        self.assertEqual(self.wall.input_sequence_folder, "")
+        self.assertEqual(self.wall.num_grey_patches, 30)
+        self.assertEqual(self.wall.primaries_saturation, 0.7)
+        self.assertEqual(self.wall.calculation_order, constants.CalculationOrder(constants.CalculationOrder.default()))
+        self.assertEqual(self.wall.input_plate_gamut, constants.ColourSpace(constants.ColourSpace.default_ref()))
+        self.assertEqual(self.wall.native_camera_gamut, constants.CameraColourSpace(constants.CameraColourSpace.default()))
+        self.assertEqual(self.wall.reference_to_target_cat, constants.CAT(constants.CAT.CAT_BRADFORD))
+        self.assertEqual(self.wall.roi, [])
+        self.assertEqual(self.wall.shadow_rolloff, 0.008)
+        self.assertEqual(self.wall.target_max_lum_nits, 1000)
+        self.assertEqual(self.wall.target_gamut, constants.LedColourSpace(constants.LedColourSpace.default_target()))
+        self.assertEqual(self.wall.target_eotf, constants.EOTF(constants.EOTF.default()))
+        self.assertEqual(self.wall.target_to_screen_cat, constants.CAT.CAT_NONE)
+        self.assertEqual(self.wall.match_reference_wall, False)
+        self.assertEqual(self.wall.reference_wall, "")
+        self.assertEqual(self.wall.white_point_offset_source, "")
+        self.assertEqual(self.wall.use_white_point_offset, False)
+        self.assertEqual(self.wall.is_verification_wall, False)
+        self.assertEqual(self.wall.verification_wall, "")
 
     def test_name(self):
         self.wall.name = "NewName"
         self.assertEqual(self.wall.name, "NewName")
-        self.assertEqual(self.wall._led_settings.name, "NewName")
+        self.assertEqual(self.wall.name, "NewName")
 
     def test_avoid_clipping(self):
         self.wall.avoid_clipping = True
         self.assertEqual(self.wall.avoid_clipping, True)
-        self.assertEqual(self.wall._led_settings.avoid_clipping, True)
+        self.assertEqual(self.wall.avoid_clipping, True)
 
     # <test_custom_primaries> is removed
 
     def test_enable_eotf_correction(self):
         self.wall.enable_eotf_correction = False
         self.assertEqual(self.wall.enable_eotf_correction, False)
-        self.assertEqual(self.wall._led_settings.enable_eotf_correction, False)
+        self.assertEqual(self.wall.enable_eotf_correction, False)
 
     def test_enable_gamut_compression(self):
         self.wall.enable_gamut_compression = False
         self.assertEqual(self.wall.enable_gamut_compression, False)
-        self.assertEqual(self.wall._led_settings.enable_gamut_compression, False)
+        self.assertEqual(self.wall.enable_gamut_compression, False)
 
     def test_auto_wb_source(self):
         self.wall.auto_wb_source = False
         self.assertEqual(self.wall.auto_wb_source, False)
-        self.assertEqual(self.wall._led_settings.auto_wb_source, False)
+        self.assertEqual(self.wall.auto_wb_source, False)
 
     def test_input_sequence_folder(self):
         self.wall.input_sequence_folder = "/new/path"
         self.assertEqual(self.wall.input_sequence_folder, "/new/path")
-        self.assertEqual(self.wall._led_settings.input_sequence_folder, "/new/path")
+        self.assertEqual(self.wall.input_sequence_folder, "/new/path")
 
     def test_calculation_order(self):
         self.wall.calculation_order = constants.CalculationOrder.CO_EOTF_CS
         self.assertEqual(self.wall.calculation_order, constants.CalculationOrder.CO_EOTF_CS)
-        self.assertEqual(self.wall._led_settings.calculation_order, constants.CalculationOrder.CO_EOTF_CS)
+        self.assertEqual(self.wall.calculation_order, constants.CalculationOrder.CO_EOTF_CS)
 
     def test_primaries_saturation(self):
         self.wall.primaries_saturation = 0.1
         self.assertAlmostEqual(self.wall.primaries_saturation, 0.1)
-        self.assertAlmostEqual(self.wall._led_settings.primaries_saturation, 0.1)
+        self.assertAlmostEqual(self.wall.primaries_saturation, 0.1)
 
     def test_input_plate_gamut(self):
         self.wall.input_plate_gamut = constants.ColourSpace.CS_SRGB
         self.assertEqual(self.wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
-        self.assertEqual(self.wall._led_settings.input_plate_gamut, constants.ColourSpace.CS_SRGB)
+        self.assertEqual(self.wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
 
     def test_native_camera_gamut(self):
         self.wall.native_camera_gamut = constants.CameraColourSpace.ARRI_WIDE_GAMUT_3
         self.assertEqual(self.wall.native_camera_gamut, constants.CameraColourSpace.ARRI_WIDE_GAMUT_3)
-        self.assertEqual(self.wall._led_settings.native_camera_gamut, constants.CameraColourSpace.ARRI_WIDE_GAMUT_3)
+        self.assertEqual(self.wall.native_camera_gamut, constants.CameraColourSpace.ARRI_WIDE_GAMUT_3)
 
     def test_num_grey_patches(self):
         self.wall.num_grey_patches = 25
         self.assertEqual(self.wall.num_grey_patches, 25)
-        self.assertEqual(self.wall._led_settings.num_grey_patches, 25)
+        self.assertEqual(self.wall.num_grey_patches, 25)
 
     def test_reference_to_target_cat(self):
         self.wall.reference_to_target_cat = constants.CAT.CAT_BRADFORD
         self.assertEqual(self.wall.reference_to_target_cat, constants.CAT.CAT_BRADFORD)
-        self.assertEqual(self.wall._led_settings.reference_to_target_cat, constants.CAT.CAT_BRADFORD)
+        self.assertEqual(self.wall.reference_to_target_cat, constants.CAT.CAT_BRADFORD)
 
     # <test_saturation_cat> is removed
 
     def test_roi(self):
         legacy_roi = [1, 2, 3, 4]
         self.assertEqual(upgrade_legacy_roi(legacy_roi),
-            LedWallSettingsBaseModel.upgrade_roi(legacy_roi))
+            LedWallSettings.upgrade_roi(legacy_roi))
 
         roi = upgrade_legacy_roi(legacy_roi)
         self.wall.roi = roi
         self.assertEqual(self.wall.roi, roi)
-        self.assertEqual(self.wall._led_settings.roi, roi)
+        self.assertEqual(self.wall.roi, roi)
 
     def test_empty_roi(self):
         self.wall.roi = []
@@ -298,51 +311,51 @@ class TestLedWallSettings(TestBase):
     def test_shadow_rolloff(self):
         self.wall.shadow_rolloff = 0.1
         self.assertEqual(self.wall.shadow_rolloff, 0.1)
-        self.assertEqual(self.wall._led_settings.shadow_rolloff, 0.1)
+        self.assertEqual(self.wall.shadow_rolloff, 0.1)
 
     def test_target_gamut(self):
         self.wall.target_gamut = constants.ColourSpace.CS_BT2020
         self.assertEqual(self.wall.target_gamut, constants.ColourSpace.CS_BT2020)
-        self.assertEqual(self.wall._led_settings.target_gamut, constants.ColourSpace.CS_BT2020)
+        self.assertEqual(self.wall.target_gamut, constants.ColourSpace.CS_BT2020)
 
     def test_target_eotf(self):
         self.wall.target_eotf = constants.EOTF.EOTF_ST2084
         self.wall.target_max_lum_nits = 30
         self.assertEqual(self.wall.target_eotf, constants.EOTF.EOTF_ST2084)
-        self.assertEqual(self.wall._led_settings.target_eotf, constants.EOTF.EOTF_ST2084)
+        self.assertEqual(self.wall.target_eotf, constants.EOTF.EOTF_ST2084)
         self.assertEqual(self.wall.target_max_lum_nits, 30)
-        self.assertEqual(self.wall._led_settings.target_max_lum_nits, 30)
+        self.assertEqual(self.wall.target_max_lum_nits, 30)
 
         # target_max_lum_nits should be set to <TARGET_MAX_LUM_NITS_NONE_PQ> when target_eotf is not ST2084
         self.wall.target_eotf = constants.EOTF.EOTF_BT1886
         self.assertEqual(self.wall.target_eotf, constants.EOTF.EOTF_BT1886)
-        self.assertEqual(self.wall._led_settings.target_eotf, constants.EOTF.EOTF_BT1886)
+        self.assertEqual(self.wall.target_eotf, constants.EOTF.EOTF_BT1886)
         self.assertEqual(self.wall.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
-        self.assertEqual(self.wall._led_settings.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
+        self.assertEqual(self.wall.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
 
     def test_target_max_lum_nits(self):
         self.wall.target_eotf = constants.EOTF.EOTF_ST2084
         self.wall.target_max_lum_nits = 2000
         self.assertEqual(self.wall.target_max_lum_nits, 2000)
-        self.assertEqual(self.wall._led_settings.target_max_lum_nits, 2000)
+        self.assertEqual(self.wall.target_max_lum_nits, 2000)
 
         # target_max_lum_nits should be set to <TARGET_MAX_LUM_NITS_NONE_PQ> when target_eotf is not ST2084
         self.wall.target_eotf = constants.EOTF.EOTF_BT1886
         self.wall.target_max_lum_nits = 2000
         self.assertEqual(self.wall.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
-        self.assertEqual(self.wall._led_settings.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
+        self.assertEqual(self.wall.target_max_lum_nits, constants.TARGET_MAX_LUM_NITS_NONE_PQ)
 
     def test_target_to_screen_cat(self):
         self.wall.target_to_screen_cat = constants.CAT.CAT_BIANCO2010
         self.assertEqual(self.wall.target_to_screen_cat, constants.CAT.CAT_BIANCO2010)
-        self.assertEqual(self.wall._led_settings.target_to_screen_cat, constants.CAT.CAT_BIANCO2010)
+        self.assertEqual(self.wall.target_to_screen_cat, constants.CAT.CAT_BIANCO2010)
 
     # <test_wall_calibration_file> is removed
 
     def test_match_reference_wall(self):
         self.wall.match_reference_wall = True
         self.assertEqual(self.wall.match_reference_wall, True)
-        self.assertEqual(self.wall._led_settings.match_reference_wall, True)
+        self.assertEqual(self.wall.match_reference_wall, True)
 
     def test_reference_wall(self):
         # Check we can set a new wall by instance
@@ -350,14 +363,14 @@ class TestLedWallSettings(TestBase):
         self.wall.reference_wall = new_wall
         self.assertEqual(self.wall.reference_wall, new_wall.name)
         self.assertEqual(self.wall.reference_wall_as_wall.name, new_wall.name) # type: ignore
-        self.assertEqual(self.wall._led_settings.reference_wall, new_wall.name)
+        self.assertEqual(self.wall.reference_wall, new_wall.name)
 
         # Check we can set a new wall by name
         another_wall = self.project_settings.add_led_wall("AnotherWall")
         self.wall.reference_wall = another_wall.name
         self.assertEqual(self.wall.reference_wall, another_wall.name)
         self.assertEqual(self.wall.reference_wall_as_wall.name, another_wall.name) # type: ignore
-        self.assertEqual(self.wall._led_settings.reference_wall, another_wall.name)
+        self.assertEqual(self.wall.reference_wall, another_wall.name)
 
         # Setting reference_wall to itself should raise ValueError (by instance)
         with self.assertRaises(ValueError):
@@ -368,7 +381,7 @@ class TestLedWallSettings(TestBase):
 
         # Setting reference_wall to a non-existent wall should raise ValueError (by instance)
         with self.assertRaises(ValueError):
-            self.wall.reference_wall = LedWallSettings(self.project_settings, "NonExistentWall")
+            self.wall.reference_wall = LedWallSettings(self.project_settings, name="NonExistentWall")
 
         # Setting reference_wall to a non-existent wall should raise ValueError (by name)
         with self.assertRaises(ValueError):
@@ -395,25 +408,25 @@ class TestLedWallSettings(TestBase):
     def test_use_white_point_offset(self):
         self.wall.use_white_point_offset = True
         self.assertEqual(self.wall.use_white_point_offset, True)
-        self.assertEqual(self.wall._led_settings.use_white_point_offset, True)
+        self.assertEqual(self.wall.use_white_point_offset, True)
 
     def test_white_point_offset_source(self):
         self.wall.white_point_offset_source = "new_file.exr"
         self.assertEqual(self.wall.white_point_offset_source, "new_file.exr")
-        self.assertEqual(self.wall._led_settings.white_point_offset_source, "new_file.exr")
+        self.assertEqual(self.wall.white_point_offset_source, "new_file.exr")
 
     def test_verification_wall(self):
         new_wall = self.project_settings.add_led_wall("NewWall")
         verification_wall = self.project_settings.add_verification_wall(new_wall.name)
         self.assertEqual(verification_wall.is_verification_wall, True)
-        self.assertEqual(verification_wall._led_settings.is_verification_wall, True)
+        self.assertEqual(verification_wall.is_verification_wall, True)
         self.assertEqual(new_wall.is_verification_wall, False)
-        self.assertEqual(new_wall._led_settings.is_verification_wall, False)
+        self.assertEqual(new_wall.is_verification_wall, False)
 
         self.assertEqual(new_wall.verification_wall, verification_wall.name)
-        self.assertEqual(new_wall._led_settings.verification_wall, verification_wall.name)
+        self.assertEqual(new_wall.verification_wall, verification_wall.name)
         self.assertEqual(verification_wall.verification_wall, new_wall.name)
-        self.assertEqual(verification_wall._led_settings.verification_wall, new_wall.name)
+        self.assertEqual(verification_wall.verification_wall, new_wall.name)
 
         # Test That Changing A Param On The Main Wall Changes On The Verification Wall
         new_wall.input_plate_gamut = constants.ColourSpace.CS_SRGB
@@ -423,7 +436,7 @@ class TestLedWallSettings(TestBase):
         verification_wall.input_plate_gamut = constants.ColourSpace.CS_P3
         self.assertEqual(verification_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
         self.assertEqual(new_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
-        self.assertEqual(new_wall._led_settings.input_plate_gamut, constants.ColourSpace.CS_SRGB)
+        self.assertEqual(new_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
 
         new_wall.target_eotf = constants.EOTF.EOTF_GAMMA_1_8
         self.assertEqual(verification_wall.target_eotf, constants.EOTF.EOTF_GAMMA_1_8)
@@ -433,28 +446,30 @@ class TestLedWallSettings(TestBase):
 
         # Ensure we set back to 2084 so that we avoid the fixing of the peak lum being set to 100
         new_wall.target_eotf = constants.EOTF.EOTF_ST2084
-        other_linked_properties = [
-            constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION,
-            constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION,
-            constants.LedWallSettingsKeys.AUTO_WB_SOURCE,
-            constants.LedWallSettingsKeys.CALCULATION_ORDER,
-            constants.LedWallSettingsKeys.PRIMARIES_SATURATION,
-            constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT,
-            constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT,
-            constants.LedWallSettingsKeys.NUM_GREY_PATCHES,
-            constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT,
-            constants.LedWallSettingsKeys.SHADOW_ROLLOFF,
-            constants.LedWallSettingsKeys.TARGET_GAMUT,
-            constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS,
-            constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT,
-            constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL,
-            constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET,
-            constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE]
 
-        # We test all the other linked params with false data
-        for count, linked_prop in enumerate(other_linked_properties):
-            setattr(new_wall, linked_prop, count)
-            self.assertEqual(getattr(verification_wall, linked_prop), count)
+        # Test additional linked properties with valid test values
+        linked_properties_with_values = {
+            constants.LedWallSettingsKeys.ENABLE_EOTF_CORRECTION: False,
+            constants.LedWallSettingsKeys.ENABLE_GAMUT_COMPRESSION: False,
+            constants.LedWallSettingsKeys.AUTO_WB_SOURCE: True,
+            constants.LedWallSettingsKeys.CALCULATION_ORDER: constants.CalculationOrder.CO_EOTF_CS,
+            constants.LedWallSettingsKeys.PRIMARIES_SATURATION: 0.5,
+            constants.LedWallSettingsKeys.NATIVE_CAMERA_GAMUT: constants.CameraColourSpace.ARRI_WIDE_GAMUT_3,
+            constants.LedWallSettingsKeys.NUM_GREY_PATCHES: 25,
+            constants.LedWallSettingsKeys.REFERENCE_TO_TARGET_CAT: constants.CAT.CAT_CAT02,
+            constants.LedWallSettingsKeys.SHADOW_ROLLOFF: 0.01,
+            constants.LedWallSettingsKeys.TARGET_GAMUT: constants.LedColourSpace.CS_P3,
+            constants.LedWallSettingsKeys.TARGET_MAX_LUM_NITS: 500,
+            constants.LedWallSettingsKeys.TARGET_TO_SCREEN_CAT: constants.CAT.CAT_BRADFORD,
+            constants.LedWallSettingsKeys.MATCH_REFERENCE_WALL: True,
+            constants.LedWallSettingsKeys.USE_WHITE_POINT_OFFSET: True,
+            constants.LedWallSettingsKeys.WHITE_POINT_OFFSET_SOURCE: "test.exr",
+        }
+
+        # Test that linked properties propagate from main wall to verification wall
+        for linked_prop, test_value in linked_properties_with_values.items():
+            setattr(new_wall, linked_prop, test_value)
+            self.assertEqual(getattr(verification_wall, linked_prop), test_value)
 
     def test_add_verification_wall_to_verification_wall(self):
         new_wall = self.project_settings.add_led_wall("NewWall")
@@ -482,12 +497,23 @@ class TestLedWallSettings(TestBase):
         verification_wall.input_plate_gamut = constants.ColourSpace.CS_SRGB
         self.assertNotEqual(new_wall.input_plate_gamut, None)
 
-    def test_get_property_on_verification_wall_raises_if_parent_removed(self):
+    def test_get_property_on_verification_wall_falls_back_if_parent_removed(self):
+        """When parent wall is removed, verification walls fall back to local values."""
         new_wall = self.project_settings.add_led_wall("NewWall")
         verification_wall = self.project_settings.add_verification_wall(new_wall.name)
+
+        # Set a value on the parent wall, which should propagate to verification wall
+        new_wall.input_plate_gamut = constants.ColourSpace.CS_SRGB
+        self.assertEqual(verification_wall.input_plate_gamut, constants.ColourSpace.CS_SRGB)
+
+        # Remove the parent wall - verification_wall should fall back to its local value
         self.project_settings.remove_led_wall(new_wall.name)
-        with self.assertRaises(ValueError):
-            _ = verification_wall._get_property(constants.LedWallSettingsKeys.INPUT_PLATE_GAMUT)
+
+        # After removal, accessing linked property returns local value (the last synced value)
+        # The verification_wall link is cleared, so it uses its own stored value
+        self.assertEqual(verification_wall.verification_wall, "")
+        # Local value should still be accessible
+        _ = verification_wall.input_plate_gamut  # Should not raise
 
 
     def test_verification_wall_edge_cases(self):
@@ -515,13 +541,12 @@ class TestLedWallSettings(TestBase):
         """Test that verification_wall_as_wall returns None when no verification wall is set."""
         self.assertIsNone(self.wall.verification_wall_as_wall)
 
-        # Test with a non-existent verification wall name
-        self.wall._led_settings.verification_wall = "NonExistentWall"
-        with self.assertRaises(ValueError):
-            _ = self.wall.verification_wall_as_wall
+        # Test with a non-existent verification wall name - returns None
+        self.wall.verification_wall = "NonExistentWall"
+        self.assertIsNone(self.wall.verification_wall_as_wall)
 
         # Test with empty string
-        self.wall._led_settings.verification_wall = ""
+        self.wall.verification_wall = ""
         self.assertIsNone(self.wall.verification_wall_as_wall)
 
     def test_has_valid_white_balance_options(self):
@@ -542,19 +567,19 @@ class TestLedWallSettings(TestBase):
 
         new_wall2 = LedWallSettings.from_json_file(self.project_settings, self.json_path)
         for key in self.sample:
-            self.assertEqual(getattr(new_wall2._led_settings, key), self.sample_expected[key])
+            self.assertEqual(getattr(new_wall2, key), self.sample_expected[key])
 
     def test_from_json_string(self):
         json_str = json.dumps(self.sample)
 
         new_wall = LedWallSettings.from_json_string(self.project_settings, json_str)
         for key in self.sample:
-            self.assertEqual(getattr(new_wall._led_settings, key), self.sample_expected[key])
+            self.assertEqual(getattr(new_wall, key), self.sample_expected[key])
 
     def test_from_dict(self):
         new_wall = LedWallSettings.from_dict(self.project_settings, self.sample)
         for key in self.sample:
-            self.assertEqual(getattr(new_wall._led_settings, key), self.sample_expected[key])
+            self.assertEqual(getattr(new_wall, key), self.sample_expected[key])
 
     def test_to_dict(self):
         json_str = json.dumps(self.sample)
@@ -643,7 +668,7 @@ class TestLedWallSettings(TestBase):
 
     def test_roi_upgrade(self):
         led_wall = LedWallSettings.from_dict(self.project_settings, self.sample)
-        self.assertEqual(led_wall._led_settings.roi, self.sample_expected[constants.LedWallSettingsKeys.ROI])
+        self.assertEqual(led_wall.roi, self.sample_expected[constants.LedWallSettingsKeys.ROI])
 
     def test_all_sample_project_json(self):
         for project_settings_path in self.get_all_test_project_settings_path():
