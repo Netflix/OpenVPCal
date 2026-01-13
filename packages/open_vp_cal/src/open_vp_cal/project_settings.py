@@ -28,7 +28,6 @@ from pydantic import (
     field_validator,
     field_serializer,
     model_validator,
-    model_serializer,
     PrivateAttr,
     ConfigDict,
 )
@@ -127,16 +126,6 @@ class ProjectSettings(BaseModel):
             )
             return inner
         return data
-
-    @model_serializer(mode='wrap')
-    def serialize_nested(self, handler) -> dict:
-        """Output backwards-compatible nested JSON format."""
-        data = handler(self)
-        version = data.pop('openvp_cal_version', open_vp_cal.__version__)
-        return {
-            constants.OpenVPCalSettingsKeys.VERSION: version,
-            constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS: data
-        }
 
     def __init__(self, led_wall_class: Optional[Type[LedWallSettings]] = None, **data):
         """Initialize a ProjectSettings object.
