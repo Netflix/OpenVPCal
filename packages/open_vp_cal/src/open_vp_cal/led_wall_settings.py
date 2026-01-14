@@ -21,7 +21,6 @@ import json
 from typing import List, Union, Any, Optional
 from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field, field_validator, PrivateAttr, ConfigDict
-from pydantic.json_schema import SkipJsonSchema
 
 from open_vp_cal.core import constants
 from open_vp_cal.core.structures import ProcessingResults
@@ -82,19 +81,34 @@ class LedWallSettings(BaseModel):
     verification_wall: str = Field(default="")
 
     # ===== Runtime Fields (excluded from serialization) =====
-    processing_results: SkipJsonSchema[ProcessingResults] = Field(
-        default_factory=ProcessingResults,
-        exclude=True
+    _processing_results: ProcessingResults = PrivateAttr(
+        default_factory=ProcessingResults
     )
-    separation_results: SkipJsonSchema[Optional[SeparationResults]] = Field(
+    _separation_results: Optional[SeparationResults] = PrivateAttr(
         default=None,
-        exclude=True
     )
+
+    @property
+    def processing_results(self) -> ProcessingResults:
+        return self._processing_results
+
+    @processing_results.setter
+    def processing_results(self, value: ProcessingResults):
+        self.processing_results = value
+
+    @property
+    def separation_results(self) -> Optional[SeparationResults]:
+        return self._separation_results
+
+    @separation_results.setter
+    def separation_results(self, value: SeparationResults):
+        self._separation_results = value
 
     # ===== Private Attributes (not in schema at all) =====
     _sequence_loader: Optional[SequenceLoader] = PrivateAttr(default=None)
     _sequence_loader_class: type = PrivateAttr(default=SequenceLoader)
     _project_settings: Optional["ProjectSettings"] = PrivateAttr(default=None)
+
 
     @field_validator(
         "roi",
