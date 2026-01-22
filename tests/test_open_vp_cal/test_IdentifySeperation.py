@@ -56,8 +56,6 @@ class TestIdentifySeparation(TestProcessorBase):
         self.led_wall.set_separation_results(first_red_frame_num=72, separation=5)
 
         # Running identify_separation should return the preset results
-        identify_sep = IdentifySeparation(self.led_wall)
-        # The run() method will use existing results since they're already valid
         # Note: IdentifySeparation.run() always runs _find_frame_peaks(),
         # but Processing.identify_separation() checks if results are valid first
         processing = Processing(self.led_wall)
@@ -133,7 +131,7 @@ class TestIdentifySeparation(TestProcessorBase):
         time_saved = time_auto - time_preset
         speedup_percent = (time_saved / time_auto) * 100 if time_auto > 0 else 0
 
-        print(f"\n--- Preset Separation Performance Test ---")
+        print("\n--- Preset Separation Performance Test ---")
         print(f"Auto detection time:   {time_auto:.3f}s")
         print(f"Preset detection time: {time_preset:.3f}s")
         print(f"Time saved:            {time_saved:.3f}s ({speedup_percent:.1f}%)")

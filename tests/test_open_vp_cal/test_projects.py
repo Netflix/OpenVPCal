@@ -304,13 +304,6 @@ class TestSample_Project8_AcesCCT(BaseTestProjectPlateReuse):
             if led_wall.is_verification_wall:
                 continue
 
-            expected_ocio_file = os.path.join(
-                self.get_sample_project_folder(),
-                constants.ProjectFolders.EXPORT,
-                constants.ProjectFolders.CALIBRATION,
-                ocio_config.OcioConfigWriter.post_calibration_config_name.format(project_id=self.project_settings.project_id)
-            )
-
             expected_file = self.get_results_file(led_wall)
             with open(expected_file, "r", encoding="utf-8") as handle:
                 expected_results = json.load(handle)
