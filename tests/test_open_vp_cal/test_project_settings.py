@@ -34,7 +34,7 @@ class TestProjectSettings(TestBase):
         """Set up test case."""
         super(TestProjectSettings, self).setUp()
         self.settings = ProjectSettings()
-        self.test_json_path = "test_project_settings.json"
+        self.test_json_path = os.path.join(self.get_test_output_folder(), "test_project_settings.json")
         self.test_settings = {
             constants.OpenVPCalSettingsKeys.VERSION: open_vp_cal.__version__,
             constants.OpenVPCalSettingsKeys.PROJECT_SETTINGS:

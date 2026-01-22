@@ -31,18 +31,18 @@ shared_views:
   - !<View> {name: ACES 1.0 - SDR Video (D60 sim on D65), view_transform: ACES 1.0 - SDR Video (D60 sim on D65), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Video (P3 lim), view_transform: ACES 1.1 - SDR Video (P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Video (Rec.709 lim), view_transform: ACES 1.1 - SDR Video (Rec.709 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), view_transform: ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), view_transform: ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), view_transform: ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (1000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (1000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (2000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (2000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (4000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (4000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", view_transform: "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", view_transform: "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", view_transform: "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (1000 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Video (1000 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (2000 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Video (2000 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (4000 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Video (4000 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.0 - SDR Cinema, view_transform: ACES 1.0 - SDR Cinema, display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (Rec.709 lim), view_transform: ACES 1.1 - SDR Cinema (Rec.709 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.0 - SDR Cinema (D60 sim on DCI), view_transform: ACES 1.0 - SDR Cinema (D60 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (D60 sim on D65), view_transform: ACES 1.1 - SDR Cinema (D60 sim on D65), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (D65 sim on DCI), view_transform: ACES 1.1 - SDR Cinema (D65 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Cinema (108 nits & P3 lim), view_transform: ACES 1.1 - HDR Cinema (108 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Un-tone-mapped, view_transform: Un-tone-mapped, display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s1470-10000_to_2100_nits, view_transform: Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s1470-10000_to_2100_nits, display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s1680-10000_to_2100_nits, view_transform: Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s1680-10000_to_2100_nits, display_colorspace: <USE_DISPLAY_NAME>}
@@ -67,13 +67,13 @@ displays:
     - !<Views> [ACES 1.0 - SDR Video, ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), Un-tone-mapped]
   Rec.2100-HLG - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), Un-tone-mapped]
+    - !<Views> ["ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", Un-tone-mapped]
   Rec.2100-PQ - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), Un-tone-mapped]
+    - !<Views> ["ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", Un-tone-mapped]
   ST2084-P3-D65 - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped]
+    - !<Views> ["ACES 1.1 - HDR Video (1000 nits & P3 lim)", "ACES 1.1 - HDR Video (2000 nits & P3 lim)", "ACES 1.1 - HDR Video (4000 nits & P3 lim)", "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", Un-tone-mapped]
   P3-D60 - Display:
     - !<View> {name: Raw, colorspace: Raw}
     - !<Views> [ACES 1.0 - SDR Cinema, Un-tone-mapped]
@@ -91,7 +91,7 @@ displays:
     - !<Views> [ACEScct_view, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS_ACEScct]
 
 active_displays: [ITU-R BT.2020 - ST 2084 - OpenVPCal LED, sRGB - Display, Display P3 - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
-active_views: [Calibrated Output - Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS, Pre-Calibration Output, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s1470-10000_to_2100_nits, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s1680-10000_to_2100_nits, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Hard_Rolloff_s1890-10000_to_2100_nits, ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw, ACEScct_view, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS_ACEScct]
+active_views: [Calibrated Output - Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS, Pre-Calibration Output, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s1470-10000_to_2100_nits, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s1680-10000_to_2100_nits, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS - Hard_Rolloff_s1890-10000_to_2100_nits, ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (1000 nits & P3 lim)", "ACES 1.1 - HDR Video (2000 nits & P3 lim)", "ACES 1.1 - HDR Video (4000 nits & P3 lim)", ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (D65 sim on DCI), "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", Un-tone-mapped, Raw, ACEScct_view, Calibrated Wall1 - ITU-R BT.2020 - REDWideGamutRGB - EOTF_CS_ACEScct]
 inactive_colorspaces: [CIE-XYZ-D65, sRGB - Display, Display P3 - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
 
 looks:
@@ -196,7 +196,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO-REC709lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)
+    name: "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)"
     description: |
       Component of ACES Output Transforms for 1000 nit HDR D65 video
 
@@ -210,7 +210,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)
+    name: "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)"
     description: |
       Component of ACES Output Transforms for 2000 nit HDR D65 video
 
@@ -222,7 +222,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-2000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)
+    name: "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)"
     description: |
       Component of ACES Output Transforms for 4000 nit HDR D65 video
 
@@ -234,7 +234,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-4000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (1000 nits & P3 lim)
+    name: "ACES 1.1 - HDR Video (1000 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 1000 nit HDR D65 video
 
@@ -246,7 +246,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (2000 nits & P3 lim)
+    name: "ACES 1.1 - HDR Video (2000 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 2000 nit HDR D65 video
 
@@ -258,7 +258,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-2000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (4000 nits & P3 lim)
+    name: "ACES 1.1 - HDR Video (4000 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 4000 nit HDR D65 video
 
@@ -328,7 +328,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA-D65sim-DCI_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Cinema (108 nits & P3 lim)
+    name: "ACES 1.1 - HDR Cinema (108 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 108 nit HDR D65 cinema
 
@@ -1545,9 +1545,15 @@ colorspaces:
         - !<MatrixTransform> {matrix: [1.16646562578235, -0.14595229230042, -0.0205133334819319, 0, -0.0236769239118667, 0.966395447475896, 0.0572814764359695, 0, 0.00674261788253418, -0.00432741411011962, 0.997584796227585, 0, 0, 0, 0, 1]}
         - !<GroupTransform>
           children:
-            - !<BuiltinTransform> {style: CURVE - LINEAR_to_ST-2084}
-            - !<FileTransform> {src: EOTF Correction 1D - Wall1 - REDWideGamutRGB - EOTF_CS.clf, direction: inverse}
-            - !<BuiltinTransform> {style: CURVE - ST-2084_to_LINEAR}
+            - !<GradingRGBCurveTransform>
+              style: log
+              red: {control_points: [0, 0, 0.0004745277, 0.0060958, 0.003794672, 0.01028977, 0.009492879, 0.01639714, 0.01817203, 0.02503841, 0.02934564, 0.03699832, 0.04610379, 0.05326616, 0.05946754, 0.07508576, 0.08022769, 0.1040178, 0.1045787, 0.142017, 0.142661, 0.191529, 0.1859468, 0.2556101, 0.2438109, 0.3380777, 0.3370126, 0.4436983, 0.4439092, 0.578423, 0.6080866, 0.7496828, 0.7933819, 0.9667611, 1.038985, 1.241262, 1.387484, 1.587703, 1.843177, 2.024263, 2.351065, 2.57374, 3.100844, 3.264756, 3.622236, 3.78, 3.916144, 4.13331, 4.923563, 5.224758, 6.390366, 6.59636, 7.976396, 8.320557, 10.29221, 10.48922, 12.82963, 13.21915, 15.95057, 16.65927, 20.63208, 21]}
+            - !<GradingRGBCurveTransform>
+              style: log
+              green: {control_points: [0, 0, 0.0004745277, 0.0060958, 0.003068611, 0.01028977, 0.007974735, 0.01639714, 0.0160548, 0.02503841, 0.026436, 0.03699832, 0.0455323, 0.05326616, 0.06379799, 0.07508576, 0.08851249, 0.1040178, 0.1186413, 0.142017, 0.1641831, 0.191529, 0.2170069, 0.2556101, 0.2871009, 0.3380777, 0.3950657, 0.4436983, 0.5100957, 0.578423, 0.6799915, 0.7496828, 0.8757521, 0.9667611, 1.160612, 1.241262, 1.470182, 1.587703, 1.919176, 2.024263, 2.401815, 2.57374, 3.117653, 3.264756, 3.622245, 3.78, 3.897876, 4.13331, 4.863164, 5.224758, 6.309732, 6.59636, 7.898887, 8.320557, 10.19267, 10.48922, 12.68631, 13.21915, 15.85986, 16.65927, 20.50467, 21]}
+            - !<GradingRGBCurveTransform>
+              style: log
+              blue: {control_points: [0, 0, 0.0004745277, 0.0060958, 0.00352209, 0.01028977, 0.008824975, 0.01639714, 0.01698362, 0.02503841, 0.02740275, 0.03699832, 0.04580212, 0.05326616, 0.06496291, 0.07508576, 0.08688634, 0.1040178, 0.1148159, 0.142017, 0.1573859, 0.191529, 0.20656, 0.2556101, 0.2731199, 0.3380777, 0.3764938, 0.4436983, 0.4899112, 0.578423, 0.6616147, 0.7496828, 0.8512319, 0.9667611, 1.094726, 1.241262, 1.448613, 1.587703, 1.904122, 2.024263, 2.413244, 2.57374, 3.132566, 3.264756, 3.622243, 3.78, 3.89775, 4.13331, 4.881878, 5.224758, 6.289523, 6.59636, 7.879725, 8.320557, 10.21849, 10.48922, 12.74712, 13.21915, 15.88434, 16.65927, 20.50712, 21]}
         - !<GroupTransform>
           children:
             - !<BuiltinTransform> {style: ACEScg_to_ACES2065-1}

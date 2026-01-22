@@ -15,6 +15,8 @@ limitations under the License.
 """
 import json
 import os
+import shutil
+import tempfile
 import unittest
 
 from spg import PatternGenerators as _PatternGenerators
@@ -29,6 +31,15 @@ OIIO_MSG = "OpenImageIO Is Not Installed"
 
 class TestBase(unittest.TestCase):
     image_fail_count = 10
+
+    def setUp(self):
+        """Create a unique temp directory for this test to enable parallel execution."""
+        self._test_output_folder = tempfile.mkdtemp(prefix="spg_test_")
+
+    def tearDown(self):
+        """Clean up the temp directory."""
+        if hasattr(self, '_test_output_folder') and self._test_output_folder:
+            shutil.rmtree(self._test_output_folder, ignore_errors=True)
 
     @classmethod
     def get_folder_for_this_file(cls):
@@ -72,19 +83,13 @@ class TestBase(unittest.TestCase):
             return oiio.ImageBuf(path)
         raise IOError("File Not Found: " + path)
 
-    @classmethod
-    def get_test_result_folder(cls):
-        results_folder = os.path.join(
-            cls.get_folder_for_this_file(),
-            'results')
-        if not os.path.exists(results_folder):
-            os.makedirs(results_folder)
-        return results_folder
+    def get_test_result_folder(self):
+        """Return the unique temp directory for this test instance."""
+        return self._test_output_folder
 
-    @classmethod
-    def get_test_result(cls, resource_name, ext):
+    def get_test_result(self, resource_name, ext):
         return os.path.join(
-            cls.get_test_result_folder(),
+            self.get_test_result_folder(),
             resource_name + "." + ext
         )
 
@@ -137,9 +142,8 @@ class TestBase(unittest.TestCase):
             self.write_test_image_result(image_buffer, file_name.replace("test", "result"), ext, expected_bps)
             self.fail(file_name + ": Images did not match")
 
-    @classmethod
-    def write_test_image_result(cls, image, image_name, ext, bit_depth):
-        file_name = cls.get_test_result(image_name, ext)
+    def write_test_image_result(self, image, image_name, ext, bit_depth):
+        file_name = self.get_test_result(image_name, ext)
         imageUtils.write_image(image, file_name, bit_depth)
         return file_name
 
@@ -148,7 +152,9 @@ class SpgTestBase(TestBase):
     spg = None
 
     def setUp(self):
+        super(SpgTestBase, self).setUp()
         self.output_folder = os.path.join(self.get_test_result_folder(), "pattern_outputs")
+        os.makedirs(self.output_folder, exist_ok=True)
 
         self.panels_config = self.get_panels_config()
         self.walls_config = self.get_walls_config()

@@ -4,7 +4,7 @@ version = "1.3.0"
 description = "The spg part"
 requires-python = "==3.11.*"
 dependencies = [
-    "opencolorio>=2.4.1",
+    "opencolorio>=2.5.1",
     "openimageio==3.0.4.0",
     "packaging>=24.2",
 ]

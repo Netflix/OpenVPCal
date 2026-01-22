@@ -45,7 +45,7 @@ class TestLedWallSettings(TestBase):
         """Called before every test case."""
         super().setUp()
         self.wall = LedWallSettings(self.project_settings, name="TestWall")
-        self.json_path = "test.json"
+        self.json_path = os.path.join(self.get_test_output_folder(), "test.json")
 
         self.sample = {
             constants.LedWallSettingsKeys.NAME: "Wall1",

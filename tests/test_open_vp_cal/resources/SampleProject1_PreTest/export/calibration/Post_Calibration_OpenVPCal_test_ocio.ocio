@@ -31,18 +31,18 @@ shared_views:
   - !<View> {name: ACES 1.0 - SDR Video (D60 sim on D65), view_transform: ACES 1.0 - SDR Video (D60 sim on D65), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Video (P3 lim), view_transform: ACES 1.1 - SDR Video (P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Video (Rec.709 lim), view_transform: ACES 1.1 - SDR Video (Rec.709 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), view_transform: ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), view_transform: ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), view_transform: ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (1000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (1000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (2000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (2000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Video (4000 nits & P3 lim), view_transform: ACES 1.1 - HDR Video (4000 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", view_transform: "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", view_transform: "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", view_transform: "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (1000 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Video (1000 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (2000 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Video (2000 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Video (4000 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Video (4000 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.0 - SDR Cinema, view_transform: ACES 1.0 - SDR Cinema, display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (Rec.709 lim), view_transform: ACES 1.1 - SDR Cinema (Rec.709 lim), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.0 - SDR Cinema (D60 sim on DCI), view_transform: ACES 1.0 - SDR Cinema (D60 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (D60 sim on D65), view_transform: ACES 1.1 - SDR Cinema (D60 sim on D65), display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: ACES 1.1 - SDR Cinema (D65 sim on DCI), view_transform: ACES 1.1 - SDR Cinema (D65 sim on DCI), display_colorspace: <USE_DISPLAY_NAME>}
-  - !<View> {name: ACES 1.1 - HDR Cinema (108 nits & P3 lim), view_transform: ACES 1.1 - HDR Cinema (108 nits & P3 lim), display_colorspace: <USE_DISPLAY_NAME>}
+  - !<View> {name: "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", view_transform: "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Un-tone-mapped, view_transform: Un-tone-mapped, display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s770-10000_to_1100_nits, view_transform: Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s770-10000_to_1100_nits, display_colorspace: <USE_DISPLAY_NAME>}
   - !<View> {name: Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s880-10000_to_1100_nits, view_transform: Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s880-10000_to_1100_nits, display_colorspace: <USE_DISPLAY_NAME>}
@@ -65,13 +65,13 @@ displays:
     - !<Views> [ACES 1.0 - SDR Video, ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), Un-tone-mapped]
   Rec.2100-HLG - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), Un-tone-mapped]
+    - !<Views> ["ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", Un-tone-mapped]
   Rec.2100-PQ - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), Un-tone-mapped]
+    - !<Views> ["ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", Un-tone-mapped]
   ST2084-P3-D65 - Display:
     - !<View> {name: Raw, colorspace: Raw}
-    - !<Views> [ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped]
+    - !<Views> ["ACES 1.1 - HDR Video (1000 nits & P3 lim)", "ACES 1.1 - HDR Video (2000 nits & P3 lim)", "ACES 1.1 - HDR Video (4000 nits & P3 lim)", "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", Un-tone-mapped]
   P3-D60 - Display:
     - !<View> {name: Raw, colorspace: Raw}
     - !<Views> [ACES 1.0 - SDR Cinema, Un-tone-mapped]
@@ -86,7 +86,7 @@ displays:
     - !<Views> [Calibrated Output - AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s770-10000_to_1100_nits, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s880-10000_to_1100_nits, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Hard_Rolloff_s990-10000_to_1100_nits, Pre-Calibration Output]
 
 active_displays: [AOTO_Acheivable - ST 2084 - OpenVPCal LED, sRGB - Display, Display P3 - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
-active_views: [Calibrated Output - AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS, Pre-Calibration Output, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s770-10000_to_1100_nits, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s880-10000_to_1100_nits, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Hard_Rolloff_s990-10000_to_1100_nits, ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw]
+active_views: [Calibrated Output - AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS, Pre-Calibration Output, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Soft_Rolloff_s770-10000_to_1100_nits, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Medium_Rolloff_s880-10000_to_1100_nits, Calibrated AOTO_Wall2 - AOTO_Acheivable - REDWideGamutRGB - EOTF_CS - Hard_Rolloff_s990-10000_to_1100_nits, ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)", "ACES 1.1 - HDR Video (1000 nits & P3 lim)", "ACES 1.1 - HDR Video (2000 nits & P3 lim)", "ACES 1.1 - HDR Video (4000 nits & P3 lim)", ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (D65 sim on DCI), "ACES 1.1 - HDR Cinema (108 nits & P3 lim)", Un-tone-mapped, Raw]
 inactive_colorspaces: [CIE-XYZ-D65, sRGB - Display, Display P3 - Display, Rec.1886 Rec.709 - Display, Rec.1886 Rec.2020 - Display, Rec.2100-HLG - Display, Rec.2100-PQ - Display, ST2084-P3-D65 - Display, P3-D60 - Display, P3-D65 - Display, P3-DCI - Display]
 
 looks:
@@ -191,7 +191,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-VIDEO-REC709lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)
+    name: "ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim)"
     description: |
       Component of ACES Output Transforms for 1000 nit HDR D65 video
 
@@ -205,7 +205,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)
+    name: "ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim)"
     description: |
       Component of ACES Output Transforms for 2000 nit HDR D65 video
 
@@ -217,7 +217,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-2000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)
+    name: "ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim)"
     description: |
       Component of ACES Output Transforms for 4000 nit HDR D65 video
 
@@ -229,7 +229,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-4000nit-15nit-REC2020lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (1000 nits & P3 lim)
+    name: "ACES 1.1 - HDR Video (1000 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 1000 nit HDR D65 video
 
@@ -241,7 +241,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-1000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (2000 nits & P3 lim)
+    name: "ACES 1.1 - HDR Video (2000 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 2000 nit HDR D65 video
 
@@ -253,7 +253,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-VIDEO-2000nit-15nit-P3lim_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Video (4000 nits & P3 lim)
+    name: "ACES 1.1 - HDR Video (4000 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 4000 nit HDR D65 video
 
@@ -323,7 +323,7 @@ view_transforms:
     from_scene_reference: !<BuiltinTransform> {style: ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-CINEMA-D65sim-DCI_1.1}
 
   - !<ViewTransform>
-    name: ACES 1.1 - HDR Cinema (108 nits & P3 lim)
+    name: "ACES 1.1 - HDR Cinema (108 nits & P3 lim)"
     description: |
       Component of ACES Output Transforms for 108 nit HDR D65 cinema
 

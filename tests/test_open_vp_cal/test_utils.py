@@ -39,15 +39,15 @@ class TestUtils(unittest.TestCase):
         super(TestUtils, self).setUp()
         os.environ[constants.OPEN_VP_CAL_UNIT_TESTING] = "1"
 
-        test_output_folder = self.get_test_output_folder()
-        if os.path.exists(test_output_folder):
-            shutil.rmtree(test_output_folder)
-
-        os.makedirs(test_output_folder)
+        # Create a unique temp directory for this test to enable parallel execution
+        self._test_output_folder = tempfile.mkdtemp(prefix="openvpcal_test_")
 
     def tearDown(self):
         super(TestUtils, self).tearDown()
         del os.environ[constants.OPEN_VP_CAL_UNIT_TESTING]
+        # Clean up the temp directory
+        if hasattr(self, '_test_output_folder') and self._test_output_folder:
+            shutil.rmtree(self._test_output_folder, ignore_errors=True)
 
     @classmethod
     def get_folder_for_this_file(cls):
@@ -60,12 +60,9 @@ class TestUtils(unittest.TestCase):
             "resources",
         )
 
-    @classmethod
-    def get_test_output_folder(cls):
-        return os.path.join(
-            cls.get_folder_for_this_file(),
-            "output",
-        )
+    def get_test_output_folder(self):
+        """Return the unique temp directory for this test instance."""
+        return self._test_output_folder
 
     @classmethod
     def get_all_test_project_settings_path(cls) -> List[Path]:
@@ -123,11 +120,10 @@ class TestUtils(unittest.TestCase):
                                  msg=f"Files {file1_path} and {file2_path} are not equal.")
 
 
-    @classmethod
-    def write_test_image_result(cls, image, image_name, ext, bit_depth):
+    def write_test_image_result(self, image, image_name, ext, bit_depth):
         if not bit_depth:
             bit_depth = "half"
-        output_folder = cls.get_test_output_folder()
+        output_folder = self.get_test_output_folder()
         file_name = os.path.join(output_folder, image_name + "." + ext)
         open_vp_cal.imaging.imaging_utils.write_image(image, file_name, bit_depth)
         return file_name
@@ -189,8 +185,7 @@ class TestUtils(unittest.TestCase):
 
     def cleanup_pre_process_vp1(self, temp_folders):
         for temp_folder in temp_folders:
-            if os.path.exists(temp_folder):
-                shutil.rmtree(temp_folder)
+            shutil.rmtree(temp_folder, ignore_errors=True)
 
 
 class TestBase(TestUtils):
@@ -234,10 +229,8 @@ class TestProject(TestUtils):
         super(TestProject, self).setUp()
         self.project_settings = ProjectSettings.from_json(self.get_sample_project_settings())
         self.project_settings.output_folder = self.get_output_folder()
-        if os.path.exists(self.project_settings.output_folder):
-            shutil.rmtree(self.project_settings.output_folder)
-
-        os.makedirs(self.project_settings.output_folder)
+        # Create the project output folder (parent temp dir already exists from super().setUp())
+        os.makedirs(self.project_settings.output_folder, exist_ok=True)
 
         self.led_walls = self.project_settings.led_walls
         self.led_wall = self.project_settings.led_walls[0]

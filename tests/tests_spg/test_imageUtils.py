@@ -35,6 +35,7 @@ class TestImageUtils(utils.TestBase):
         return os.path.dirname(__file__)
 
     def setUp(self):
+        super(TestImageUtils, self).setUp()
         self.image_buffer = _imageUtils.create_solid_color_image(
             self.expected_width, self.expected_height, num_channels=3,
             color=self.red_color

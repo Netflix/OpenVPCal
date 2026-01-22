@@ -1136,29 +1136,28 @@ class OcioConfigWriter:
 
                 # Update the active_views part of the config
                 active_views = config.getActiveViews()
-                comps = active_views.split(",")
-                if calibrated_output_name not in comps:
-                    comps.insert(0, calibrated_output_name)
+                active_views = [view for view in active_views]
+                if calibrated_output_name not in active_views:
+                    active_views.insert(0, calibrated_output_name)
                     if lw_cs.rolloff_view_soft:
-                        if lw_cs.rolloff_view_soft.getName() not in comps:
-                            comps.insert(1, lw_cs.rolloff_view_soft.getName())
+                        if lw_cs.rolloff_view_soft.getName() not in active_views:
+                            active_views.insert(1, lw_cs.rolloff_view_soft.getName())
                     if lw_cs.rolloff_view_medium:
-                        if lw_cs.rolloff_view_medium.getName() not in comps:
-                            comps.insert(2, lw_cs.rolloff_view_medium.getName())
+                        if lw_cs.rolloff_view_medium.getName() not in active_views:
+                            active_views.insert(2, lw_cs.rolloff_view_medium.getName())
                     if lw_cs.rolloff_view_hard:
-                        if lw_cs.rolloff_view_hard.getName() not in comps:
-                            comps.insert(3, lw_cs.rolloff_view_hard.getName())
-
-                    active_views = ",".join(comps)
-                    config.setActiveViews(active_views)
+                        if lw_cs.rolloff_view_hard.getName() not in active_views:
+                            active_views.insert(3, lw_cs.rolloff_view_hard.getName())
+                    config.setActiveViews(",".join(active_views))
 
             if lw_cs.aces_cct_view_transform:
                 config.addSharedView(
                     lw_cs.aces_cct_view_transform.getName(), lw_cs.aces_cct_view_transform.getName(), ocio.OCIO_VIEW_USE_DISPLAY_NAME)
 
                 active_views = config.getActiveViews()
-                active_views += f", {lw_cs.aces_cct_view_transform.getName()}"
-                config.setActiveViews(active_views)
+                active_views = [view for view in active_views]
+                active_views.append(lw_cs.aces_cct_view_transform.getName())
+                config.setActiveViews(",".join(active_views))
 
             if lw_cs.aces_cct_calibration_view_transform:
                 config.addSharedView(
@@ -1166,18 +1165,17 @@ class OcioConfigWriter:
                     lw_cs.aces_cct_calibration_view_transform.getName(), ocio.OCIO_VIEW_USE_DISPLAY_NAME)
 
                 active_views = config.getActiveViews()
-                active_views += f", {lw_cs.aces_cct_calibration_view_transform.getName()}"
-                config.setActiveViews(active_views)
+                active_views = [view for view in active_views]
+                active_views.append(lw_cs.aces_cct_calibration_view_transform.getName())
+                config.setActiveViews(",".join(active_views))
 
         for added_display_colour_space in added_display_colour_spaces:
             config.addDisplaySharedView(added_display_colour_space, OcioConfigWriter.pre_calibration_output)
 
-            active_displays = config.getActiveDisplays()
-            comps = active_displays.split(",")
-            if added_display_colour_space not in comps:
-                comps.insert(0, added_display_colour_space)
-                active_displays = ",".join(comps)
-                config.setActiveDisplays(active_displays)
+            active_displays = [display for display in config.getActiveDisplays()]
+            if added_display_colour_space not in active_displays:
+                active_displays.insert(0, added_display_colour_space)
+                config.setActiveDisplays(",".join(active_displays))
 
         for added_acess_cct_display_colour_space in added_acess_cct_display_colour_spaces:
             config.addDisplaySharedView(added_acess_cct_display_colour_space, added_acess_cct_view_transforms[0])
@@ -1189,11 +1187,10 @@ class OcioConfigWriter:
             )
 
             active_views = config.getActiveViews()
-            comps = active_views.split(",")
-            if OcioConfigWriter.pre_calibration_output not in comps:
-                comps.insert(1, OcioConfigWriter.pre_calibration_output)
-                active_views = ",".join(comps)
-                config.setActiveViews(active_views)
+            active_views = [active_view for active_view in active_views]
+            if OcioConfigWriter.pre_calibration_output not in active_views:
+                active_views.insert(1, OcioConfigWriter.pre_calibration_output)
+                config.setActiveViews(",".join(active_views))
 
         # Set the search path so its relative to the ocio config folder
         config.setSearchPath("./")

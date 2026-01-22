@@ -395,7 +395,7 @@ class EOTF(StrEnum):
     @staticmethod
     def all() -> list[str]:
         """ Returns all EOTFs except HLG """
-        return [ member.value for member in EOTF]
+        return [ member.value for member in EOTF if member != EOTF.EOTF_HLG]
 
     @staticmethod
     def default() -> str:
