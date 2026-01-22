@@ -21,7 +21,7 @@ from open_vp_cal.framework.frame import Frame
 from scipy.signal import find_peaks
 
 from open_vp_cal.imaging import imaging_utils
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from open_vp_cal.led_wall_settings import LedWallSettings
 
@@ -35,11 +35,11 @@ class SeparationResults:
         """
         Initialize an instance of SeparationResults.
         """
-        self.first_grey_frame = None
-        self.first_red_frame = None
-        self.first_green_frame = None
-        self.first_blue_frame = None
-        self.second_red_frame = None
+        self.first_grey_frame: Optional[Frame] = None
+        self.first_red_frame: Optional[Frame] = None
+        self.first_green_frame: Optional[Frame] = None
+        self.first_blue_frame: Optional[Frame] = None
+        self.second_red_frame: Optional[Frame] = None
 
     @property
     def is_valid(self) -> bool:

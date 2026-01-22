@@ -108,6 +108,44 @@ class LedWallSettings:
         self.separation_results = None
         self.roi = []
 
+    def set_separation_results(self, first_red_frame_num: int, separation: int) -> None:
+        """
+        Set known separation results to skip automatic frame detection.
+
+        This should be only be called by implementors who know the exact first frame of the first
+        red patch and the exact number of frames between each patch in the sequence.
+
+        Often this is the case where implementers have a closed loop between displaying the
+        patches on the LED wall and capturing them to disk, often via SDI capture back in the media
+        server.
+
+        Ideally set after the sequence is loaded. but before the auto-roi detection, or analysis is
+        run.
+
+        As this will cause the SeperationIdenfification step to be skipped entirely.
+
+        Frame objects for the key frames used in calibration analysis.
+
+        Args:
+            first_red_frame_num: Frame number of the first red patch
+            separation: Number of frames between each patch (typically 5)
+
+        Example:
+            led_wall.sequence_loader.load_sequence("/path/to/sequence")
+            led_wall.set_separation_results(first_red_frame_num=72, separation=5)
+            # This sets: red=72, green=77, blue=82, grey=87, second_red=92
+        """
+        seq = self.sequence_loader
+
+        results = SeparationResults()
+        results.first_red_frame = seq.get_frame(first_red_frame_num)
+        results.first_green_frame = seq.get_frame(first_red_frame_num + separation)
+        results.first_blue_frame = seq.get_frame(first_red_frame_num + 2 * separation)
+        results.first_grey_frame = seq.get_frame(first_red_frame_num + 3 * separation)
+        results.second_red_frame = seq.get_frame(first_red_frame_num + 4 * separation)
+
+        self.separation_results = results
+
     def clear_led_settings(self):
         """
         Clear the LED settings and restore them to the defaults
