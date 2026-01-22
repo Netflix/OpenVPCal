@@ -109,6 +109,15 @@ wheels = [
 ]
 
 [[package]]
+name = "execnet"
+version = "2.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bf/89/780e11f9588d9e7128a3f87788354c7946a9cbb1401ad38a48c4db9a4f07/execnet-2.1.2.tar.gz", hash = "sha256:63d83bfdd9a23e35b9c6a3261412324f964c2ec8dcd8d3c6916ee9373e0befcd", size = 166622, upload-time = "2025-11-12T09:56:37.75Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ab/84/02fc1827e8cdded4aa65baef11296a9bbe595c474f0d6d758af082d849fd/execnet-2.1.2-py3-none-any.whl", hash = "sha256:67fba928dd5a544b783f6056f449e5e3931a5c378b128bc18501f7ea79e296ec", size = 40708, upload-time = "2025-11-12T09:56:36.333Z" },
+]
+
+[[package]]
 name = "fonttools"
 version = "4.56.0"
 source = { registry = "https://pypi.org/simple" }
@@ -247,7 +256,7 @@ requires-dist = [
     { name = "colour-science", specifier = ">=0.4.6" },
     { name = "deepdiff" },
     { name = "matplotlib", specifier = ">=3.10.1" },
-    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "opencolorio", specifier = ">=2.5.1" },
     { name = "openimageio", specifier = "==3.0.4.0" },
     { name = "packaging", specifier = ">=24.2" },
     { name = "pyqtgraph", specifier = ">=0.13.7" },
@@ -270,7 +279,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "opencolorio", specifier = ">=2.5.1" },
     { name = "openimageio", specifier = "==3.0.4.0" },
     { name = "packaging", specifier = ">=24.2" },
     { name = "pytest", marker = "extra == 'dev'" },
@@ -290,7 +299,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "opencolorio", specifier = ">=2.5.1" },
     { name = "openimageio", specifier = "==3.0.4.0" },
     { name = "packaging", specifier = ">=24.2" },
     { name = "pytest", marker = "extra == 'dev'" },
@@ -310,7 +319,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "opencolorio", specifier = ">=2.4.1" },
+    { name = "opencolorio", specifier = ">=2.5.1" },
     { name = "openimageio", specifier = "==3.0.4.0" },
     { name = "packaging", specifier = ">=24.2" },
     { name = "pytest", marker = "extra == 'dev'" },
@@ -320,16 +329,16 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "opencolorio"
-version = "2.4.1"
+version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f2/f5/f6e3392509ac85792f70cb751d68cae958644629c5b72071268f49149e20/opencolorio-2.4.1.tar.gz", hash = "sha256:a723906e6cfb3c3413061e5536351578e868d65ee258501698d77ab7eb75f57b", size = 11156742, upload-time = "2024-12-12T20:21:49.485Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/25/15eece486a3911fb0d68126c523b52a3970f382fbe57cb224a107ff56710/opencolorio-2.5.1.tar.gz", hash = "sha256:5d9a63ffa92e3442dea811d3d0aa445c4cdf70a8e4d038057d53f7576c235c97", size = 13941789, upload-time = "2026-01-13T06:06:00.638Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/27/b8d8269f50d2e8d8045c17d05ecb24ce504f3d2a13891310633571986df3/opencolorio-2.4.1-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:b5ca7fbd632a4d9f0139b2a41cd0d925b801822199eb80a813c49d4c3aa7a643", size = 6224178, upload-time = "2024-12-12T20:20:23.038Z" },
-    { url = "https://files.pythonhosted.org/packages/33/b3/35f3dd69f995dbae946ec3a88266445d22fba79bbbde92f478717f3adb16/opencolorio-2.4.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:f665652ce1eb4db7251dcc26a43a8e9f13afb7f5df785b9ad801132e06245a3f", size = 5739809, upload-time = "2024-12-12T20:20:26.121Z" },
-    { url = "https://files.pythonhosted.org/packages/38/ae/2e2fa78265487419847514c840d12d1430ddceff362546471a634fb45040/opencolorio-2.4.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:852b7d2e02e826d839339a8043b7ef6cca2db2aed2c3f3057a1f572d4b701cf7", size = 5748598, upload-time = "2024-12-12T20:20:30.431Z" },
-    { url = "https://files.pythonhosted.org/packages/d0/0b/7cb1a698ef82886a6973dbc861e28944bca4e121fe6489389296184840ec/opencolorio-2.4.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:817a01ba96e3240e8ef412598001cd6e3ed8188bfd68b3108e7a78d64ce3607d", size = 6163540, upload-time = "2024-12-12T20:20:32.737Z" },
-    { url = "https://files.pythonhosted.org/packages/bf/03/e296b1413c99d4661c5a4e37b40e22759e9e76484fb837155375f99e3ab7/opencolorio-2.4.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f62765fe37e9d772108a01e95a29392540bc5dc9b98511a65bae4aacb13fcbd8", size = 6063878, upload-time = "2024-12-12T20:20:34.426Z" },
-    { url = "https://files.pythonhosted.org/packages/43/e2/a18189dc55aee2f9395f1e70e721b0aa7372745144cb91e86fc7414ed6ca/opencolorio-2.4.1-cp311-cp311-win_amd64.whl", hash = "sha256:8bc4cd00bdd452ff6bc1bd05718ba634ebed8e63e9dbf76dba27f415a6c716df", size = 3877365, upload-time = "2024-12-12T20:20:36.427Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/d6/e9145dcf68ee685ca0ae44f06ca8d218ffb986ed49b9f7c3a27865803a79/opencolorio-2.5.1-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:4134a3acc64d9a0b32cb99881ef4efd5211431f1402b00a5d8473e474e13d9c0", size = 6359717, upload-time = "2026-01-13T06:05:18.576Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/6f/14e732b96d984b639c2304674ab52b9a00db4a3b656f4bc0bcce0b007864/opencolorio-2.5.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:734318bfab2c9cdd8a609762e64b28953d18d44dbc966ffeb31b5f616efac8db", size = 5735628, upload-time = "2026-01-13T06:05:19.763Z" },
+    { url = "https://files.pythonhosted.org/packages/87/a8/97fc64f474038b62ac5700d26ab415c72a0b0b5d52172d778160657aba38/opencolorio-2.5.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:859c87226bf8c19809bc161730841298ac037a19f029aa4ce98a808c1c682b54", size = 6315197, upload-time = "2026-01-13T06:05:21.482Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/97/5ad4c3c85012be8618a4864ae1eab4ef38192945352eb2033a19ae0cf780/opencolorio-2.5.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:d6177770ee5273a90d334f3023537c566443845fc415018ee29c031801692248", size = 6882856, upload-time = "2026-01-13T06:05:23.205Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/d1/4350f31f75bf0e1e7cb7ca73a2ffb455f6a085561f0f9e497a93fa4ed22f/opencolorio-2.5.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:efdc91843ac92c51411ccf8541009dd2e7ac1ba3c62e7bb92757cef7edf6787a", size = 6930017, upload-time = "2026-01-13T06:05:24.732Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/94/d57f844c675b37cfaf171c46e77ca4b2fdb421e57cb81de52224507aff3e/opencolorio-2.5.1-cp311-cp311-win_amd64.whl", hash = "sha256:0d9906cef258769e1e43dcab007cecead921010461dd65f82b024f99940193ed", size = 3902756, upload-time = "2026-01-13T06:05:25.95Z" },
 ]
 
 [[package]]
@@ -375,6 +384,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyinstaller" },
     { name = "pytest" },
+    { name = "pytest-xdist" },
     { name = "ruff" },
 ]
 
@@ -387,6 +397,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pyinstaller", specifier = ">=6.12.0" },
     { name = "pytest" },
+    { name = "pytest-xdist" },
     { name = "ruff" },
 ]
 
@@ -614,6 +625,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ae/3c/c9d525a414d506893f0cd8a8d0de7706446213181570cdbd766691164e40/pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845", size = 1450891, upload-time = "2025-03-02T12:54:54.503Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/3d/64ad57c803f1fa1e963a7946b6e0fea4a70df53c1a7fed304586539c2bac/pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820", size = 343634, upload-time = "2025-03-02T12:54:52.069Z" },
+]
+
+[[package]]
+name = "pytest-xdist"
+version = "3.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "execnet" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/78/b4/439b179d1ff526791eb921115fca8e44e596a13efeda518b9d845a619450/pytest_xdist-3.8.0.tar.gz", hash = "sha256:7e578125ec9bc6050861aa93f2d59f1d8d085595d6551c2c90b6f4fad8d3a9f1", size = 88069, upload-time = "2025-07-01T13:30:59.346Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/31/d4e37e9e550c2b92a9cbc2e4d0b7420a27224968580b5a447f420847c975/pytest_xdist-3.8.0-py3-none-any.whl", hash = "sha256:202ca578cfeb7370784a8c33d6d05bc6e13b4f25b5053c30a152269fd10f0b88", size = 46396, upload-time = "2025-07-01T13:30:56.632Z" },
 ]
 
 [[package]]
