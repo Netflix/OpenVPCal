@@ -32,6 +32,17 @@ class ResourceLoader:
      folder within the installed package.
 
     """
+    _enable_aces_2: bool = False
+
+    @classmethod
+    def set_enable_aces_2(cls, enable: bool) -> None:
+        """Set whether to use ACES 2.0 OCIO config globally.
+
+        Args:
+            enable: If True, use the ACES 2.0 OCIO config instead of the default
+        """
+        cls._enable_aces_2 = enable
+
     @staticmethod
     def _get_resource(filename: str) -> str:
         """ For the given filename, we return the absolute file path from within the installed package.
@@ -48,13 +59,15 @@ class ResourceLoader:
     def ocio_config_path(cls) -> str:
         """
 
-        Returns: The absolute path to the ocio config file
+        Returns: The absolute path to the ocio config file. Uses ACES 2.0 config if
+                 set_enable_aces_2(True) was called, otherwise uses the default ACES 1.3 config.
 
         """
+        config_name = constants.DEFAULT_ACES_2_OCIO_CONFIG if cls._enable_aces_2 else constants.DEFAULT_OCIO_CONFIG
         ocio_config_path = os.path.join(
-            cls.prefs_dir(), f"{constants.DEFAULT_OCIO_CONFIG}{ocio.OCIO_CONFIG_DEFAULT_FILE_EXT}")
+            cls.prefs_dir(), f"{config_name}{ocio.OCIO_CONFIG_DEFAULT_FILE_EXT}")
         if not os.path.exists(ocio_config_path):
-            ocio.Config().CreateFromBuiltinConfig(constants.DEFAULT_OCIO_CONFIG).serialize(ocio_config_path)
+            ocio.Config().CreateFromBuiltinConfig(config_name).serialize(ocio_config_path)
         return ocio_config_path
 
     @classmethod

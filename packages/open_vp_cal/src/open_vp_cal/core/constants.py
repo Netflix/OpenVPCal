@@ -55,6 +55,8 @@ DEFAULT_RESOLUTION_WIDTH = 1920
 DEFAULT_RESOLUTION_HEIGHT = 1080
 
 DEFAULT_OCIO_CONFIG = "studio-config-v2.1.0_aces-v1.3_ocio-v2.3"
+DEFAULT_ACES_2_OCIO_CONFIG = "studio-config-v4.0.0_aces-v2.0_ocio-v2.5"
+
 ARC_CONFIG = "arc_config.xml"
 
 

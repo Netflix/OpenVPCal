@@ -34,9 +34,13 @@ from open_vp_cal.led_wall_settings import LedWallSettings
 from open_vp_cal.project_settings import ProjectSettings
 
 
-def open_ui() -> None:
+def open_ui(enable_aces_2: bool = False) -> None:
     """ Opens the MainWindow as QApplication after the splash screen loads
+
+    Args:
+        enable_aces_2: Whether to use the ACES 2.0 OCIO config instead of the default
     """
+    ResourceLoader.set_enable_aces_2(enable_aces_2)
     from PySide6.QtWidgets import QMessageBox
     from PySide6 import QtWidgets
     from PySide6.QtGui import QPixmap
@@ -211,7 +215,8 @@ def add_error_to_log(error_log: str, error: str) -> None:
 def run_cli(
         project_settings_file_path: str,
         output_folder: str,
-        ocio_config_path: str = None, force=False, error_log: str = None, export_analysis_swatches: bool = False ) -> dict[str, LedWallSettings]:
+        ocio_config_path: str = None, force=False, error_log: str = None, export_analysis_swatches: bool = False,
+        enable_aces_2: bool = False) -> dict[str, LedWallSettings]:
     """ Runs the application in CLI mode to process the given project settings file.
 
     Args:
@@ -222,10 +227,13 @@ def run_cli(
             primarily for testing purposes
         error_log: The error log file path to store errors in as a json file
         export_analysis_swatches: For debugging we can force the swatches to be exported after the analysis
+        enable_aces_2: Whether to use the ACES 2.0 OCIO config instead of the default
 
     Returns: The list of ProcessingResults
 
     """
+    ResourceLoader.set_enable_aces_2(enable_aces_2)
+
     project_settings = ProjectSettings.from_json(project_settings_file_path)
     project_settings.output_folder = output_folder
     open_vp_cal_base = OpenVPCalBase()
@@ -314,7 +322,7 @@ def run_args(args: argparse.Namespace) -> None:
         args: The command line arguments
     """
     if args.ui:
-        open_ui()
+        open_ui(enable_aces_2=args.enable_aces_2)
     else:
 
         if args.generate_patterns:
@@ -328,7 +336,8 @@ def run_args(args: argparse.Namespace) -> None:
                 args.output_folder,
                 args.ocio_config_path,
                 force=args.ignore_errors,
-                error_log=args.error_log
+                error_log=args.error_log,
+                enable_aces_2=args.enable_aces_2
             )
 
 
@@ -372,6 +381,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--ignore_errors', type=str2bool, default=False,
                         help='CLI flag to ignore any errors produced during the calibration process and logging them in the provided error log file')
     parser.add_argument('--error_log', required=False, help='A file path to store any errors in a json file, the file is created if it does not already exist')
+    parser.add_argument('--enable_aces_2', type=str2bool, default=False,
+                        help='CLI flag to use the ACES 2.0 OCIO config instead of the default ACES 1.3 config')
     args = parser.parse_args(sys.argv[1:])
 
     if not args.ui:
