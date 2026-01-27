@@ -140,7 +140,14 @@ jobs:
         run: uv run ruff check ./packages ./tests
 
       - name: Run tests (verbose, stop on fail)
-        run: uv run pytest ./tests -vv --junitxml=test-results/junit-report.xml
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            # Limit parallel workers on Ubuntu to avoid resource exhaustion with image generation tests
+            uv run pytest ./tests -vv --junitxml=test-results/junit-report.xml -n 2
+          else
+            uv run pytest ./tests -vv --junitxml=test-results/junit-report.xml
+          fi
 
       - name: Report test results (${{ matrix.os }})
         if: always()
