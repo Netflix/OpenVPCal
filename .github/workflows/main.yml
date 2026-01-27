@@ -35,14 +35,14 @@ jobs:
     steps:
       - name: Checkout code (no LFS)
         if: ${{ github.event_name == 'schedule' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           ref: dev
           lfs: false
 
       - name: Checkout code (no LFS)
         if: ${{ github.event_name != 'schedule' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           lfs: false
 
@@ -69,7 +69,7 @@ jobs:
 
       # ← Cache all LFS objects between runs
       - name: Cache Git LFS objects
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: .git/lfs/objects
           key: ${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
@@ -125,7 +125,7 @@ jobs:
 
       # Common Python setup + build + test
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -168,20 +168,20 @@ jobs:
     steps:
       - name: Checkout code (no LFS)
         if: ${{ github.event_name == 'schedule' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           ref: dev
           lfs: false
 
       - name: Checkout code (no LFS)
         if: ${{ github.event_name != 'schedule' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           lfs: false
 
       # Common Python setup + build + test
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -213,7 +213,7 @@ jobs:
 
       # ← Cache LFS objects for nightly packaging too
       - name: Cache Git LFS objects
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: .git/lfs/objects
           key: nightly-${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
@@ -288,28 +288,28 @@ jobs:
 
       - name: Upload macOS nightly artifact
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nightly-macos
           path: './dist/OpenVPCal-*.dmg'
 
       - name: Upload Windows nightly artifact - Zip
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nightly-windows-setup
           path: 'Output/OpenVPCal*.exe'
 
       - name: Upload Windows nightly artifact - Setup
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nightly-windows-zip
           path: 'Output/OpenVPCal*.zip'
 
       - name: Upload Linux nightly artifact
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nightly-linux
           path: 'Output/OpenVPCal*.zip'
@@ -336,7 +336,7 @@ jobs:
 
     steps:
       - name: Checkout tagged commit (no LFS, full history for branch check)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
           lfs: false
@@ -355,7 +355,7 @@ jobs:
 
       # Common Python setup
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -387,7 +387,7 @@ jobs:
 
       # ← Cache LFS objects for release packaging
       - name: Cache Git LFS objects
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: .git/lfs/objects
           key: release-${{ runner.os }}-git-lfs-${{ hashFiles('**/.gitattributes') }}
@@ -436,28 +436,28 @@ jobs:
       # Upload artifacts for release
       - name: Upload macOS release artifact
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-macos
           path: './dist/OpenVPCal-*.dmg'
 
       - name: Upload Windows release artifact - Setup
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-windows-setup
           path: 'Output/OpenVPCal*.exe'
 
       - name: Upload Windows release artifact - Zip
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-windows-zip
           path: 'Output/OpenVPCal*.zip'
 
       - name: Upload Linux release artifact
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-linux
           path: 'Output/OpenVPCal*.zip'
@@ -476,7 +476,7 @@ jobs:
       contents: write
     steps:
       - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: release-assets
           merge-multiple: true
