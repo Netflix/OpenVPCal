@@ -6,13 +6,14 @@ requires-python = "==3.11.*"
 dependencies = [
     "colour-checker-detection>=0.2.1",
     "colour-science>=0.4.6",
+    "fonttools>=4.60.2",
     "matplotlib>=3.10.1",
     "opencolorio>=2.5.1",
     "openimageio==3.0.4.0",
     "packaging>=24.2",
     "pyqtgraph>=0.13.7",
     "pyside6>=6.8.2.1",
-    "deepdiff"
+    "deepdiff>=8.6.1"
 ]
 
 [project.optional-dependencies]
