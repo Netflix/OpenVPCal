@@ -266,7 +266,7 @@ class SequenceLoader:
         if not os.path.exists(full_file_path):
             raise IOError(f"File {full_file_path} does not exist.")
 
-        frame = self.frame_class(self.led_wall_settings.project_settings)
+        frame = self.frame_class(self.led_wall_settings)
         frame.frame_num = frame_num
         frame.file_name = full_file_name
         frame.image_buf = imaging_utils.load_image(full_file_path)

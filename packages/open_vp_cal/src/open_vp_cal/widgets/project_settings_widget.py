@@ -38,10 +38,10 @@ from open_vp_cal.widgets import utils
 from open_vp_cal.widgets.utils import LockableWidget
 
 
-class ProjectSettingsModel(ProjectSettings, QObject):
+class ProjectSettingsModel(QObject):
     """
     A class used to represent the Model in MVC structure.
-    ...
+    Wraps ProjectSettings with Qt signals for UI integration.
 
     Attributes
     ----------
@@ -53,7 +53,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
     set_data(key: str, value: object)
         Updates the stored data with the new value and emits the data_changed signal.
 
-    Get_data(key: str)
+    get_data(key: str)
         Retrieves the value of a given key from the stored data.
     """
 
@@ -63,6 +63,9 @@ class ProjectSettingsModel(ProjectSettings, QObject):
     error_occurred = Signal(str)
     register_custom_gamut_from_load = Signal(str)
     input_plate_gamut_changed = Signal()
+
+    # Attributes that belong to this class, not delegated to _settings
+    _own_attrs = frozenset({'_settings', 'parent', '_led_wall_class', 'default_data', 'current_wall'})
 
     def __init__(self, parent=None, led_wall_class=None):
         """
@@ -74,12 +77,64 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             parent widget (default is None)
         """
         QObject.__init__(self)
-        ProjectSettings.__init__(self)
-        self.parent = parent
-        self._led_wall_class = led_wall_class
-        self.default_data = {}
-        self.current_wall = None
+        # Store attributes in __dict__ directly to bypass our custom __setattr__
+        self.__dict__['_settings'] = ProjectSettings(led_wall_class=led_wall_class)
+        self.__dict__['parent'] = parent
+        self.__dict__['_led_wall_class'] = led_wall_class
+        self.__dict__['default_data'] = {}
+        self.__dict__['current_wall'] = None
         self.refresh_default_data()
+
+    def __getattr__(self, name: str):
+        """Delegate attribute access to the wrapped ProjectSettings."""
+        # Check if in our own dict first
+        if name in self.__dict__:
+            return self.__dict__[name]
+        # Delegate to settings
+        settings = self.__dict__.get('_settings')
+        if settings is not None:
+            return getattr(settings, name)
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def __setattr__(self, name: str, value):
+        """Delegate attribute setting to the wrapped ProjectSettings for known fields."""
+        # Handle our own attributes directly
+        if name in self._own_attrs:
+            self.__dict__[name] = value
+            return
+
+        # If _settings exists and has this attribute, delegate to it
+        settings = self.__dict__.get('_settings')
+        if settings is not None and name in ProjectSettings.model_fields:
+            setattr(settings, name, value)
+            return
+
+        # Fall back to normal attribute setting
+        self.__dict__[name] = value
+
+    # Explicit delegation for commonly used methods
+    def to_json(self, json_file: str):
+        """Save the ProjectSettings object to a JSON file."""
+        return self._settings.to_json(json_file)
+
+    @classmethod
+    def from_json(cls, json_file: str, led_wall_class=None):
+        """Create a ProjectSettingsModel from a JSON file."""
+        instance = cls(led_wall_class=led_wall_class)
+        instance._settings = ProjectSettings.from_json(json_file, led_wall_class=led_wall_class)
+        return instance
+
+    def to_dict(self):
+        """Returns the settings as a dictionary."""
+        return self._settings.to_dict()
+
+    def get_led_wall(self, name: str) -> LedWallSettings:
+        """Returns a LED wall from the project."""
+        return self._settings.get_led_wall(name)
+
+    def add_custom_primary(self, name: str, primaries):
+        """Adds a custom primary to the project."""
+        return self._settings.add_custom_primary(name, primaries)
 
     def refresh_default_data(self):
         """
@@ -88,7 +143,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         target_gamut_options = constants.ColourSpace.all().copy()
         target_gamut_options.pop(target_gamut_options.index(constants.ColourSpace.CS_ACES))
         target_gamut_options.extend(self.project_custom_primaries.keys())
-        default_led_wall = LedWallSettings(self, constants.DEFAULT)
+        default_led_wall = LedWallSettings(self._settings, name=constants.DEFAULT)
 
         self.default_data = {
             constants.ProjectSettingsKeys.OUTPUT_FOLDER: {constants.DEFAULT: self.output_folder},
@@ -234,25 +289,33 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             json_file (str): The path to the JSON file.
 
         """
-        project_settings = self.from_json(json_file, led_wall_class=self._led_wall_class)
-        for key, _ in project_settings._project_settings:
+        project_settings = ProjectSettings.from_json(json_file, led_wall_class=self._led_wall_class)
+        # Iterate over project settings model fields (excluding version and walls)
+        for key in ProjectSettings.model_fields:
+            if key in ('openvp_cal_version', 'led_walls'):
+                continue
             value = getattr(project_settings, key)
             self.set_data(key, value)
 
-        for led_wall in self.led_walls:
-            led_wall.project_settings = self
+        # Copy the led walls
+        self._settings.led_walls = project_settings.led_walls
+        for led_wall in self._settings.led_walls:
+            led_wall._project_settings = self._settings
             self.led_wall_added.emit(led_wall)
 
         self.refresh_default_data()
-        for gamut_name in self.project_custom_primaries:
+        for gamut_name in self._settings.project_custom_primaries:
             self.register_custom_gamut_from_load.emit(gamut_name)
 
     def clear_project_settings(self):
         """ Clears the project settings back to the default settings and emits a signal to inform the views
         """
-        super().clear_project_settings()
-        for key, value in self._project_settings:
-            self.data_changed.emit(key, value)
+        self._settings.clear_project_settings()
+        # Emit data changes for all project settings fields (excluding version and walls)
+        for key in ProjectSettings.model_fields:
+            if key in ('openvp_cal_version', 'led_walls'):
+                continue
+            self.data_changed.emit(key, getattr(self._settings, key))
 
     def add_led_wall(self, name: str) -> Union[LedWallSettings, None]:
         """
@@ -265,7 +328,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
 
         """
         try:
-            led_wall = super().add_led_wall(name)
+            led_wall = self._settings.add_led_wall(name)
         except ValueError as handled_exception:
             self.error_occurred.emit(str(handled_exception))
             return None
@@ -283,10 +346,14 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         """
         self.current_wall = led_wall
         self.led_wall_added.emit(led_wall)
-        for key, _ in self._project_settings:
+        # Emit data changes for all project settings fields (excluding version and walls)
+        for key in ProjectSettings.model_fields:
+            if key in ('openvp_cal_version', 'led_walls'):
+                continue
             self.data_changed.emit(key, self.get_data(key))
 
-        for key, _ in self.current_wall._led_settings:
+        # Emit data changes for all led wall settings fields
+        for key in LedWallSettings.model_fields:
             self.data_changed.emit(key, self.get_data(key))
         return led_wall
 
@@ -301,7 +368,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
 
         """
         try:
-            led_wall = super().copy_led_wall(existing_wall_name, new_name)
+            led_wall = self._settings.copy_led_wall(existing_wall_name, new_name)
         except ValueError as handled_exception:
             self.error_occurred.emit(str(handled_exception))
             return None
@@ -318,7 +385,7 @@ class ProjectSettingsModel(ProjectSettings, QObject):
 
         """
         try:
-            led_wall = super().add_verification_wall(existing_wall_name)
+            led_wall = self._settings.add_verification_wall(existing_wall_name)
         except ValueError as handled_exception:
             self.error_occurred.emit(str(handled_exception))
             return None
@@ -331,8 +398,8 @@ class ProjectSettingsModel(ProjectSettings, QObject):
         Args:
             name: The name of the wall to remove
         """
-        super().remove_led_wall(name)
-        if not self.led_walls:
+        self._settings.remove_led_wall(name)
+        if not self._settings.led_walls:
             self.current_wall = None
         self.led_wall_removed.emit(name)
 
@@ -343,20 +410,24 @@ class ProjectSettingsModel(ProjectSettings, QObject):
             led_wall: The wall to set as the current wall
         """
         if isinstance(led_wall, str):
-            for wall in self.led_walls:
+            for wall in self._settings.led_walls:
                 if wall.name == led_wall:
                     self.current_wall = wall
         else:
             self.current_wall = led_wall
 
-        for key, _ in self._project_settings:
+        # Emit data changes for all project settings fields (excluding version and walls)
+        for key in ProjectSettings.model_fields:
+            if key in ('openvp_cal_version', 'led_walls'):
+                continue
             self.data_changed.emit(key, self.get_data(key))
 
-        for key, _ in self.current_wall._led_settings:
+        # Emit data changes for all led wall settings fields
+        for key in LedWallSettings.model_fields:
             self.data_changed.emit(key, self.get_data(key))
 
     def reset_led_wall(self, name: str) -> None:
-        super().reset_led_wall(name)
+        self._settings.reset_led_wall(name)
         self.set_current_wall(name)
 
 

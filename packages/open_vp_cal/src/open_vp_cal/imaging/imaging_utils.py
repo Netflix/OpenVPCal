@@ -659,18 +659,18 @@ def get_scaled_cie_spectrum_bg_image(max_scale: int) -> Oiio.ImageBuf:
 
 
 def load_image_buffer_to_qimage(buffer: Oiio.ImageBuf,
-                                project_settings: "ProjectSettings") -> QImage:
+                                input_plate_gamut: str) -> QImage:
     """ Load an image buffer into a QImage
 
     Args:
         buffer: The image buffer to load
-        project_settings: The project settings we want to use to access the correct ocio config
+        input_plate_gamut: The input plate gamut colour space name for color conversion
 
     Returns: The QImage loaded from the buffer
 
     """
     buf = apply_color_conversion(
-        buffer, project_settings.current_wall.input_plate_gamut, "sRGB - Display")
+        buffer, input_plate_gamut, "sRGB - Display")
     with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp:
         res = buf.write(temp.name, Oiio.UINT8)
         if not res:
@@ -684,17 +684,17 @@ def load_image_buffer_to_qimage(buffer: Oiio.ImageBuf,
 
 
 def load_image_buffer_to_qpixmap(buffer: Oiio.ImageBuf,
-                                 project_settings: "ProjectSettings") -> QPixmap:
+                                 input_plate_gamut: str) -> QPixmap:
     """ Load an Oiio.ImageBuf into a QPixmap so we can display it
 
     Args:
         buffer: The image buffer to load
-        project_settings: The project settings we want to use to access the correct ocio config
+        input_plate_gamut: The input plate gamut colour space name for color conversion
 
     Returns: The QPixmap loaded from the buffer
 
     """
-    image = load_image_buffer_to_qimage(buffer, project_settings)
+    image = load_image_buffer_to_qimage(buffer, input_plate_gamut)
     pixmap = QPixmap.fromImage(
         image
     )
