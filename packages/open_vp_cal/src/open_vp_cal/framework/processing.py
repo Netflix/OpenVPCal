@@ -586,7 +586,7 @@ class Processing:
             led_wall_for_ocio_generation = self.led_wall.verification_wall_as_wall
 
         generation_ocio_config_path = ocio_config_writer.generate_pre_calibration_ocio_config(
-            [led_wall_for_ocio_generation]
+            [led_wall_for_ocio_generation], base_ocio_config=self.led_wall.project_settings.ocio_config_path
         )
 
         converted_sample_buffers = []
