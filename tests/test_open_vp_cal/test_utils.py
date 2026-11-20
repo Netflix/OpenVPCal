@@ -17,7 +17,7 @@ limitations under the License.
 import json
 import math
 import os
-import platform
+import re
 import shutil
 import tempfile
 import unittest
@@ -107,17 +107,32 @@ class TestUtils(unittest.TestCase):
             self.write_test_image_result(image_buffer, file_name.replace("test", "result"), ext, expected_bps)
             self.fail(file_name + ": Images did not match")
 
+    _FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?")
+
+    def _assert_ocio_lines_close(self, lines1, lines2, msg):
+        """ OCIO configs hold serialized floats whose last digits vary with the platform math libraries,
+        so text must match exactly and numbers must match within a tight tolerance. """
+        self.assertEqual(len(lines1), len(lines2), msg=msg)
+        for line_num, (line1, line2) in enumerate(zip(lines1, lines2), start=1):
+            if line1 == line2:
+                continue
+            self.assertEqual(
+                self._FLOAT_RE.sub("#", line1), self._FLOAT_RE.sub("#", line2),
+                msg=f"{msg} Line {line_num} differs.")
+            nums1 = [float(v) for v in self._FLOAT_RE.findall(line1)]
+            nums2 = [float(v) for v in self._FLOAT_RE.findall(line2)]
+            for a, b in zip(nums1, nums2):
+                self.assertTrue(
+                    math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-12),
+                    msg=f"{msg} Line {line_num}: {a} != {b}")
+
     def files_are_equal(self, file1_path, file2_path):
+        msg = f"Files {file1_path} and {file2_path} are not equal."
         with open(file1_path, 'r', encoding="utf8") as file1, open(file2_path, 'r', encoding="utf8") as file2:
             if file1_path.endswith(".ocio") and file2_path.endswith(".ocio"):
-                if platform.system() != "Darwin":
-                    with self.subTest("OCIO Config Compare Only Works On Osx, Needs More Than Text File Compare"):
-                        self.assertTrue(True)
-                else:
-                    self.assertEqual(file1.readlines(), file2.readlines(), msg=f"Files {file1_path} and {file2_path} are not equal.")
+                self._assert_ocio_lines_close(file1.readlines(), file2.readlines(), msg)
             else:
-                self.assertEqual(file1.readlines(), file2.readlines(),
-                                 msg=f"Files {file1_path} and {file2_path} are not equal.")
+                self.assertEqual(file1.readlines(), file2.readlines(), msg=msg)
 
 
     def write_test_image_result(self, image, image_name, ext, bit_depth):
