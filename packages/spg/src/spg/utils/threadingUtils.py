@@ -21,6 +21,9 @@ import os
 import sys
 import threading
 
+# Frame work is partly file I/O (reading and writing images), so running more frames than there are CPUs hides
+# that latency. Measured on a 16 core machine, 2x cores recovered most of the unbounded speed at ~2/3 the memory.
+WORKERS_PER_CPU = 2
 # Float RGB image copies a single frame typically holds at once (source, converted, cropped, rotated, written)
 FRAME_IMAGE_COPIES = 6
 # The share of the memory available at start-up that concurrent frames may use
@@ -86,7 +89,7 @@ class ResourceGate:
         self._condition = threading.Condition()
         self._active = 0
         self._used = 0
-        self.max_workers = max_workers or self._env_int("SPG_MAX_WORKERS") or os.cpu_count() or 1
+        self.max_workers = max_workers or self._env_int("SPG_MAX_WORKERS") or (os.cpu_count() or 1) * WORKERS_PER_CPU
         if memory_budget is None:
             budget_mb = self._env_int("SPG_MEMORY_BUDGET_MB")
             if budget_mb:
