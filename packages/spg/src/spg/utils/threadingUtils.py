@@ -16,7 +16,26 @@ limitations under the License.
 Contains some helper functions and classes for threading
 
 """
+import os
 import threading
+
+
+def _default_max_workers() -> int:
+    """ The number of frames we allow to be processed at the same time. Every in-flight frame holds full resolution
+    image buffers, so this is bounded by the CPU count (capped at 8) to keep peak memory proportional to the
+    machine rather than to the number of frames in the sequence. Override with the SPG_MAX_WORKERS env var.
+    """
+    env_value = os.environ.get("SPG_MAX_WORKERS")
+    if env_value:
+        try:
+            return max(1, int(env_value))
+        except ValueError:
+            pass
+    return max(1, min(os.cpu_count() or 1, 8))
+
+
+# Shared by all ThreadedFunction instances so the limit applies across the whole process
+_CONCURRENCY_LIMIT = threading.BoundedSemaphore(_default_max_workers())
 
 
 class ThreadedFunction(threading.Thread):
@@ -40,4 +59,5 @@ class ThreadedFunction(threading.Thread):
     def run(self):
         """ Handles the execution of the thread
         """
-        self.func(self.frame, self.kwargs, self.results)
+        with _CONCURRENCY_LIMIT:
+            self.func(self.frame, self.kwargs, self.results)
