@@ -18,6 +18,7 @@ The module is dedicated to the handling of accessing non python file resources f
 import importlib.resources
 import os
 import platform
+import tempfile
 from pathlib import Path
 
 
@@ -67,7 +68,15 @@ class ResourceLoader:
         ocio_config_path = os.path.join(
             cls.prefs_dir(), f"{config_name}{ocio.OCIO_CONFIG_DEFAULT_FILE_EXT}")
         if not os.path.exists(ocio_config_path):
-            ocio.Config().CreateFromBuiltinConfig(config_name).serialize(ocio_config_path)
+            # Write atomically so parallel processes never read a partially written config
+            fd, tmp_path = tempfile.mkstemp(dir=str(cls.prefs_dir()), suffix=".tmp")
+            os.close(fd)
+            try:
+                ocio.Config().CreateFromBuiltinConfig(config_name).serialize(tmp_path)
+                os.replace(tmp_path, ocio_config_path)
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
         return ocio_config_path
 
     @classmethod
