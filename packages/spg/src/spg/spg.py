@@ -30,7 +30,7 @@ from spg.projectSettings import ProjectSettings as _ProjectSettings
 from spg.utils import constants as _constants
 from spg.utils import imageUtils as _imageUtils
 from spg.utils.imageUtils import oiio
-from spg.utils.threadingUtils import ThreadedFunction as _ThreadedFunction
+from spg.utils.threadingUtils import ThreadedFunction as _ThreadedFunction, estimate_frame_bytes as _estimate_frame_bytes
 
 
 class PatternGenerator(object):
@@ -192,7 +192,9 @@ class PatternGenerator(object):
                     if first_pattern_frame or generator_changes_per_frame:
                         # We create a new thread which executes our generator, which we start and keep track of
                         first_pattern_sequence_frame = full_sequence_frame_num
-                        thread = _ThreadedFunction(self.stitch_raster_frame, frame, kwargs, results)
+                        thread = _ThreadedFunction(
+                            self.stitch_raster_frame, frame, kwargs, results,
+                            memory_estimate=_estimate_frame_bytes(raster_map.resolution_width, raster_map.resolution_height))
                         thread.start()
                         if generator_changes_per_frame:
                             generator_changes_per_frame_threads.append(thread)

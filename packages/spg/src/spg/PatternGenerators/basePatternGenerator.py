@@ -22,7 +22,7 @@ import shutil
 from spg.utils import constants as _constants
 from spg.utils import imageUtils as _imageUtils
 from spg.utils.attributeUtils import CategorizedAttribute, UICategory
-from spg.utils.threadingUtils import ThreadedFunction as _ThreadedFunction
+from spg.utils.threadingUtils import ThreadedFunction as _ThreadedFunction, estimate_frame_bytes as _estimate_frame_bytes
 
 
 class BasePatternGeneratorMeta(type):
@@ -335,7 +335,9 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
 
                 if first_frame:
                     # We create a new thread which executes our generator, which we start and keep track of
-                    thread = _ThreadedFunction(self.generator, self.frame, kwargs, results)
+                    thread = _ThreadedFunction(
+                        self.generator, self.frame, kwargs, results,
+                        memory_estimate=self._frame_memory_estimate())
                     thread.start()
                     generator_threads.append(thread)
                 else:
@@ -390,7 +392,9 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
                 kwargs = self.get_kwargs()
 
                 # We create a new thread which executes our generator, which we start and keep track of
-                thread = _ThreadedFunction(self.generator, self.frame, kwargs, results)
+                thread = _ThreadedFunction(
+                    self.generator, self.frame, kwargs, results,
+                    memory_estimate=self._frame_memory_estimate())
                 thread.start()
                 threads.append(thread)
 
@@ -435,7 +439,9 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
             kwargs = self.get_kwargs()
 
             # We create a new thread which executes our generator, which we start and keep track of
-            thread = _ThreadedFunction(self.generator, self.frame, kwargs, results)
+            thread = _ThreadedFunction(
+                self.generator, self.frame, kwargs, results,
+                memory_estimate=self._frame_memory_estimate())
             thread.start()
             threads.append(thread)
 
@@ -546,6 +552,14 @@ class BasePatternGenerator(object, metaclass=BasePatternGeneratorMeta):
 
         # Write the image to disk and store the result
         cls.store_result(frame_num, full_file_path, led_wall.name, results)
+
+    def _frame_memory_estimate(self):
+        """ Estimated peak bytes for one in-flight frame, from the largest led wall, used to throttle concurrency
+        """
+        walls = list(self.spg.walls.values())
+        if not walls:
+            return 0
+        return max(_estimate_frame_bytes(wall.resolution_width, wall.resolution_height) for wall in walls)
 
     def get_kwargs(self):
         """ Method returns a dictionary of kwargs which are passed to the generator function
